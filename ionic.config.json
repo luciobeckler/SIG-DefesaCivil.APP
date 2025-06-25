@@ -1,0 +1,7 @@
+{
+  "name": "SIG-DefesaCivil.APP",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
