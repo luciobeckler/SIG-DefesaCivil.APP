@@ -15,6 +15,7 @@ import { AppComponent } from './app/app.component';
 
 import { addIcons } from 'ionicons';
 import { people, calendar } from 'ionicons/icons';
+import { provideHttpClient } from '@angular/common/http';
 
 addIcons({
   people,
@@ -26,5 +27,6 @@ bootstrapApplication(AppComponent, {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
+    provideHttpClient(),
   ],
 });
