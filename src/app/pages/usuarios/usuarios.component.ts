@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, NgModule, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { IRegister } from 'src/app/interfaces/usuario/IRegister';
 import { IUsuarioInfoId } from 'src/app/interfaces/usuario/IUsuarioInfo';
 import { UsuariosService } from 'src/app/services/usuarios/usuarios.service';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
+import { toDateOnly } from 'src/app/helper/funcions';
 
 @Component({
   selector: 'app-usuarios',
@@ -15,7 +16,7 @@ import { FormsModule } from '@angular/forms';
 })
 export class UsuariosComponent implements OnInit {
   usuarios: IUsuarioInfoId[] = [];
-  novoUsuario: IRegister = {
+  usuarioSelecionado: IRegister | IUsuarioInfoId = {
     nome: '',
     senha: '',
     email: '',
@@ -48,27 +49,26 @@ export class UsuariosComponent implements OnInit {
     });
   }
   onCreateUser() {
-    this.novoUsuario = {
-      nome: '',
-      senha: '',
-      email: '',
-      telefone: '',
-      cpf: '',
-      endereco: '',
-      dataDeNascimento: null,
-      dataAdmissao: new Date(),
-      cargo: '',
-      permissao: 'Usuário de campo',
-      isAtivo: true,
+    const payload = {
+      ...this.usuarioSelecionado,
+      dataAdmissao: toDateOnly(this.usuarioSelecionado.dataAdmissao),
+      dataDeNascimento: toDateOnly(this.usuarioSelecionado.dataDeNascimento),
     };
 
-    this.fecharModal();
-    this.getAllUsers();
+    this.usuarioService.create(payload).subscribe({
+      next: (resposta) => {
+        this.getAllUsers();
+        alert(resposta.message);
+        this.fecharModal();
+      },
+      error: (erro) => {
+        console.log('Erro ao criar o usuário:', erro);
+        alert(erro.error);
+      },
+    });
   }
 
-  onEditUser(_t23: IUsuarioInfoId) {
-    throw new Error('Method not implemented.');
-  }
+  onEditUser(user: IUsuarioInfoId) {}
   onDeleteUser(user: IUsuarioInfoId) {
     this.usuarioService.delete(user.id).subscribe({
       next: () => {
@@ -81,11 +81,33 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  abrirModalAdicionarUsuario() {
+  abrirModalUsuario(userSelected?: IUsuarioInfoId) {
+    if (userSelected) {
+      this.usuarioSelecionado = userSelected;
+    } else {
+      this.resetarUsuario();
+    }
+
     this.mostrarModal = true;
   }
 
   fecharModal() {
     this.mostrarModal = false;
+  }
+
+  resetarUsuario() {
+    this.usuarioSelecionado = {
+      nome: '',
+      senha: '',
+      email: '',
+      telefone: '',
+      cpf: '',
+      endereco: '',
+      dataDeNascimento: null,
+      dataAdmissao: new Date(),
+      cargo: '',
+      permissao: 'Usuário de campo',
+      isAtivo: true,
+    };
   }
 }

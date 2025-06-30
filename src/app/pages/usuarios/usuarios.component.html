@@ -1,18 +1,12 @@
 <ion-content class="ion-padding">
   <!-- Botão para adicionar novo usuário -->
-  <ion-button
-    expand="block"
-    color="primary"
-    (click)="abrirModalAdicionarUsuario()"
-  >
+  <ion-button expand="block" color="primary" (click)="abrirModalUsuario()">
     <ion-icon name="person-add" slot="start"></ion-icon>
     Adicionar Usuário
   </ion-button>
 
-  <!-- Tabela de usuários -->
   <ion-card>
     <ion-grid>
-      <!-- Cabeçalho -->
       <ion-row class="header-row bordered-row">
         <ion-col class="bordered-col"><strong>Nome</strong></ion-col>
         <ion-col class="bordered-col"><strong>Cargo</strong></ion-col>
@@ -20,7 +14,6 @@
         <ion-col class="bordered-col"><strong>Ações</strong></ion-col>
       </ion-row>
 
-      <!-- Linhas de dados -->
       <ion-row *ngFor="let user of usuarios" class="bordered-row">
         <ion-col class="bordered-col">{{ user.nome }}</ion-col>
         <ion-col class="bordered-col">{{ user.cargo }}</ion-col>
@@ -34,7 +27,12 @@
           >
             <ion-icon name="trash" slot="icon-only"></ion-icon>
           </ion-button>
-          <ion-button size="small" color="tertiary" fill="clear">
+          <ion-button
+            size="small"
+            color="tertiary"
+            fill="clear"
+            (click)="abrirModalUsuario(user)"
+          >
             <ion-icon name="pencil" slot="icon-only"></ion-icon>
           </ion-button>
         </ion-col>
@@ -54,56 +52,60 @@
       </ion-toolbar>
     </ion-header>
 
+    <ion-item>
+      <ion-text> Campos com * são obrigatórios </ion-text>
+    </ion-item>
+
     <ion-content class="ion-padding">
       <ion-item>
-        <ion-label position="stacked">Nome</ion-label>
-        <ion-input [(ngModel)]="novoUsuario.nome" required></ion-input>
+        <ion-label position="stacked">Nome*</ion-label>
+        <ion-input [(ngModel)]="usuarioSelecionado.nome" required></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Email</ion-label>
+        <ion-label position="stacked">Email*</ion-label>
         <ion-input
           type="email"
-          [(ngModel)]="novoUsuario.email"
+          [(ngModel)]="usuarioSelecionado.email"
           required
         ></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Senha</ion-label>
+        <ion-label position="stacked">Senha*</ion-label>
         <ion-input
           type="password"
-          [(ngModel)]="novoUsuario.senha"
+          [(ngModel)]="usuarioSelecionado.senha"
           required
         ></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Telefone</ion-label>
-        <ion-input [(ngModel)]="novoUsuario.telefone"></ion-input>
+        <ion-label position="stacked">Confirmar senha*</ion-label>
+        <ion-input type="password" required></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">CPF</ion-label>
-        <ion-input [(ngModel)]="novoUsuario.cpf"></ion-input>
+        <ion-label position="stacked">Telefone*</ion-label>
+        <ion-input [(ngModel)]="usuarioSelecionado.telefone"></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Data de Admissão</ion-label>
-        <ion-datetime
-          display-format="DD/MM/YYYY"
-          [(ngModel)]="novoUsuario.dataAdmissao"
-        ></ion-datetime>
+        <ion-label position="stacked">CPF*</ion-label>
+        <ion-input [(ngModel)]="usuarioSelecionado.cpf"></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Cargo</ion-label>
-        <ion-input [(ngModel)]="novoUsuario.cargo"></ion-input>
+        <ion-label position="stacked">Cargo*</ion-label>
+        <ion-input [(ngModel)]="usuarioSelecionado.cargo"></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label position="stacked">Permissão</ion-label>
-        <ion-select [(ngModel)]="novoUsuario.permissao" interface="popover">
+        <ion-label position="stacked">Permissão*</ion-label>
+        <ion-select
+          [(ngModel)]="usuarioSelecionado.permissao"
+          interface="popover"
+        >
           <ion-select-option value="Usuário de campo"
             >Usuário de campo</ion-select-option
           >
@@ -116,8 +118,24 @@
       </ion-item>
 
       <ion-item>
-        <ion-label>Está ativo?</ion-label>
-        <ion-toggle [(ngModel)]="novoUsuario.isAtivo"></ion-toggle>
+        <ion-label position="stacked">Data de Nascimento</ion-label>
+        <ion-datetime
+          display-format="DD/MM/YYYY"
+          [(ngModel)]="usuarioSelecionado.dataDeNascimento"
+        ></ion-datetime>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Data de Admissão</ion-label>
+        <ion-datetime
+          display-format="DD/MM/YYYY"
+          [(ngModel)]="usuarioSelecionado.dataAdmissao"
+        ></ion-datetime>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Está ativo?*</ion-label>
+        <ion-toggle [(ngModel)]="usuarioSelecionado.isAtivo"></ion-toggle>
       </ion-item>
 
       <ion-button expand="full" color="success" (click)="onCreateUser()"

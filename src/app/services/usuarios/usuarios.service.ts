@@ -12,7 +12,7 @@ export class UsuariosService {
 
   constructor(private http: HttpClient) {}
 
-  register(data: IRegister): Observable<any> {
+  create(data: any): Observable<any> {
     return this.http.post(`${this.endPoint}/register`, data);
   }
 
