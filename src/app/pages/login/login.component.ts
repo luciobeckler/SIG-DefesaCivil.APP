@@ -24,9 +24,12 @@ export class LoginComponent {
     senha: '',
   };
 
-  onLogin() {
+  async onLogin() {
     if (this.loginInfo.email && this.loginInfo.senha) {
-      this.accountService.login(this.loginInfo).subscribe({
+      //!todo trocar depois
+      this.loginInfo.email = 'admin@teste.com';
+      this.loginInfo.senha = 'SenhaForte123!';
+      await this.accountService.login(this.loginInfo).subscribe({
         next: (res) => {
           this.router.navigate(['/home']);
         },

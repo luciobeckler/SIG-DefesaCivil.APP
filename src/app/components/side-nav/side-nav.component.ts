@@ -12,9 +12,6 @@ import {
   IonIcon,
   IonRouterOutlet,
 } from '@ionic/angular/standalone';
-
-import { addIcons } from 'ionicons';
-
 @Component({
   selector: 'app-side-nav',
   templateUrl: './side-nav.component.html',

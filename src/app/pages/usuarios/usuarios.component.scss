@@ -1,0 +1,18 @@
+.bordered-row {
+  border-bottom: 1px solid #dcdcdc; // linha horizontal
+}
+
+.bordered-col {
+  border-right: 1px solid #dcdcdc; // linha vertical
+  padding: 8px;
+}
+
+// Remove a borda direita do último item da linha
+ion-row > ion-col:last-child {
+  border-right: none;
+}
+
+ion-row.header-row {
+  background-color: #f1f1f1;
+  font-weight: bold;
+}
