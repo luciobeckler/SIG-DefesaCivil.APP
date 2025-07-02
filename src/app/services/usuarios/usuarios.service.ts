@@ -28,7 +28,7 @@ export class UsuariosService {
     return this.http.delete(`${this.endPoint}/${id}`);
   }
 
-  update(id: string, data: IRegister): Observable<any> {
+  update(id: string, data: any): Observable<any> {
     return this.http.put(`${this.endPoint}/${id}`, data);
   }
 }

@@ -1,5 +1,4 @@
 <ion-content class="ion-padding">
-  <!-- Botão para adicionar novo usuário -->
   <ion-button expand="block" color="primary" (click)="abrirModalUsuario()">
     <ion-icon name="person-add" slot="start"></ion-icon>
     Adicionar Usuário
@@ -21,19 +20,20 @@
         <ion-col class="bordered-col">
           <ion-button
             size="small"
-            color="danger"
-            fill="clear"
-            (click)="onDeleteUser(user)"
-          >
-            <ion-icon name="trash" slot="icon-only"></ion-icon>
-          </ion-button>
-          <ion-button
-            size="small"
             color="tertiary"
             fill="clear"
             (click)="abrirModalUsuario(user)"
           >
             <ion-icon name="pencil" slot="icon-only"></ion-icon>
+          </ion-button>
+
+          <ion-button
+            size="small"
+            color="danger"
+            fill="clear"
+            (click)="confirmarExclusao(user)"
+          >
+            <ion-icon name="trash" slot="icon-only"></ion-icon>
           </ion-button>
         </ion-col>
       </ion-row>
@@ -41,11 +41,14 @@
   </ion-card>
 </ion-content>
 
+<!-- MODAL -->
 <ion-modal [isOpen]="mostrarModal" (didDismiss)="fecharModal()">
   <ng-template>
     <ion-header>
       <ion-toolbar color="primary">
-        <ion-title>Registrar Novo Usuário</ion-title>
+        <ion-title>{{
+          isCreaterOrEdit ? "Registrar Novo Usuário" : "Editar usuário"
+        }}</ion-title>
         <ion-buttons slot="end">
           <ion-button (click)="fecharModal()">Fechar</ion-button>
         </ion-buttons>
@@ -138,7 +141,7 @@
         <ion-toggle [(ngModel)]="usuarioSelecionado.isAtivo"></ion-toggle>
       </ion-item>
 
-      <ion-button expand="full" color="success" (click)="onCreateUser()"
+      <ion-button expand="full" color="success" (click)="onSaveModal()"
         >Salvar</ion-button
       >
     </ion-content>
