@@ -20,7 +20,6 @@ export class UsuariosComponent implements OnInit {
   usuarioSelecionado: IUsuarioInfoId = {
     id: '',
     nome: '',
-    senha: '',
     email: '',
     telefone: '',
     cpf: '',
@@ -73,7 +72,6 @@ export class UsuariosComponent implements OnInit {
     this.usuarioSelecionado = {
       id: '',
       nome: '',
-      senha: '',
       email: '',
       telefone: '',
       cpf: '',

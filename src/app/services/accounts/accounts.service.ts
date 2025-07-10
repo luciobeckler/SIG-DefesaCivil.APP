@@ -3,7 +3,6 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, throwError, Observable } from 'rxjs';
 import { URL } from 'src/app/helper/constantes';
 import { ILogin } from 'src/app/interfaces/auth/ILogin';
-import { IRegister } from 'src/app/interfaces/usuario/IRegister';
 
 @Injectable({
   providedIn: 'root',
