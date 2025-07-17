@@ -30,12 +30,14 @@ export class LoginComponent {
     await this.loadingService.show();
 
     if (this.loginInfo.email && this.loginInfo.senha) {
-      //!todo trocar depois
-      this.loginInfo.email = 'admin@teste.com';
-      this.loginInfo.senha = 'Beckler111*';
       await this.accountService.login(this.loginInfo).subscribe({
         next: (res) => {
-          this.router.navigate(['/home']);
+          if (res.primeiroAcesso) {
+            this.router.navigate(['/primeiro-login']);
+          } else {
+            this.router.navigate(['/home']);
+          }
+
           this.loadingService.hide();
         },
         error: (err) => {

@@ -1,0 +1,147 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Primeiro Acesso - Alterar Senha</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="welcome-message">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Bem-vindo!</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        Este é seu primeiro acesso ao sistema. <br />Por segurança, é necessário
+        alterar sua senha antes de continuar.
+      </ion-card-content>
+    </ion-card>
+  </div>
+
+  <form (ngSubmit)="onAlterarSenha()" #alterarSenhaForm="ngForm">
+    <!-- Nova Senha -->
+    <ion-item>
+      <ion-label position="floating">Nova Senha</ion-label>
+      <ion-input
+        [type]="senhaVisivel.nova ? 'text' : 'password'"
+        required
+        [(ngModel)]="alterarSenhaInfo.novaSenha"
+        name="novaSenha"
+        #novaSenhaInput="ngModel"
+      ></ion-input>
+      <ion-button
+        fill="clear"
+        slot="end"
+        (click)="toggleSenhaVisibilidade('nova')"
+      >
+        <ion-icon [name]="senhaVisivel.nova ? 'eye-off' : 'eye'"></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-text color="danger" *ngIf="novaSenhaInput.touched && !validarSenha()">
+      A senha deve ter pelo menos 8 caracteres, incluindo maiúscula, minúscula,
+      número e símbolo.
+    </ion-text>
+
+    <!-- Confirmar Nova Senha -->
+    <ion-item>
+      <ion-label position="floating">Confirmar Nova Senha</ion-label>
+      <ion-input
+        [type]="senhaVisivel.confirmar ? 'text' : 'password'"
+        required
+        [(ngModel)]="alterarSenhaInfo.confirmarSenha"
+        name="confirmarSenha"
+        #confirmarSenhaInput="ngModel"
+      ></ion-input>
+      <ion-button
+        fill="clear"
+        slot="end"
+        (click)="toggleSenhaVisibilidade('confirmar')"
+      >
+        <ion-icon
+          [name]="senhaVisivel.confirmar ? 'eye-off' : 'eye'"
+        ></ion-icon>
+      </ion-button>
+    </ion-item>
+    <ion-text
+      color="danger"
+      *ngIf="confirmarSenhaInput.touched && !senhasIguais()"
+    >
+      As senhas não coincidem.
+    </ion-text>
+
+    <!-- Requisitos da Senha -->
+    <ion-card class="password-requirements">
+      <ion-card-header>
+        <ion-card-subtitle>Requisitos da Senha:</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-item lines="none">
+          <ion-icon
+            [name]="
+              temMinimo8Caracteres() ? 'checkmark-circle' : 'close-circle'
+            "
+            [color]="temMinimo8Caracteres() ? 'success' : 'danger'"
+            slot="start"
+          ></ion-icon>
+          <ion-label>Mínimo 8 caracteres</ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon
+            [name]="temMaiuscula() ? 'checkmark-circle' : 'close-circle'"
+            [color]="temMaiuscula() ? 'success' : 'danger'"
+            slot="start"
+          ></ion-icon>
+          <ion-label>Pelo menos uma letra maiúscula</ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon
+            [name]="temMinuscula() ? 'checkmark-circle' : 'close-circle'"
+            [color]="temMinuscula() ? 'success' : 'danger'"
+            slot="start"
+          ></ion-icon>
+          <ion-label>Pelo menos uma letra minúscula</ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon
+            [name]="temNumero() ? 'checkmark-circle' : 'close-circle'"
+            [color]="temNumero() ? 'success' : 'danger'"
+            slot="start"
+          ></ion-icon>
+          <ion-label>Pelo menos um número</ion-label>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon
+            [name]="temSimbolo() ? 'checkmark-circle' : 'close-circle'"
+            [color]="temSimbolo() ? 'success' : 'danger'"
+            slot="start"
+          ></ion-icon>
+          <ion-label>Pelo menos um símbolo (&#64;$!%*?&)</ion-label>
+        </ion-item>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Botões -->
+    <div class="buttons-container">
+      <ion-button
+        expand="block"
+        type="submit"
+        [disabled]="!formularioValido()"
+        color="primary"
+        class="ion-margin-top"
+      >
+        <ion-icon name="key" slot="start"></ion-icon>
+        Alterar Senha
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        fill="outline"
+        color="medium"
+        (click)="onCancelar()"
+        class="ion-margin-top"
+      >
+        <ion-icon name="arrow-back" slot="start"></ion-icon>
+        Voltar ao Login
+      </ion-button>
+    </div>
+  </form>
+</ion-content>

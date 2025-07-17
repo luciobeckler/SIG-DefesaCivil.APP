@@ -12,22 +12,38 @@ export class UsuariosService {
   constructor(private http: HttpClient) {}
 
   create(data: any): Observable<any> {
-    return this.http.post(`${this.endPoint}/register`, data);
+    return this.http.post(`${this.endPoint}/register`, data,{
+      withCredentials: true,
+    });
   }
 
   getRoles(): Observable<any> {
-    return this.http.get(`${this.endPoint}/roles`);
+    return this.http.get(`${this.endPoint}/roles`,{
+      withCredentials: true,
+    });
+  }
+
+  getOutrosUsuarios(): Observable<any> {
+    return this.http.get(`${this.endPoint}/outros-usuarios`,{
+      withCredentials: true,
+    });
   }
 
   getAll(): Observable<any> {
-    return this.http.get(`${this.endPoint}`);
+    return this.http.get(`${this.endPoint}`,{
+      withCredentials: true,
+    });
   }
 
   delete(id: string): Observable<any> {
-    return this.http.delete(`${this.endPoint}/${id}`);
+    return this.http.delete(`${this.endPoint}/${id}`,{
+      withCredentials: true,
+    });
   }
 
   update(id: string, data: any): Observable<any> {
-    return this.http.put(`${this.endPoint}/${id}`, data);
+    return this.http.put(`${this.endPoint}/${id}`, data, {
+      withCredentials: true,
+    });
   }
 }

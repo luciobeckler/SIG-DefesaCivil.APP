@@ -24,7 +24,7 @@ export class UsuariosComponent implements OnInit {
     telefone: '',
     cpf: '',
     endereco: '',
-    dataAdmissao: new Date(),
+    dataAdmissao: null,
     dataDeNascimento: null,
     cargo: '',
     permissao: 'Usuário de campo',
@@ -40,7 +40,7 @@ export class UsuariosComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.getAllUsers();
+    this.getOutrosUsuarios();
   }
 
   abrirModalUsuario(userSelected?: IUsuarioInfoId) {
@@ -106,11 +106,11 @@ export class UsuariosComponent implements OnInit {
     await alert.present();
   }
 
-  async getAllUsers() {
+  async getOutrosUsuarios() {
     this.loadingService.show('Carregando usuários...');
     this.resetarUsuario();
 
-    this.usuarioService.getAll().subscribe({
+    this.usuarioService.getOutrosUsuarios().subscribe({
       next: (data) => {
         this.usuarios = data;
         console.log(this.usuarios);
@@ -135,7 +135,7 @@ export class UsuariosComponent implements OnInit {
 
     this.usuarioService.update(id, payload).subscribe({
       next: () => {
-        this.getAllUsers();
+        this.getOutrosUsuarios();
         alert(`Usuário ${user.nome} editado com sucesso.`);
         this.mostrarModal = false;
         this.loadingService.hide();
@@ -152,7 +152,7 @@ export class UsuariosComponent implements OnInit {
 
     this.usuarioService.delete(user.id).subscribe({
       next: () => {
-        this.getAllUsers();
+        this.getOutrosUsuarios();
         alert(`Usuário ${user.nome} deletado com sucesso.`);
         this.loadingService.hide();
       },
@@ -175,7 +175,7 @@ export class UsuariosComponent implements OnInit {
 
     this.usuarioService.create(payload).subscribe({
       next: (resposta) => {
-        this.getAllUsers();
+        this.getOutrosUsuarios();
         alert(resposta.message);
         this.fecharModal();
         this.loadingService.hide();

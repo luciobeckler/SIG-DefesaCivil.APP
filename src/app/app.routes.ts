@@ -9,6 +9,13 @@ export const routes: Routes = [
       import('./pages/login/login.component').then((m) => m.LoginComponent),
   },
   {
+    path: 'primeiro-login',
+    loadComponent: () =>
+      import('./pages/login/primeiro-login/primeiro-login.component').then(
+        (m) => m.PrimeiroLoginComponent
+      ),
+  },
+  {
     path: 'home',
     component: SideNavComponent,
     children: [
