@@ -28,6 +28,8 @@ export class LoginComponent {
 
   async onLogin() {
     await this.loadingService.show();
+    this.loginInfo.email = 'admin@teste.com';
+    this.loginInfo.senha = 'SenhaForte123!';
 
     if (this.loginInfo.email && this.loginInfo.senha) {
       await this.accountService.login(this.loginInfo).subscribe({

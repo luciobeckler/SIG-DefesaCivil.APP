@@ -4,7 +4,7 @@ import { IUsuarioInfoId } from 'src/app/interfaces/usuario/IUsuarioInfo';
 import { UsuariosService } from 'src/app/services/usuarios/usuarios.service';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { toDateOnly } from 'src/app/helper/funcions';
+import { isCpfValido, isTelefoneValido, toDateOnly } from 'src/app/helper/funcions';
 import { AlertController } from '@ionic/angular';
 import { LoadingService } from 'src/app/services/loading/loading.service';
 
@@ -32,12 +32,24 @@ export class UsuariosComponent implements OnInit {
   };
   mostrarModal = false;
   isCreaterOrEdit: boolean = true;
+  minDate: string;
+  maxDate: string ;
 
   constructor(
     private alertController: AlertController,
     private usuarioService: UsuariosService,
     private loadingService: LoadingService
-  ) {}
+  ) {
+    const today = new Date();
+    const max = today.toISOString();
+
+    const pastDate = new Date();
+    pastDate.setFullYear(today.getFullYear() - 120);
+    const min = pastDate.toISOString();
+
+    this.minDate = min;
+    this.maxDate = max;
+  }
 
   ngOnInit() {
     this.getOutrosUsuarios();
@@ -57,6 +69,15 @@ export class UsuariosComponent implements OnInit {
   }
 
   onSaveModal() {
+    // Validação extra antes de salvar
+    if (!this.validarCPF(this.usuarioSelecionado.cpf)) {
+      alert('CPF inválido!');
+      return;
+    }
+    if (!this.validarTelefone(this.usuarioSelecionado.telefone)) {
+      alert('Telefone inválido! Informe DDD + número.');
+      return;
+    }
     if (this.isCreaterOrEdit) {
       this.onCreateUser();
     } else {
@@ -186,5 +207,13 @@ export class UsuariosComponent implements OnInit {
         this.loadingService.hide();
       },
     });
+  }
+
+  validarCPF(cpf: string): boolean {
+    return isCpfValido(cpf);
+  }
+
+  validarTelefone(telefone: string): boolean {
+    return isTelefoneValido(telefone);
   }
 }
