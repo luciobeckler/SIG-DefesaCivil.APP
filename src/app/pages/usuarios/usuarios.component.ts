@@ -162,7 +162,8 @@ export class UsuariosComponent implements OnInit {
         this.loadingService.hide();
       },
       error: (err) => {
-        alert(`Erro ao editar os dados do usuário ${user.nome}.`);
+        console.log(err);
+        alert(err.error.message);
         this.loadingService.hide();
       },
     });
@@ -178,8 +179,7 @@ export class UsuariosComponent implements OnInit {
         this.loadingService.hide();
       },
       error: (err) => {
-        console.error('Erro ao deletar usuário', err);
-        alert(`Erro ao deletar o usuário ${user.nome}.`);
+        alert(err.error.message);
         this.loadingService.hide();
       },
     });
@@ -201,9 +201,8 @@ export class UsuariosComponent implements OnInit {
         this.fecharModal();
         this.loadingService.hide();
       },
-      error: (erro) => {
-        console.log('Erro ao criar o usuário:', erro);
-        alert(erro.error);
+      error: (err) => {
+        alert(err.error.message);
         this.loadingService.hide();
       },
     });

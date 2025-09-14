@@ -17,8 +17,8 @@ export class UsuariosService {
     });
   }
 
-  getRoles(): Observable<any> {
-    return this.http.get(`${this.endPoint}/roles`,{
+  getAllRoles(): Observable<any> {
+    return this.http.get(`${this.endPoint}/get-all-roles`,{
       withCredentials: true,
     });
   }

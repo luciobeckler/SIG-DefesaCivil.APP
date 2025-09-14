@@ -12,6 +12,7 @@ import {
   IonIcon,
   IonRouterOutlet,
 } from '@ionic/angular/standalone';
+import { AccountsService } from 'src/app/services/accounts/accounts.service';
 @Component({
   selector: 'app-side-nav',
   templateUrl: './side-nav.component.html',
@@ -31,7 +32,13 @@ import {
   styleUrls: ['./side-nav.component.scss'],
 })
 export class SideNavComponent implements OnInit {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private accountService: AccountsService) {
+    this.roles = this.accountService.getRole();
+    this.isAdministrador = this.roles.includes('Administrador');
+    console.log(this.isAdministrador);
+  }
+  roles: string[] = [];
+  isAdministrador: boolean = false;
 
   ngOnInit() {}
 

@@ -6,7 +6,12 @@
   </ion-header>
 
   <ion-content class="ion-padding">
-    <ion-button expand="block" color="primary" (click)="goToUsuarios()">
+    <ion-button
+      *ngIf="isAdministrador"
+      expand="block"
+      color="primary"
+      (click)="goToUsuarios()"
+    >
       <ion-icon name="people" slot="start"></ion-icon>
       Usuários
     </ion-button>

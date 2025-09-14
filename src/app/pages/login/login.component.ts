@@ -15,10 +15,13 @@ import { LoadingService } from 'src/app/services/loading/loading.service';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
+  roles: string[] = [];
+
   constructor(
     private router: Router,
     private accountService: AccountsService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private accountsService: AccountsService
   ) {}
 
   loginInfo: ILogin = {
@@ -28,18 +31,14 @@ export class LoginComponent {
 
   async onLogin() {
     await this.loadingService.show();
-    this.loginInfo.email = 'admin@teste.com';
-    this.loginInfo.senha = 'SenhaForte123!';
+    //CODIGO A BAIXO PARA PERMITIR LOGIN RAPIDO
+    /* this.loginInfo.email = 'admin@teste.com';
+    this.loginInfo.senha = 'SenhaForte123!'; */
 
     if (this.loginInfo.email && this.loginInfo.senha) {
       await this.accountService.login(this.loginInfo).subscribe({
         next: (res) => {
-          if (res.primeiroAcesso) {
-            this.router.navigate(['/primeiro-login']);
-          } else {
-            this.router.navigate(['/home']);
-          }
-
+          this.direcionaAcesso(res);
           this.loadingService.hide();
         },
         error: (err) => {
@@ -48,6 +47,14 @@ export class LoginComponent {
           this.loadingService.hide();
         },
       });
+    }
+  }
+
+  direcionaAcesso(res: any): void {
+    if (res.primeiroAcesso) {
+      this.router.navigate(['/primeiro-login']);
+    } else {
+      this.router.navigate(['/home']);
     }
   }
 }

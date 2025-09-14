@@ -71,10 +71,7 @@ export class PrimeiroLoginComponent {
   }
 
   formularioValido(): boolean {
-    return (
-      this.validarSenha() &&
-      this.senhasIguais()
-    );
+    return this.validarSenha() && this.senhasIguais();
   }
 
   async onAlterarSenha() {
@@ -85,20 +82,22 @@ export class PrimeiroLoginComponent {
 
     await this.loadingService.show();
 
-    this.accountService.alterarSenha(this.alterarSenhaInfo.novaSenha).subscribe({
-      next: (res) => {
-        this.loadingService.hide();
-        alert('Senha alterada com sucesso!');
-        this.router.navigate(['/home']);
-      },
-      error: (err) => {
-        this.loadingService.hide();
-        alert(
-          'Erro ao alterar senha. Verifique se a senha atual está correta.'
-        );
-        console.error('Erro ao alterar senha:', err);
-      },
-    });
+    this.accountService
+      .alterarSenha(this.alterarSenhaInfo.novaSenha)
+      .subscribe({
+        next: (res) => {
+          this.loadingService.hide();
+          alert('Senha alterada com sucesso!');
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          this.loadingService.hide();
+          alert(
+            'Erro ao alterar senha. Verifique se a senha atual está correta.'
+          );
+          console.error('Erro ao alterar senha:', err);
+        },
+      });
   }
 
   onCancelar() {
