@@ -1,0 +1,20 @@
+.menu-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.menu-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.logout-container {
+  margin-top: auto;
+  padding: 16px 0;
+  border-top: 1px solid var(--ion-color-light-shade);
+}
+
+ion-button {
+  margin: 8px 0;
+}

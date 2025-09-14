@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import {
@@ -28,6 +29,7 @@ import { AccountsService } from 'src/app/services/accounts/accounts.service';
     IonToolbar,
     IonIcon,
     IonRouterOutlet,
+    CommonModule,
   ],
   styleUrls: ['./side-nav.component.scss'],
 })
@@ -48,5 +50,17 @@ export class SideNavComponent implements OnInit {
 
   goToEventos() {
     this.router.navigate(['/home/eventos']);
+  }
+
+  logOut() {
+    this.accountService.logOut().subscribe({
+      next: () => {
+        alert('Logout executado com sucesso');
+      },
+      error: (err) => {
+        alert('Erro ao fazer logout');
+        console.error(err);
+      },
+    });
   }
 }

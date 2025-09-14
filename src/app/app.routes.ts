@@ -1,6 +1,8 @@
 // app.routes.ts
 import { Routes } from '@angular/router';
 import { SideNavComponent } from './components/side-nav/side-nav.component';
+import { AuthGuard } from './services/Auth/auth.guard';
+import { AdminGuard } from './services/Auth/admin.guard';
 
 export const routes: Routes = [
   {
@@ -18,6 +20,7 @@ export const routes: Routes = [
   {
     path: 'home',
     component: SideNavComponent,
+    canActivate: [AuthGuard], // 🔒 exige autenticação
     children: [
       {
         path: 'usuarios',
@@ -25,6 +28,7 @@ export const routes: Routes = [
           import('./pages/usuarios/usuarios.component').then(
             (m) => m.UsuariosComponent
           ),
+        canActivate: [AdminGuard], // 🔒 só admin acessa
       },
       {
         path: 'eventos',

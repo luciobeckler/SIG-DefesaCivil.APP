@@ -5,21 +5,30 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-content class="ion-padding">
-    <ion-button
-      *ngIf="isAdministrador"
-      expand="block"
-      color="primary"
-      (click)="goToUsuarios()"
-    >
-      <ion-icon name="people" slot="start"></ion-icon>
-      Usuários
-    </ion-button>
+  <ion-content class="ion-padding menu-container">
+    <div class="menu-content">
+      <ion-button
+        *ngIf="isAdministrador"
+        expand="block"
+        color="primary"
+        (click)="goToUsuarios()"
+      >
+        <ion-icon name="people" slot="start"></ion-icon>
+        Usuários
+      </ion-button>
 
-    <ion-button expand="block" color="secondary" (click)="goToEventos()">
-      <ion-icon name="calendar" slot="start"></ion-icon>
-      Eventos
-    </ion-button>
+      <ion-button expand="block" color="secondary" (click)="goToEventos()">
+        <ion-icon name="calendar" slot="start"></ion-icon>
+        Eventos
+      </ion-button>
+    </div>
+
+    <div class="logout-container">
+      <ion-button expand="block" color="danger" (click)="logOut()">
+        <ion-icon name="log-out" slot="start"></ion-icon>
+        Sair
+      </ion-button>
+    </div>
   </ion-content>
 </ion-menu>
 
@@ -29,6 +38,7 @@
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
+      <ion-title>Minha Aplicação</ion-title>
     </ion-toolbar>
   </ion-header>
 

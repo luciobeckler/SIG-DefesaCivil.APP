@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { catchError, throwError, Observable, tap, switchMap } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap, switchMap } from 'rxjs';
 import { URL } from 'src/app/helper/constantes';
 import { ILogin } from 'src/app/interfaces/auth/ILogin';
-import { IAlterarSenha } from 'src/app/interfaces/auth/IAlterarSenha';
-
+import { Router } from '@angular/router';
 @Injectable({
   providedIn: 'root',
 })
@@ -12,16 +11,24 @@ export class AccountsService {
   private endPoint = `${URL}/accounts`;
   private roles: string[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   login(data: ILogin): Observable<any> {
     return this.http
       .post(`${this.endPoint}/login`, data, {
         withCredentials: true,
       })
+      .pipe(switchMap(() => this.getAccountRole()));
+  }
+
+  logOut(): Observable<any> {
+    return this.http
+      .post(`${this.endPoint}/logout`, {}, { withCredentials: true })
       .pipe(
-        // só chama getAccountRole se o login retornar sucesso
-        switchMap(() => this.getAccountRole())
+        tap(() => {
+          localStorage.clear();
+          this.router.navigate(['/login']);
+        })
       );
   }
 
@@ -43,11 +50,15 @@ export class AccountsService {
       .pipe(tap((res: any) => this.setRole(res)));
   }
 
-  private setRole(role: string[]) {
-    this.roles = role;
+  private setRole(roles: string[]) {
+    localStorage.setItem('roles', JSON.stringify(roles));
   }
 
   getRole(): string[] {
-    return this.roles;
+    const roles = localStorage.getItem('roles');
+    if (roles) {
+      return JSON.parse(roles);
+    }
+    return [];
   }
 }
