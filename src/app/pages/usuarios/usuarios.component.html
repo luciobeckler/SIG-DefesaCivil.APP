@@ -1,5 +1,10 @@
 <ion-content class="ion-padding">
-  <ion-button expand="block" color="primary" (click)="abrirModalUsuario()">
+  <ion-button
+    class="add-user-button"
+    expand="block"
+    color="primary"
+    (click)="abrirModalUsuario()"
+  >
     <ion-icon name="person-add" slot="start"></ion-icon>
     Adicionar Usuário
   </ion-button>
@@ -63,70 +68,167 @@
       <form #userForm="ngForm">
         <ion-item>
           <ion-label position="stacked">Nome*</ion-label>
-          <ion-input [(ngModel)]="usuarioSelecionado.nome" name="nome" required #nome="ngModel"></ion-input>
+          <ion-input
+            [(ngModel)]="usuarioSelecionado.nome"
+            name="nome"
+            required
+            #nome="ngModel"
+          ></ion-input>
         </ion-item>
-        <ion-text color="danger" *ngIf="nome.invalid && nome.touched">Nome é obrigatório.</ion-text>
+        <ion-text color="danger" *ngIf="nome.invalid && nome.touched"
+          >Nome é obrigatório.</ion-text
+        >
 
         <ion-item>
           <ion-label position="stacked">Email*</ion-label>
-          <ion-input type="email" [(ngModel)]="usuarioSelecionado.email" name="email" required email #email="ngModel"></ion-input>
+          <ion-input
+            type="email"
+            [(ngModel)]="usuarioSelecionado.email"
+            name="email"
+            required
+            email
+            #email="ngModel"
+          ></ion-input>
         </ion-item>
         <ion-text color="danger" *ngIf="email.invalid && email.touched">
-          <ng-container *ngIf="email.errors?.['required']">Email é obrigatório.</ng-container>
-          <ng-container *ngIf="email.errors?.['email']">Email inválido.</ng-container>
+          <ng-container *ngIf="email.errors?.['required']"
+            >Email é obrigatório.</ng-container
+          >
+          <ng-container *ngIf="email.errors?.['email']"
+            >Email inválido.</ng-container
+          >
         </ion-text>
 
         <ion-item>
           <ion-label position="stacked">Telefone*</ion-label>
-          <ion-input [(ngModel)]="usuarioSelecionado.telefone" name="telefone" required #telefone="ngModel"></ion-input>
+          <ion-input
+            [(ngModel)]="usuarioSelecionado.telefone"
+            name="telefone"
+            required
+            #telefone="ngModel"
+          ></ion-input>
         </ion-item>
-        <ion-text color="danger" *ngIf="telefone.invalid && telefone.touched">Telefone é obrigatório.</ion-text>
-        <ion-text color="danger" *ngIf="telefone.valid && telefone.touched && !validarTelefone(usuarioSelecionado.telefone)">Telefone inválido. Informe DDD + número.</ion-text>
+        <ion-text color="danger" *ngIf="telefone.invalid && telefone.touched"
+          >Telefone é obrigatório.</ion-text
+        >
+        <ion-text
+          color="danger"
+          *ngIf="
+            telefone.valid &&
+            telefone.touched &&
+            !validarTelefone(usuarioSelecionado.telefone)
+          "
+          >Telefone inválido. Informe DDD + número.</ion-text
+        >
 
         <ion-item>
           <ion-label position="stacked">CPF*</ion-label>
-          <ion-input  [(ngModel)]="usuarioSelecionado.cpf" name="cpf" required minlength="11" maxlength="11" #cpf="ngModel"></ion-input>
+          <ion-input
+            [(ngModel)]="usuarioSelecionado.cpf"
+            name="cpf"
+            required
+            minlength="11"
+            maxlength="11"
+            #cpf="ngModel"
+          ></ion-input>
         </ion-item>
         <ion-text color="danger" *ngIf="cpf.invalid && cpf.touched">
-          <ng-container *ngIf="cpf.errors?.['required']">CPF é obrigatório.</ng-container>
-          <ng-container *ngIf="cpf.errors?.['minlength'] || cpf.errors?.['maxlength']">CPF deve ter 11 dígitos.</ng-container>
+          <ng-container *ngIf="cpf.errors?.['required']"
+            >CPF é obrigatório.</ng-container
+          >
+          <ng-container
+            *ngIf="cpf.errors?.['minlength'] || cpf.errors?.['maxlength']"
+            >CPF deve ter 11 dígitos.</ng-container
+          >
         </ion-text>
-        <ion-text color="danger" *ngIf="cpf.valid && cpf.touched && !validarCPF(usuarioSelecionado.cpf)">CPF inválido.</ion-text>
+        <ion-text
+          color="danger"
+          *ngIf="
+            cpf.valid && cpf.touched && !validarCPF(usuarioSelecionado.cpf)
+          "
+          >CPF inválido.</ion-text
+        >
 
         <ion-item>
           <ion-label position="stacked">Cargo*</ion-label>
-          <ion-input [(ngModel)]="usuarioSelecionado.cargo" name="cargo" required #cargo="ngModel"></ion-input>
+          <ion-input
+            [(ngModel)]="usuarioSelecionado.cargo"
+            name="cargo"
+            required
+            #cargo="ngModel"
+          ></ion-input>
         </ion-item>
-        <ion-text color="danger" *ngIf="cargo.invalid && cargo.touched">Cargo é obrigatório.</ion-text>
+        <ion-text color="danger" *ngIf="cargo.invalid && cargo.touched"
+          >Cargo é obrigatório.</ion-text
+        >
 
         <ion-item>
           <ion-label position="stacked">Permissão*</ion-label>
-          <ion-select [(ngModel)]="usuarioSelecionado.permissao" name="permissao" required #permissao="ngModel" interface="popover">
-            <ion-select-option value="Usuário de campo">Usuário de campo</ion-select-option>
+          <ion-select
+            [(ngModel)]="usuarioSelecionado.permissao"
+            name="permissao"
+            required
+            #permissao="ngModel"
+            interface="popover"
+          >
+            <ion-select-option value="Usuário de campo"
+              >Usuário de campo</ion-select-option
+            >
             <ion-select-option value="Gerente">Gerente</ion-select-option>
             <ion-select-option value="Diretor">Diretor</ion-select-option>
-            <ion-select-option value="Administrador">Administrador</ion-select-option>
+            <ion-select-option value="Administrador"
+              >Administrador</ion-select-option
+            >
           </ion-select>
         </ion-item>
-        <ion-text color="danger" *ngIf="permissao.invalid && permissao.touched">Permissão é obrigatória.</ion-text>
+        <ion-text color="danger" *ngIf="permissao.invalid && permissao.touched"
+          >Permissão é obrigatória.</ion-text
+        >
 
         <ion-item>
           <ion-label position="stacked">Data de Nascimento</ion-label>
-          <ion-datetime [min]="minDate" [max]="maxDate" presentation="date"  display-format="DD/MM/YYYY" [(ngModel)]="usuarioSelecionado.dataDeNascimento" name="dataDeNascimento"></ion-datetime>
+          <ion-datetime
+            [min]="minDate"
+            [max]="maxDate"
+            presentation="date"
+            display-format="DD/MM/YYYY"
+            [(ngModel)]="usuarioSelecionado.dataDeNascimento"
+            name="dataDeNascimento"
+          ></ion-datetime>
         </ion-item>
 
         <ion-item>
           <ion-label position="stacked">Data de Admissão</ion-label>
-          <ion-datetime [min]="minDate" [max]="maxDate" presentation="date"  display-format="DD/MM/YYYY" [(ngModel)]="usuarioSelecionado.dataAdmissao" name="dataAdmissao"></ion-datetime>
+          <ion-datetime
+            [min]="minDate"
+            [max]="maxDate"
+            presentation="date"
+            display-format="DD/MM/YYYY"
+            [(ngModel)]="usuarioSelecionado.dataAdmissao"
+            name="dataAdmissao"
+          ></ion-datetime>
         </ion-item>
 
         <ion-item>
           <ion-label>Está ativo?*</ion-label>
-          <ion-toggle [(ngModel)]="usuarioSelecionado.isAtivo" name="isAtivo" required #isAtivo="ngModel"></ion-toggle>
+          <ion-toggle
+            [(ngModel)]="usuarioSelecionado.isAtivo"
+            name="isAtivo"
+            required
+            #isAtivo="ngModel"
+          ></ion-toggle>
         </ion-item>
-        <ion-text color="danger" *ngIf="isAtivo.invalid && isAtivo.touched">Campo obrigatório.</ion-text>
+        <ion-text color="danger" *ngIf="isAtivo.invalid && isAtivo.touched"
+          >Campo obrigatório.</ion-text
+        >
 
-        <ion-button expand="full" color="success" (click)="onSaveModal()" [disabled]="userForm.invalid">Salvar</ion-button>
+        <ion-button
+          expand="full"
+          color="success"
+          (click)="onSaveModal()"
+          [disabled]="userForm.invalid"
+          >Salvar</ion-button
+        >
       </form>
     </ion-content>
   </ng-template>

@@ -1,7 +1,7 @@
 <ion-menu contentId="main-content">
   <ion-header>
     <ion-toolbar>
-      <ion-title>Menu</ion-title>
+      <ion-title>Módulos</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -21,10 +21,13 @@
         <ion-icon name="calendar" slot="start"></ion-icon>
         Eventos
       </ion-button>
-    </div>
 
-    <div class="logout-container">
-      <ion-button expand="block" color="danger" (click)="logOut()">
+      <ion-button
+        class="logout-container"
+        expand="block"
+        color="danger"
+        (click)="logOut()"
+      >
         <ion-icon name="log-out" slot="start"></ion-icon>
         Sair
       </ion-button>

@@ -7,7 +7,12 @@
   padding: 8px;
 }
 
-// Remove a borda direita do último item da linha
+.add-user-button {
+  width: 13%;
+  justify-self: flex-end;
+  margin-right: 16px;
+}
+
 ion-row > ion-col:last-child {
   border-right: none;
 }

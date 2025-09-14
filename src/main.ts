@@ -14,7 +14,20 @@ import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 
 import { addIcons } from 'ionicons';
-import { people, calendar, trash, pencil, eye, eyeOff, checkmarkCircle, closeCircle,key, arrowBack  } from 'ionicons/icons';
+import {
+  people,
+  calendar,
+  trash,
+  pencil,
+  eye,
+  eyeOff,
+  checkmarkCircle,
+  closeCircle,
+  key,
+  arrowBack,
+  logOut,
+  personAdd,
+} from 'ionicons/icons';
 import { provideHttpClient } from '@angular/common/http';
 
 addIcons({
@@ -28,6 +41,8 @@ addIcons({
   closeCircle,
   key,
   arrowBack,
+  logOut,
+  personAdd,
 });
 
 bootstrapApplication(AppComponent, {
