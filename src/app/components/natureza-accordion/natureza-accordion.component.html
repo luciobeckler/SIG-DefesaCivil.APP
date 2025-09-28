@@ -1,0 +1,31 @@
+<ion-accordion [value]="natureza.id">
+  <ion-item slot="header" color="light">
+    <ion-label>{{ natureza.codigoNatureza }} - {{ natureza.nome }}</ion-label>
+    <ion-buttons slot="end">
+      <ion-button color="secondary" (click)="editarNatureza(natureza, $event)">
+        <ion-icon name="pencil" slot="icon-only"></ion-icon>
+      </ion-button>
+      <ion-button color="danger" (click)="deletarNatureza(natureza, $event)">
+        <ion-icon name="trash" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-item>
+
+  <div class="ion-padding" slot="content">
+    @if (natureza.subNaturezas.length) {
+    <div>
+      <ion-accordion-group [multiple]="true">
+        <app-natureza-accordion
+          *ngFor="let sub of natureza.subNaturezas"
+          [natureza]="sub"
+          (editarNaturezaEvent)="editarNaturezaEvent.emit($event)"
+          (deletarNaturezaEvent)="deletarNaturezaEvent.emit($event)"
+        >
+        </app-natureza-accordion>
+      </ion-accordion-group>
+    </div>
+    } @if (!natureza.subNaturezas.length) {
+    <div>Nenhuma subnatureza</div>
+    }
+  </div>
+</ion-accordion>

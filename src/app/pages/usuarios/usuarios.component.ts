@@ -1,12 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { IUsuarioInfoId } from 'src/app/interfaces/usuario/IUsuarioInfo';
-import { UsuariosService } from 'src/app/services/usuarios/usuarios.service';
+import { UsuariosService } from 'src/app/services/usuarios.service';
 import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
-import { isCpfValido, isTelefoneValido, toDateOnly } from 'src/app/helper/funcions';
+import {
+  isCpfValido,
+  isTelefoneValido,
+  toDateOnly,
+} from 'src/app/helper/funcions';
 import { AlertController } from '@ionic/angular';
-import { LoadingService } from 'src/app/services/loading/loading.service';
+import { LoadingService } from 'src/app/services/loading.service';
 
 @Component({
   selector: 'app-usuarios',
@@ -33,7 +37,7 @@ export class UsuariosComponent implements OnInit {
   mostrarModal = false;
   isCreaterOrEdit: boolean = true;
   minDate: string;
-  maxDate: string ;
+  maxDate: string;
 
   constructor(
     private alertController: AlertController,

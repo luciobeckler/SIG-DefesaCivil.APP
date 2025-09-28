@@ -13,7 +13,7 @@ import {
   IonIcon,
   IonRouterOutlet,
 } from '@ionic/angular/standalone';
-import { AccountsService } from 'src/app/services/accounts/accounts.service';
+import { AccountsService } from 'src/app/services/accounts.service';
 @Component({
   selector: 'app-side-nav',
   templateUrl: './side-nav.component.html',
@@ -50,6 +50,10 @@ export class SideNavComponent implements OnInit {
 
   goToEventos() {
     this.router.navigate(['/home/eventos']);
+  }
+
+  goToNaturezas() {
+    this.router.navigate(['/home/naturezas']);
   }
 
   logOut() {

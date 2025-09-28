@@ -1,8 +1,8 @@
 // app.routes.ts
 import { Routes } from '@angular/router';
 import { SideNavComponent } from './components/side-nav/side-nav.component';
-import { AuthGuard } from './services/Auth/auth.guard';
-import { AdminGuard } from './services/Auth/admin.guard';
+import { AuthGuard } from './services/routeAuth/auth.guard';
+import { AdminGuard } from './services/routeAuth/admin.guard';
 
 export const routes: Routes = [
   {
@@ -28,7 +28,7 @@ export const routes: Routes = [
           import('./pages/usuarios/usuarios.component').then(
             (m) => m.UsuariosComponent
           ),
-        canActivate: [AdminGuard], // 🔒 só admin acessa
+        canActivate: [AdminGuard],
       },
       {
         path: 'eventos',
@@ -36,6 +36,14 @@ export const routes: Routes = [
           import('./pages/eventos/eventos.component').then(
             (m) => m.EventosComponent
           ),
+      },
+      {
+        path: 'naturezas',
+        loadComponent: () =>
+          import('./pages/naturezas/naturezas.component').then(
+            (m) => m.NaturezasComponent
+          ),
+        canActivate: [AdminGuard],
       },
     ],
   },

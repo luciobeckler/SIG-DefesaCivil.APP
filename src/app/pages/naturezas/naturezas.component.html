@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Naturezas</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="criarNatureza()"> Criar natureza</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-accordion-group [multiple]="true">
+    <app-natureza-accordion
+      *ngFor="let natureza of naturezas"
+      [natureza]="natureza"
+      (editarNaturezaEvent)="abrirModalEdicao($event)"
+      (deletarNaturezaEvent)="deletarNatureza($event)"
+    ></app-natureza-accordion>
+  </ion-accordion-group>
+
+  <!-- Modal -->
+  <ion-modal [isOpen]="modalOpen" (didDismiss)="fecharModal()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ modalTitle }}</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="fecharModal()">Fechar</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-content>
+        <form [formGroup]="form" style="padding: 16px">
+          <ion-item>
+            <ion-label position="stacked">Nome</ion-label>
+            <ion-input formControlName="nome"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Código Natureza</ion-label>
+            <ion-input formControlName="codigoNatureza"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Natureza Pai</ion-label>
+            <ion-input formControlName="codigoNaturezaPai"></ion-input>
+          </ion-item>
+
+          <ion-button
+            expand="block"
+            (click)="salvarNatureza()"
+            [disabled]="form.invalid"
+          >
+            Salvar
+          </ion-button>
+        </form>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>
