@@ -17,6 +17,7 @@ import { addIcons } from 'ionicons';
 import {
   people,
   calendar,
+  timeOutline,
   add,
   warning,
   bookmarks,
@@ -36,6 +37,7 @@ import { provideHttpClient } from '@angular/common/http';
 addIcons({
   people,
   calendar,
+  timeOutline,
   add,
   warning,
   bookmarks,

@@ -1,0 +1,107 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home/evento-list"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      {{ isEditMode ? 'Editar Evento' : 'Criar Novo Evento' }}
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="eventoForm" (ngSubmit)="onSubmit()">
+    <ion-list>
+      <ion-item>
+        <ion-label position="floating">Código</ion-label>
+        <ion-input formControlName="codigo"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Título</ion-label>
+        <ion-input formControlName="titulo"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Descrição</ion-label>
+        <ion-textarea
+          formControlName="descricao"
+          [autoGrow]="true"
+        ></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Endereço</ion-label>
+        <ion-input formControlName="endereco"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Status</ion-label>
+        <ion-select formControlName="status" interface="popover">
+          <ion-select-option value="Pendente">Pendente</ion-select-option>
+          <ion-select-option value="Em Andamento"
+            >Em Andamento</ion-select-option
+          >
+          <ion-select-option value="Concluído">Concluído</ion-select-option>
+          <ion-select-option value="Cancelado">Cancelado</ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Data e Hora</ion-label>
+        <ion-datetime-button datetime="datetime"></ion-datetime-button>
+        <ion-modal [keepContentsMounted]="true">
+          <ng-template>
+            <ion-datetime
+              id="datetime"
+              formControlName="dataEHoraDoEvento"
+            ></ion-datetime>
+          </ng-template>
+        </ion-modal>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Evento Pai (Opcional)</ion-label>
+        <ion-select
+          formControlName="eventoPaiId"
+          interface="popover"
+          placeholder="Nenhum Evento Pai"
+        >
+          <ion-select-option [value]="null">Nenhum</ion-select-option>
+          <ion-select-option
+            *ngFor="let evento of eventosDisponiveis"
+            [value]="evento.id"
+          >
+            {{ evento.titulo }} ({{ evento.id | slice:0:4 }}...)
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label>Sub-Eventos</ion-label>
+        <ion-select
+          formControlName="subEventosId"
+          interface="popover"
+          multiple="true"
+          placeholder="Adicionar Sub-Eventos"
+        >
+          <ion-select-option
+            *ngFor="let evento of eventosDisponiveis"
+            [value]="evento.id"
+          >
+            {{ evento.codigo }} - {{ evento.titulo }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
+
+    <ion-button
+      class="ion-margin-top"
+      type="submit"
+      expand="block"
+      [disabled]="eventoForm.invalid"
+    >
+      Salvar
+    </ion-button>
+  </form>
+</ion-content>

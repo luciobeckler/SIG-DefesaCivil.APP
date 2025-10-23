@@ -1,4 +1,3 @@
-// app.routes.ts
 import { Routes } from '@angular/router';
 import { SideNavComponent } from './components/side-nav/side-nav.component';
 import { AuthGuard } from './services/routeAuth/auth.guard';
@@ -20,7 +19,7 @@ export const routes: Routes = [
   {
     path: 'home',
     component: SideNavComponent,
-    canActivate: [AuthGuard], // 🔒 exige autenticação
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'usuarios',
@@ -31,10 +30,24 @@ export const routes: Routes = [
         canActivate: [AdminGuard],
       },
       {
-        path: 'eventos',
+        path: 'evento-list',
         loadComponent: () =>
-          import('./pages/eventos/eventos.component').then(
-            (m) => m.EventosComponent
+          import('./pages/evento/evento-list/evento-list.page').then(
+            (m) => m.EventoListPage
+          ),
+      },
+      {
+        path: 'evento-detail/:id',
+        loadComponent: () =>
+          import('./pages/evento/evento-detail/evento-detail.page').then(
+            (m) => m.EventoDetailPage
+          ),
+      },
+      {
+        path: 'evento-form/:id',
+        loadComponent: () =>
+          import('./pages/evento/evento-form/evento-form.page').then(
+            (m) => m.EventoFormPage
           ),
       },
       {

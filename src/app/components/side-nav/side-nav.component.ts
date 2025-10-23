@@ -49,7 +49,7 @@ export class SideNavComponent implements OnInit {
   }
 
   goToEventos() {
-    this.router.navigate(['/home/eventos']);
+    this.router.navigate(['/home/evento-list']);
   }
 
   goToNaturezas() {

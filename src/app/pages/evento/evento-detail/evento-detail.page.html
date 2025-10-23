@@ -1,0 +1,95 @@
+<ng-container *ngIf="evento$ | async as evento; else loading">
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/home/evento-list"></ion-back-button>
+      </ion-buttons>
+      <ion-title>{{ evento.codigo }} - {{ evento.titulo }}</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content>
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Informações Principais</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        <p><strong>Descrição:</strong> {{ evento.descricao }}</p>
+        <p><strong>Endereço:</strong> {{ evento.endereco }}</p>
+        <p><strong>Status:</strong> {{ evento.status | formatStatus }}</p>
+        <p>
+          <strong>Data e Hora:</strong> {{ evento.dataEHoraDoEvento |
+          date:'dd/MM/yyyy HH:mm' }}
+        </p>
+        <p>
+          <strong>Criado por:</strong> {{ evento.usuarioCriador.nome }} ({{
+          evento.usuarioCriador.email }})
+        </p>
+        <p *ngIf="evento.eventoPai">
+          <strong>Evento Pai:</strong>
+          <a [routerLink]="['/home/evento-detail', evento.eventoPai.id]">
+            {{ evento.eventoPai.codigo }} - {{ evento.eventoPai.titulo }}
+          </a>
+        </p>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Sub-Eventos</ion-card-title>
+      </ion-card-header>
+      <ion-list>
+        <ion-item
+          *ngFor="let sub of evento.subEventos"
+          [routerLink]="['/home/evento-detail', sub.id]"
+        >
+          <ion-label>
+            <h2>{{ sub.codigo }} - {{ sub.titulo }}</h2>
+            <p>Status: {{ sub.status }}</p>
+          </ion-label>
+        </ion-item>
+        <ion-item *ngIf="!evento.subEventos || evento.subEventos.length === 0">
+          <ion-label>Nenhum sub-evento associado.</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card>
+  </ion-content>
+
+  <ion-footer>
+    <ion-toolbar>
+      <ion-buttons slot="start">
+        <ion-button (click)="exibirHistoricoModal()">
+          <ion-icon slot="start" name="time-outline"></ion-icon>
+          Histórico
+        </ion-button>
+      </ion-buttons>
+
+      <ion-buttons slot="primary">
+        <ion-button [routerLink]="['/home/evento-form', evento.id]">
+          <ion-icon slot="start" name="pencil"></ion-icon>
+          Editar
+        </ion-button>
+
+        <ion-button color="danger" (click)="deletar(evento)">
+          <ion-icon slot="start" name="trash"></ion-icon>
+          Excluir
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-footer>
+</ng-container>
+
+<ng-template #loading>
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-back-button defaultHref="/home/evento-list"></ion-back-button>
+      </ion-buttons>
+      <ion-title>Carregando...</ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-content class="ion-padding ion-text-center">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Carregando detalhes do evento...</p>
+  </ion-content>
+</ng-template>
