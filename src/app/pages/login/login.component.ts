@@ -38,7 +38,7 @@ export class LoginComponent {
     if (this.loginInfo.email && this.loginInfo.senha) {
       await this.accountService.login(this.loginInfo).subscribe({
         next: (res) => {
-          this.direcionaAcesso(res);
+          this.direcionaAcesso(res.primeiroAcesso);
           this.loadingService.hide();
         },
         error: (err) => {
@@ -50,8 +50,8 @@ export class LoginComponent {
     }
   }
 
-  direcionaAcesso(res: any): void {
-    if (res.primeiroAcesso) {
+  async direcionaAcesso(isPrimeiroAcesso: boolean) {
+    if (isPrimeiroAcesso === true) {
       this.router.navigate(['/primeiro-login']);
     } else {
       this.router.navigate(['/home']);

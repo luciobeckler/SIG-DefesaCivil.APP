@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, switchMap } from 'rxjs';
+import { Observable, tap, switchMap, map, of } from 'rxjs';
 import { URL } from 'src/app/helper/constantes';
 import { ILogin } from 'src/app/interfaces/auth/ILogin';
 import { Router } from '@angular/router';
@@ -18,7 +18,15 @@ export class AccountsService {
       .post(`${this.endPoint}/login`, data, {
         withCredentials: true,
       })
-      .pipe(switchMap(() => this.getAccountRole()));
+      .pipe(
+        switchMap((loginResponse: any) => {
+          if (loginResponse.primeiroAcesso === true) {
+            return of(loginResponse);
+          }
+
+          return this.getAccountRole().pipe(map(() => loginResponse));
+        })
+      );
   }
 
   logOut(): Observable<any> {

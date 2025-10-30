@@ -11,13 +11,14 @@ import {
 } from 'src/app/helper/funcions';
 import { AlertController } from '@ionic/angular';
 import { LoadingService } from 'src/app/services/loading.service';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @Component({
   selector: 'app-usuarios',
   templateUrl: './usuarios.component.html',
   styleUrls: ['./usuarios.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [IonicModule, CommonModule, FormsModule, NgxMaskDirective],
 })
 export class UsuariosComponent implements OnInit {
   usuarios: IUsuarioInfoId[] = [];
@@ -38,6 +39,8 @@ export class UsuariosComponent implements OnInit {
   isCreaterOrEdit: boolean = true;
   minDate: string;
   maxDate: string;
+  dataNascimentoString: string = '';
+  dataAdmissaoString: string = '';
 
   constructor(
     private alertController: AlertController,
@@ -69,19 +72,80 @@ export class UsuariosComponent implements OnInit {
       this.resetarUsuario();
       this.isCreaterOrEdit = true;
     }
+
+    this.dataNascimentoString = this.formatDateToInput(
+      this.usuarioSelecionado.dataDeNascimento
+    );
+    this.dataAdmissaoString = this.formatDateToInput(
+      this.usuarioSelecionado.dataAdmissao
+    );
+
     this.mostrarModal = true;
   }
 
+  private convertStringToDate(
+    dateString: string | null | undefined
+  ): Date | null {
+    if (!dateString) return null;
+
+    const parts = dateString.split('/');
+    if (parts.length === 3) {
+      const date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
+    }
+    return null;
+  }
+
+  private formatDateToInput(date: Date | string | null | undefined): string {
+    if (!date) return '';
+
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+
+    if (isNaN(dateObj.getTime())) return '';
+
+    const day = ('0' + dateObj.getUTCDate()).slice(-2);
+    const month = ('0' + (dateObj.getUTCMonth() + 1)).slice(-2);
+    const year = dateObj.getUTCFullYear();
+
+    return `${day}/${month}/${year}`;
+  }
+
   onSaveModal() {
-    // Validação extra antes de salvar
+    const dataNascObj = this.convertStringToDate(this.dataNascimentoString);
+    const dataAdmiObj = this.convertStringToDate(this.dataAdmissaoString);
+
+    if (this.dataNascimentoString && !dataNascObj) {
+      this.presentAlert(
+        'Data Inválida',
+        'Data de Nascimento inválida. Use o formato DD/MM/YYYY.'
+      );
+      return;
+    }
+    if (this.dataAdmissaoString && !dataAdmiObj) {
+      this.presentAlert(
+        'Data Inválida',
+        'Data de Admissão inválida. Use o formato DD/MM/YYYY.'
+      );
+      return;
+    }
+
+    this.usuarioSelecionado.dataDeNascimento = dataNascObj;
+    this.usuarioSelecionado.dataAdmissao = dataAdmiObj;
+
     if (!this.validarCPF(this.usuarioSelecionado.cpf)) {
-      alert('CPF inválido!');
+      this.presentAlert('CPF Inválido', 'O CPF informado não é válido.');
       return;
     }
     if (!this.validarTelefone(this.usuarioSelecionado.telefone)) {
-      alert('Telefone inválido! Informe DDD + número.');
+      this.presentAlert(
+        'Telefone Inválido',
+        'Telefone inválido! Informe DDD + número.'
+      );
       return;
     }
+
     if (this.isCreaterOrEdit) {
       this.onCreateUser();
     } else {
@@ -102,11 +166,23 @@ export class UsuariosComponent implements OnInit {
       cpf: '',
       endereco: '',
       dataDeNascimento: null,
-      dataAdmissao: new Date(),
+      dataAdmissao: null,
       cargo: '',
       permissao: 'Usuário de campo',
       isAtivo: true,
     };
+    this.dataNascimentoString = '';
+    this.dataAdmissaoString = '';
+  }
+
+  async presentAlert(header: string, message: string, subHeader?: string) {
+    const alert = await this.alertController.create({
+      header: header,
+      subHeader: subHeader,
+      message: message,
+      buttons: ['OK'],
+    });
+    await alert.present();
   }
 
   async confirmarExclusao(user: IUsuarioInfoId) {
@@ -152,6 +228,7 @@ export class UsuariosComponent implements OnInit {
     this.loadingService.show();
 
     const { id, ...rest } = this.usuarioSelecionado;
+
     const payload = {
       ...rest,
       dataAdmissao: toDateOnly(this.usuarioSelecionado.dataAdmissao),
@@ -161,13 +238,15 @@ export class UsuariosComponent implements OnInit {
     this.usuarioService.update(id, payload).subscribe({
       next: () => {
         this.getOutrosUsuarios();
-        alert(`Usuário ${user.nome} editado com sucesso.`);
+        this.presentAlert(
+          'Sucesso',
+          `Usuário ${user.nome} editado com sucesso.`
+        );
         this.mostrarModal = false;
         this.loadingService.hide();
       },
       error: (err) => {
-        console.log(err);
-        alert(err.error.message);
+        this.presentAlert('Erro', err.error.message);
         this.loadingService.hide();
       },
     });
@@ -179,15 +258,19 @@ export class UsuariosComponent implements OnInit {
     this.usuarioService.delete(user.id).subscribe({
       next: () => {
         this.getOutrosUsuarios();
-        alert(`Usuário ${user.nome} deletado com sucesso.`);
+        this.presentAlert(
+          'Sucesso',
+          `Usuário ${user.nome} deletado com sucesso.`
+        );
         this.loadingService.hide();
       },
       error: (err) => {
-        alert(err.error.message);
+        this.presentAlert('Erro', err.error.message);
         this.loadingService.hide();
       },
     });
   }
+
   async onCreateUser() {
     this.loadingService.show();
 
@@ -201,12 +284,12 @@ export class UsuariosComponent implements OnInit {
     this.usuarioService.create(payload).subscribe({
       next: (resposta) => {
         this.getOutrosUsuarios();
-        alert(resposta.message);
+        this.presentAlert('Sucesso', resposta.message);
         this.fecharModal();
         this.loadingService.hide();
       },
       error: (err) => {
-        alert(err.error.message);
+        this.presentAlert('Erro', err.error.message);
         this.loadingService.hide();
       },
     });

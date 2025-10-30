@@ -18,7 +18,8 @@
         <ion-col class="bordered-col"><strong>Ações</strong></ion-col>
       </ion-row>
 
-      <ion-row *ngFor="let user of usuarios" class="bordered-row">
+      @for (user of usuarios; track user.id) {
+      <ion-row class="bordered-row">
         <ion-col class="bordered-col">{{ user.nome }}</ion-col>
         <ion-col class="bordered-col">{{ user.cargo }}</ion-col>
         <ion-col class="bordered-col">{{ user.permissao }}</ion-col>
@@ -42,11 +43,11 @@
           </ion-button>
         </ion-col>
       </ion-row>
+      }
     </ion-grid>
   </ion-card>
 </ion-content>
 
-<!-- MODAL -->
 <ion-modal [isOpen]="mostrarModal" (didDismiss)="fecharModal()">
   <ng-template>
     <ion-header>
@@ -67,90 +68,88 @@
     <ion-content class="ion-padding">
       <form #userForm="ngForm">
         <ion-item>
-          <ion-label position="stacked">Nome*</ion-label>
-          <ion-input
+          <ion-label
+            position="stacked"
+            [class.label-invalid]="nome.invalid && nome.touched"
+            >Nome*</ion-label
+          >
+          <input
+            class="native-input"
             [(ngModel)]="usuarioSelecionado.nome"
             name="nome"
             required
             #nome="ngModel"
-          ></ion-input>
+          />
         </ion-item>
-        <ion-text color="danger" *ngIf="nome.invalid && nome.touched"
-          >Nome é obrigatório.</ion-text
-        >
-
         <ion-item>
-          <ion-label position="stacked">Email*</ion-label>
-          <ion-input
+          <ion-label
+            position="stacked"
+            [class.label-invalid]="email.invalid && email.touched"
+            >Email*</ion-label
+          >
+          <input
+            class="native-input"
             type="email"
             [(ngModel)]="usuarioSelecionado.email"
             name="email"
             required
             email
             #email="ngModel"
-          ></ion-input>
+          />
         </ion-item>
-        <ion-text color="danger" *ngIf="email.invalid && email.touched">
-          <ng-container *ngIf="email.errors?.['required']"
-            >Email é obrigatório.</ng-container
-          >
-          <ng-container *ngIf="email.errors?.['email']"
-            >Email inválido.</ng-container
-          >
-        </ion-text>
 
         <ion-item>
-          <ion-label position="stacked">Telefone*</ion-label>
-          <ion-input
+          <ion-label
+            position="stacked"
+            [class.label-invalid]="telefone.invalid && telefone.touched"
+            >Telefone*</ion-label
+          >
+          <input
+            type="text"
+            mask="(00) 00000-0000"
+            class="native-input"
             [(ngModel)]="usuarioSelecionado.telefone"
             name="telefone"
             required
             #telefone="ngModel"
-          ></ion-input>
+          />
         </ion-item>
-        <ion-text color="danger" *ngIf="telefone.invalid && telefone.touched"
-          >Telefone é obrigatório.</ion-text
-        >
-        <ion-text
-          color="danger"
-          *ngIf="
-            telefone.valid &&
-            telefone.touched &&
-            !validarTelefone(usuarioSelecionado.telefone)
-          "
+        @if (telefone.valid && telefone.touched &&
+        !validarTelefone(usuarioSelecionado.telefone)) {
+        <ion-text color="danger"
           >Telefone inválido. Informe DDD + número.</ion-text
         >
+        }
 
         <ion-item>
-          <ion-label position="stacked">CPF*</ion-label>
-          <ion-input
+          <ion-label
+            position="stacked"
+            [class.label-invalid]="cpf.invalid && cpf.touched"
+            >CPF*</ion-label
+          >
+          <input
             [(ngModel)]="usuarioSelecionado.cpf"
+            class="native-input"
             name="cpf"
+            mask="000.000.000-00"
             required
-            minlength="11"
-            maxlength="11"
             #cpf="ngModel"
-          ></ion-input>
+          />
         </ion-item>
-        <ion-text color="danger" *ngIf="cpf.invalid && cpf.touched">
-          <ng-container *ngIf="cpf.errors?.['required']"
-            >CPF é obrigatório.</ng-container
-          >
-          <ng-container
-            *ngIf="cpf.errors?.['minlength'] || cpf.errors?.['maxlength']"
-            >CPF deve ter 11 dígitos.</ng-container
-          >
-        </ion-text>
-        <ion-text
-          color="danger"
-          *ngIf="
-            cpf.valid && cpf.touched && !validarCPF(usuarioSelecionado.cpf)
-          "
-          >CPF inválido.</ion-text
-        >
+        @if (cpf.invalid && cpf.touched) { @if (cpf.errors?.['minlength'] ||
+        cpf.errors?.['maxlength']) {
+        <ion-text color="danger">CPF deve ter 11 dígitos.</ion-text>
+        } } @if (cpf.valid && cpf.touched &&
+        !validarCPF(usuarioSelecionado.cpf)) {
+        <ion-text color="danger">CPF inválido.</ion-text>
+        }
 
         <ion-item>
-          <ion-label position="stacked">Cargo*</ion-label>
+          <ion-label
+            position="stacked"
+            [class.label-invalid]="cargo.invalid && cargo.touched"
+            >Cargo*</ion-label
+          >
           <ion-input
             [(ngModel)]="usuarioSelecionado.cargo"
             name="cargo"
@@ -158,12 +157,12 @@
             #cargo="ngModel"
           ></ion-input>
         </ion-item>
-        <ion-text color="danger" *ngIf="cargo.invalid && cargo.touched"
-          >Cargo é obrigatório.</ion-text
-        >
-
         <ion-item>
-          <ion-label position="stacked">Permissão*</ion-label>
+          <ion-label
+            position="stacked"
+            [class.label-invalid]="permissao.invalid && permissao.touched"
+            >Permissão*</ion-label
+          >
           <ion-select
             [(ngModel)]="usuarioSelecionado.permissao"
             name="permissao"
@@ -181,36 +180,34 @@
             >
           </ion-select>
         </ion-item>
-        <ion-text color="danger" *ngIf="permissao.invalid && permissao.touched"
-          >Permissão é obrigatória.</ion-text
-        >
-
         <ion-item>
           <ion-label position="stacked">Data de Nascimento</ion-label>
-          <ion-datetime
-            [min]="minDate"
-            [max]="maxDate"
-            presentation="date"
-            display-format="DD/MM/YYYY"
-            [(ngModel)]="usuarioSelecionado.dataDeNascimento"
-            name="dataDeNascimento"
-          ></ion-datetime>
+          <input
+            class="native-input"
+            placeholder="DD/MM/AAAA"
+            [(ngModel)]="dataNascimentoString"
+            name="dataDeNascimentoInput"
+            #dataNascimentoInput="ngModel"
+            mask="00/00/0000"
+          />
         </ion-item>
 
         <ion-item>
           <ion-label position="stacked">Data de Admissão</ion-label>
-          <ion-datetime
-            [min]="minDate"
-            [max]="maxDate"
-            presentation="date"
-            display-format="DD/MM/YYYY"
-            [(ngModel)]="usuarioSelecionado.dataAdmissao"
-            name="dataAdmissao"
-          ></ion-datetime>
+          <input
+            class="native-input"
+            placeholder="DD/MM/AAAA"
+            [(ngModel)]="dataAdmissaoString"
+            name="dataAdmissaoInput"
+            #dataAdmissaoInput="ngModel"
+            mask="00/00/0000"
+          />
         </ion-item>
 
         <ion-item>
-          <ion-label>Está ativo?*</ion-label>
+          <ion-label [class.label-invalid]="isAtivo.invalid && isAtivo.touched"
+            >Está ativo?*</ion-label
+          >
           <ion-toggle
             [(ngModel)]="usuarioSelecionado.isAtivo"
             name="isAtivo"
@@ -218,10 +215,6 @@
             #isAtivo="ngModel"
           ></ion-toggle>
         </ion-item>
-        <ion-text color="danger" *ngIf="isAtivo.invalid && isAtivo.touched"
-          >Campo obrigatório.</ion-text
-        >
-
         <ion-button
           expand="full"
           color="success"

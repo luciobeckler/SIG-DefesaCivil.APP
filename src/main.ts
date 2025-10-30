@@ -33,6 +33,7 @@ import {
   personAdd,
 } from 'ionicons/icons';
 import { provideHttpClient } from '@angular/common/http';
+import { provideNgxMask } from 'ngx-mask';
 
 addIcons({
   people,
@@ -59,5 +60,6 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideHttpClient(),
+    provideNgxMask(),
   ],
 });
