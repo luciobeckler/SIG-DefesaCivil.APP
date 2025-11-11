@@ -140,7 +140,6 @@ export class NaturezasComponent implements OnInit {
   }
 
   updateNatureza(dto: ISendNatureza) {
-    debugger;
     this.naturezaService.update(this.editingNatureza!.id, dto).subscribe({
       next: () => {
         this.loadNaturezas();

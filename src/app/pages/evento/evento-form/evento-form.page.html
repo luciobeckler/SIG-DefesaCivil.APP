@@ -3,9 +3,9 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/home/evento-list"></ion-back-button>
     </ion-buttons>
-    <ion-title>
-      {{ isEditMode ? 'Editar Evento' : 'Criar Novo Evento' }}
-    </ion-title>
+    <ion-title
+      >{{ isEditMode ? 'Editar Evento' : 'Criar Novo Evento' }}</ion-title
+    >
   </ion-toolbar>
 </ion-header>
 
@@ -13,13 +13,25 @@
   <form [formGroup]="eventoForm" (ngSubmit)="onSubmit()">
     <ion-list>
       <ion-item>
-        <ion-label position="floating">Código</ion-label>
-        <ion-input formControlName="codigo"></ion-input>
+        <ion-label position="floating">Código *</ion-label>
+        <ion-input formControlName="codigo" type="text" required></ion-input>
+        <ion-note
+          slot="error"
+          *ngIf="eventoForm.get('codigo')?.hasError('required') && eventoForm.get('codigo')?.touched"
+        >
+          Código é obrigatório.
+        </ion-note>
       </ion-item>
 
       <ion-item>
-        <ion-label position="floating">Título</ion-label>
-        <ion-input formControlName="titulo"></ion-input>
+        <ion-label position="floating">Título *</ion-label>
+        <ion-input formControlName="titulo" type="text" required></ion-input>
+        <ion-note
+          slot="error"
+          *ngIf="eventoForm.get('titulo')?.hasError('required') && eventoForm.get('titulo')?.touched"
+        >
+          Título é obrigatório.
+        </ion-note>
       </ion-item>
 
       <ion-item>
@@ -32,14 +44,15 @@
 
       <ion-item>
         <ion-label position="floating">Endereço</ion-label>
-        <ion-input formControlName="endereco"></ion-input>
+        <ion-input formControlName="endereco" type="text"></ion-input>
       </ion-item>
 
       <ion-item>
-        <ion-label>Status</ion-label>
-        <ion-select formControlName="status" interface="popover">
+        <ion-label>Status *</ion-label>
+        <ion-select formControlName="status" interface="popover" required>
           <ion-select-option value="Pendente">Pendente</ion-select-option>
           <ion-select-option value="EmAnalise">Em Análise</ion-select-option>
+          gtdb
           <ion-select-option value="EmAtendimento"
             >Em Atendimento</ion-select-option
           >
@@ -49,34 +62,48 @@
           <ion-select-option value="Finalizado">Finalizado</ion-select-option>
           <ion-select-option value="Cancelado">Cancelado</ion-select-option>
         </ion-select>
+        <ion-note
+          slot="error"
+          *ngIf="eventoForm.get('status')?.hasError('required') && eventoForm.get('status')?.touched"
+        >
+          Status é obrigatório.
+        </ion-note>
       </ion-item>
 
       <ion-item>
-        <ion-label>Data e Hora</ion-label>
+        <ion-label position="stacked">Data e Hora *</ion-label>
         <ion-datetime-button datetime="datetime"></ion-datetime-button>
         <ion-modal [keepContentsMounted]="true">
           <ng-template>
             <ion-datetime
               id="datetime"
               formControlName="dataEHoraDoEvento"
+              presentation="date-time"
+              locale="pt-BR"
             ></ion-datetime>
           </ng-template>
         </ion-modal>
+        <ion-note
+          slot="error"
+          *ngIf="eventoForm.get('dataEHoraDoEvento')?.hasError('required') && eventoForm.get('dataEHoraDoEvento')?.touched"
+        >
+          Data e Hora são obrigatórios.
+        </ion-note>
       </ion-item>
 
       <ion-item>
-        <ion-label>Evento Pai (Opcional)</ion-label>
+        <ion-label>Evento Pai</ion-label>
         <ion-select
           formControlName="eventoPaiId"
+          placeholder="Nenhum"
           interface="popover"
-          placeholder="Nenhum Evento Pai"
         >
           <ion-select-option [value]="null">Nenhum</ion-select-option>
           <ion-select-option
             *ngFor="let evento of eventosDisponiveis"
             [value]="evento.id"
           >
-            {{ evento.titulo }} ({{ evento.id | slice:0:4 }}...)
+            {{ evento.codigo }} - {{ evento.titulo }}
           </ion-select-option>
         </ion-select>
       </ion-item>
@@ -85,9 +112,9 @@
         <ion-label>Sub-Eventos</ion-label>
         <ion-select
           formControlName="subEventosId"
-          interface="popover"
+          placeholder="Nenhum"
           multiple="true"
-          placeholder="Adicionar Sub-Eventos"
+          interface="popover"
         >
           <ion-select-option
             *ngFor="let evento of eventosDisponiveis"
@@ -97,6 +124,70 @@
           </ion-select-option>
         </ion-select>
       </ion-item>
+
+      <ion-item>
+        <ion-label>Naturezas</ion-label>
+        <ion-select
+          formControlName="naturezasId"
+          placeholder="Nenhuma"
+          multiple="true"
+          interface="popover"
+        >
+          <ion-select-option
+            *ngFor="let natureza of naturezasDisponiveis"
+            [value]="natureza.id"
+          >
+            {{ natureza.nome }} ({{ natureza.codigoNatureza }})
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Anexos (Fotos, Documentos)</ion-label>
+        <input
+          type="file"
+          hidden
+          #fileUpload
+          (change)="onFilesSelected($event)"
+          multiple
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+        />
+        <ion-button (click)="fileUpload.click()" slot="end" fill="outline">
+          <ion-icon slot="start" name="attach-outline"></ion-icon>
+          Selecionar Arquivos
+        </ion-button>
+      </ion-item>
+
+      <ion-list
+        *ngIf="selectedFiles.length > 0"
+        lines="none"
+        class="ion-no-padding"
+      >
+        <ion-list-header>
+          <ion-label color="medium"
+            ><small>Arquivos selecionados:</small></ion-label
+          >
+        </ion-list-header>
+        <ion-item *ngFor="let file of selectedFiles; let i = index">
+          <ion-icon
+            name="document-text-outline"
+            slot="start"
+            color="primary"
+          ></ion-icon>
+          <ion-label class="ion-text-wrap ion-text-small" Gtdb
+            >{{ file.name }}</ion-label
+          >
+          <ion-button
+            slot="end"
+            fill="clear"
+            color="danger"
+            (click)="removeFile(i)"
+            size="small"
+          >
+            <ion-icon slot="icon-only" name="close-circle"></ion-icon>
+          </ion-button>
+        </ion-item>
+      </ion-list>
     </ion-list>
 
     <ion-button
@@ -105,7 +196,8 @@
       expand="block"
       [disabled]="eventoForm.invalid"
     >
-      Salvar
+      <ion-icon slot="start" name="save-outline"></ion-icon>
+      Salvar {{ isEditMode ? 'Alterações' : 'Evento' }}
     </ion-button>
   </form>
 </ion-content>
