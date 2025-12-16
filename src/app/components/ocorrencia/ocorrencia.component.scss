@@ -1,33 +1,65 @@
 .kanban-card {
   margin: 0 0 12px 0;
-  border-radius: 12px; // Bordas mais arredondadas (estilo moderno)
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); // Sombra suave
-  background: var(--ion-card-background, #fff);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
-  // Item do cabeçalho compacto
+  // FORÇAR FUNDO BRANCO E TEXTO BASE ESCURO
+  background: #ffffff;
+  --background: #ffffff;
+  color: #333333;
+
+  // === HEADER ===
   .card-header-item {
+    --background: #1f1f1f;
+    --color: #ffffff;
     --min-height: 40px;
-    --padding-start: 16px;
-    --padding-end: 16px;
-    --inner-padding-end: 0;
+    --padding-start: 12px;
+    --inner-padding-end: 12px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 
-    .protocolo {
-      font-weight: 800;
-      font-size: 1rem;
-      color: var(--ion-color-dark);
-      margin: 0;
+    // Wrapper do Protocolo (Esquerda)
+    .protocolo-wrapper {
+      margin-right: 12px; // Espaço entre o #123 e o Risco
+      padding-right: 12px;
+      border-right: 1px solid rgba(255, 255, 255, 0.2); // Divisor sutil opcional
+
+      .protocolo {
+        font-weight: 800;
+        font-size: 1rem;
+        color: #ffffff;
+        margin: 0;
+      }
     }
 
+    // Wrapper do Risco (Meio)
+    .risk-info {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      // Texto do Risco
+      .risco-texto {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+    }
+
+    // Data (Direita)
     .data-nota {
       font-size: 0.75rem;
       font-weight: 500;
+      color: #cccccc;
     }
   }
 
-  // Conteúdo
+  // === CONTEÚDO (Mantido igual ao seu pedido anterior) ===
   ion-card-content {
-    padding-top: 0; // Cola no header
+    padding-top: 12px;
     padding-bottom: 12px;
+    background: #ffffff;
 
     .endereco-rua {
       font-size: 1.05rem;
@@ -36,31 +68,43 @@
       margin-bottom: 2px;
       display: flex;
       align-items: center;
+      color: #000000;
 
       ion-icon {
         font-size: 1.1rem;
+        --color: #d32f2f;
       }
     }
 
     .endereco-bairro {
       margin: 0;
       font-size: 0.85rem;
-      padding-left: 24px; // Alinha com o texto da rua (pulando o ícone)
+      padding-left: 24px;
+      color: #555555;
+      font-weight: 500;
     }
 
     .solicitante-info {
       padding-left: 4px;
       font-size: 0.85rem;
+      color: #666666;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      ion-icon {
+        color: #888888;
+      }
     }
   }
 
-  // Rodapé (Flexbox para separar Chips do Avatar)
+  // === RODAPÉ ===
   .footer-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 8px;
-    border-top: 1px solid var(--ion-color-light);
+    margin-top: 12px;
+    border-top: 1px solid #eeeeee;
     padding-top: 8px;
   }
 
@@ -69,29 +113,30 @@
     flex-wrap: wrap;
     gap: 4px;
 
-    // Ajuste fino nos chips para ficarem pequenos no card
     ion-chip {
       margin: 0;
       height: 24px;
       font-size: 0.7rem;
-      font-weight: 600;
+      font-weight: 700;
       padding-inline: 8px;
+      border-radius: 6px;
     }
   }
 
   .user-avatar {
     width: 28px;
     height: 28px;
-    background: var(--ion-color-step-100);
-    border: 1px solid var(--ion-color-medium);
+    background: #f0f0f0;
+    border: 1px solid #ddd;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
 
     span {
       font-size: 0.75rem;
       font-weight: bold;
-      color: var(--ion-color-dark);
+      color: #333;
     }
   }
 }

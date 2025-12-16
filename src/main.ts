@@ -9,10 +9,8 @@ import {
   IonicRouteStrategy,
   provideIonicAngular,
 } from '@ionic/angular/standalone';
-
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
-
 import { addIcons } from 'ionicons';
 import {
   people,
@@ -46,6 +44,17 @@ import {
   trashBinOutline,
   trashOutline,
   pencilOutline,
+  alertCircle,
+  thermometer,
+  shieldCheckmark,
+  helpCircle,
+  earth,
+  hammer,
+  leaf,
+  ellipsisHorizontalCircle,
+  alert,
+  locationSharp,
+  personOutline,
 } from 'ionicons/icons';
 import { provideHttpClient } from '@angular/common/http';
 import { provideNgxMask } from 'ngx-mask';
@@ -81,6 +90,18 @@ addIcons({
   arrowBack,
   logOut,
   personAdd,
+  pencilOutline,
+  alertCircle,
+  thermometer,
+  shieldCheckmark,
+  helpCircle,
+  earth,
+  hammer,
+  leaf,
+  ellipsisHorizontalCircle,
+  alert,
+  locationSharp,
+  personOutline,
 });
 
 bootstrapApplication(AppComponent, {

@@ -1,69 +1,66 @@
 <ion-card class="kanban-card" button="true">
+  @let grauVisual = getGrauVisual(ocorrencia().grauDeRisco);
+
   <ion-item lines="none" class="card-header-item">
-    <ion-icon
-      name="document-text-outline"
-      slot="start"
-      color="primary"
-    ></ion-icon>
-    <ion-label>
-      <h3 class="protocolo">#{{ ocorrencia().numero }}</h3>
-    </ion-label>
+    <div slot="start" class="protocolo-wrapper">
+      <span class="protocolo">#{{ ocorrencia().numero }}</span>
+    </div>
+
+    <div class="risk-info">
+      <ion-icon
+        [name]="grauVisual.icon"
+        [color]="grauVisual.color"
+        size="small"
+      ></ion-icon>
+
+      <ion-text [color]="grauVisual.color" class="risco-texto">
+        {{ formatarLabel(ocorrencia().grauDeRisco) }}
+      </ion-text>
+    </div>
+
     <ion-note slot="end" class="data-nota">
       {{ ocorrencia().dataEHoraDoOcorrido | date : "dd/MM HH:mm" }}
     </ion-note>
   </ion-item>
 
-  <ion-card-content class="ion-no-padding-top">
+  <ion-card-content>
     <div class="ion-margin-bottom">
-      <ion-text color="dark">
-        <h2 class="endereco-rua">
-          <ion-icon
-            name="location-sharp"
-            color="danger"
-            class="ion-margin-end"
-          ></ion-icon>
-          {{ getRua(ocorrencia().enderecoResumido) }}
-        </h2>
-      </ion-text>
-      <ion-text color="medium">
-        <p class="endereco-bairro ion-padding-start">
-          {{ getBairro(ocorrencia().enderecoResumido) }}
-        </p>
-      </ion-text>
+      <h2 class="endereco-rua">
+        <ion-icon
+          name="location-sharp"
+          color="danger"
+          class="ion-margin-end"
+        ></ion-icon>
+        {{ getRua(ocorrencia().enderecoResumido) }}
+      </h2>
+
+      <p class="endereco-bairro">
+        {{ getBairro(ocorrencia().enderecoResumido) }}
+      </p>
     </div>
 
     @if (ocorrencia().solicitanteNome) {
     <div class="solicitante-info ion-margin-bottom">
-      <ion-note>
-        <ion-icon
-          name="person-outline"
-          style="vertical-align: middle"
-        ></ion-icon>
-        {{ ocorrencia().solicitanteNome }}
-      </ion-note>
+      <ion-icon name="person-outline"></ion-icon>
+      <span>{{ ocorrencia().solicitanteNome }}</span>
     </div>
     }
 
     <div class="footer-actions">
       <div class="chips-container">
-        @for (risco of ocorrencia().tipoDeRisco; track risco) {
-        <ion-chip [color]="getRiskColor(risco)" outline="true">
-          <ion-label>{{ risco }}</ion-label>
-        </ion-chip>
-        } @if (!ocorrencia().tipoDeRisco?.length) {
-        <ion-chip color="medium" outline="true">
-          <ion-label>Em análise</ion-label>
+        @for (tipo of ocorrencia().tipoDeRisco; track tipo) { @let tipoVis =
+        getTipoVisual(tipo);
+        <ion-chip [color]="tipoVis.color" outline="true">
+          <ion-icon [name]="tipoVis.icon"></ion-icon>
+          <ion-label>{{ tipo }}</ion-label>
         </ion-chip>
         }
       </div>
 
       @if (ocorrencia().emailResponsavel) {
-      <ion-avatar
-        class="user-avatar"
-        title="{{ ocorrencia().emailResponsavel }}"
-      >
+      <div class="user-avatar" title="{{ ocorrencia().emailResponsavel }}">
         <span>{{ getIniciais(ocorrencia().emailResponsavel) }}</span>
-      </ion-avatar>
+      </div>
       }
     </div>
   </ion-card-content>

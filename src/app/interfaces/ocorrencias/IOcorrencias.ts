@@ -78,6 +78,7 @@ export interface IOcorrenciaPreviewDTO {
   solicitanteCPF: string | null;
 
   tipoDeRisco: ETipoRisco[];
+  grauDeRisco: EGrauRisco;
   dataEHoraDoOcorrido: string | null;
 }
 
