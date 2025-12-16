@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { IonicModule, ModalController } from '@ionic/angular';
 import { Observable } from 'rxjs';
 
-import { IEventoHistorico } from 'src/app/interfaces/eventos/IEventoHistorico';
+import { IEventoHistorico } from 'src/app/interfaces/ocorrencias/IEventoHistorico';
 
 @Component({
   selector: 'app-evento-historico-modal',

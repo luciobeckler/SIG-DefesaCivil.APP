@@ -1,0 +1,97 @@
+.kanban-card {
+  margin: 0 0 12px 0;
+  border-radius: 12px; // Bordas mais arredondadas (estilo moderno)
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); // Sombra suave
+  background: var(--ion-card-background, #fff);
+
+  // Item do cabeçalho compacto
+  .card-header-item {
+    --min-height: 40px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --inner-padding-end: 0;
+
+    .protocolo {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--ion-color-dark);
+      margin: 0;
+    }
+
+    .data-nota {
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  }
+
+  // Conteúdo
+  ion-card-content {
+    padding-top: 0; // Cola no header
+    padding-bottom: 12px;
+
+    .endereco-rua {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-top: 4px;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+
+      ion-icon {
+        font-size: 1.1rem;
+      }
+    }
+
+    .endereco-bairro {
+      margin: 0;
+      font-size: 0.85rem;
+      padding-left: 24px; // Alinha com o texto da rua (pulando o ícone)
+    }
+
+    .solicitante-info {
+      padding-left: 4px;
+      font-size: 0.85rem;
+    }
+  }
+
+  // Rodapé (Flexbox para separar Chips do Avatar)
+  .footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    border-top: 1px solid var(--ion-color-light);
+    padding-top: 8px;
+  }
+
+  .chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+
+    // Ajuste fino nos chips para ficarem pequenos no card
+    ion-chip {
+      margin: 0;
+      height: 24px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding-inline: 8px;
+    }
+  }
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    background: var(--ion-color-step-100);
+    border: 1px solid var(--ion-color-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    span {
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: var(--ion-color-dark);
+    }
+  }
+}

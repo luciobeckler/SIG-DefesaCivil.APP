@@ -1,10 +1,10 @@
-export interface IViewNatureza {
+export interface INaturezaResumo {
   id: string;
   nome: string;
   codigoNatureza: string;
 }
 
-export interface INatureza extends IViewNatureza {
+export interface INatureza extends INaturezaResumo {
   naturezaPaiId: string | null;
   subNaturezas: INatureza[];
 }

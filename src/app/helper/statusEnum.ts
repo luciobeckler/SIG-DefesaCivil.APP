@@ -15,3 +15,5 @@ export type EStatusStrings =
   | 'EmMonitoramento'
   | 'Finalizado'
   | 'Cancelado';
+
+//https://www.linkedin.com/posts/emmanuelchika_never-use-enums-in-typescript-but-heres-activity-7404149183227744256-Vmb2?utm_source=social_share_send&utm_medium=android_app&rcm=ACoAAC8Xm2IBwXFW9HbeCKJVYAQTJLCENrDD2B4&utm_campaign=whatsapp

@@ -2,9 +2,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http'; // Import HttpHeaders
 import { Observable } from 'rxjs';
-import { IEventoDetalhes, IEventoPreview } from '../interfaces/eventos/IEvento';
+import {
+  IOcorrenciaDetalhes,
+  IOcorrenciaPreview,
+} from '../interfaces/ocorrencias/IEvento';
 import { URL } from '../helper/constantes';
-import { IEventoHistorico } from '../interfaces/eventos/IEventoHistorico';
+import { IEventoHistorico } from '../interfaces/ocorrencias/IEventoHistorico';
 
 @Injectable({
   providedIn: 'root',
@@ -24,22 +27,22 @@ export class EventoService {
     return headers;
   }
 
-  getEventosPreview(): Observable<IEventoPreview[]> {
-    return this.http.get<IEventoPreview[]>(`${this.apiUrl}/getAllPreview`, {
+  getEventosPreview(): Observable<IOcorrenciaPreview[]> {
+    return this.http.get<IOcorrenciaPreview[]>(`${this.apiUrl}/getAllPreview`, {
       withCredentials: true,
       headers: this.getHeaders(),
     });
   }
 
-  getEventoDetalhes(id: string): Observable<IEventoDetalhes> {
-    return this.http.get<IEventoDetalhes>(`${this.apiUrl}/${id}/detalhes`, {
+  getEventoDetalhes(id: string): Observable<IOcorrenciaDetalhes> {
+    return this.http.get<IOcorrenciaDetalhes>(`${this.apiUrl}/${id}/detalhes`, {
       withCredentials: true,
       headers: this.getHeaders(),
     });
   }
 
-  createEvento(formData: FormData): Observable<IEventoDetalhes> {
-    return this.http.post<IEventoDetalhes>(this.apiUrl, formData, {
+  createEvento(formData: FormData): Observable<IOcorrenciaDetalhes> {
+    return this.http.post<IOcorrenciaDetalhes>(this.apiUrl, formData, {
       withCredentials: true,
       headers: this.getHeaders(true),
     });

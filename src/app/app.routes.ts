@@ -17,10 +17,15 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'home',
+    path: 'home', // O Layout principal (SideNav) vive aqui
     component: SideNavComponent,
     canActivate: [AuthGuard],
     children: [
+      {
+        path: '',
+        redirectTo: 'evento-list', // Redireciona para uma tela padrão ao entrar na home
+        pathMatch: 'full',
+      },
       {
         path: 'usuarios',
         loadComponent: () =>
@@ -29,6 +34,7 @@ export const routes: Routes = [
           ),
         canActivate: [AdminGuard],
       },
+      // --- EVENTOS / OCORRÊNCIAS ---
       {
         path: 'evento-list',
         loadComponent: () =>
@@ -50,6 +56,16 @@ export const routes: Routes = [
             (m) => m.EventoFormPage
           ),
       },
+      // --- QUADROS KANBAN ---
+      // Movido para cá para herdar o SideNav
+      {
+        path: 'quadro/:id',
+        loadComponent: () =>
+          import('./pages/ocorrencia/quadro/quadro.component').then(
+            (m) => m.QuadroComponent
+          ),
+      },
+      // ----------------------
       {
         path: 'naturezas',
         loadComponent: () =>
@@ -64,5 +80,9 @@ export const routes: Routes = [
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',
+  },
+  {
+    path: '**', // Rota coringa para 404
+    redirectTo: 'login',
   },
 ];

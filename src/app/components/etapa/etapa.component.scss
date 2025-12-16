@@ -1,0 +1,43 @@
+// Estilo de cada coluna (Etapa)
+.kanban-column {
+  min-width: 300px;
+  max-width: 300px;
+  background: var(--ion-background-color, #ffffff);
+  border-radius: 8px;
+  margin-right: 15px;
+  display: flex;
+  flex-direction: column;
+  max-height: 95%; // Evita que a coluna ultrapasse a altura da tela
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .column-header {
+    border-bottom: 1px solid var(--ion-color-light);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    --background: transparent;
+
+    h2 {
+      font-weight: bold;
+      font-size: 1rem;
+    }
+    p {
+      font-size: 0.75rem;
+      color: var(--ion-color-medium);
+    }
+  }
+
+  // Área onde ficam os cards (com scroll vertical interno)
+  .column-content {
+    padding: 8px;
+    overflow-y: auto;
+    flex-grow: 1;
+    min-height: 100px; // Altura mínima para área de drop
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 20px;
+  border: 2px dashed var(--ion-color-light);
+  border-radius: 8px;
+}

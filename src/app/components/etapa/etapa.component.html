@@ -1,0 +1,23 @@
+<div class="kanban-column">
+  <ion-item lines="none" class="column-header">
+    <ion-label>
+      <h2>{{ etapa().nome }}</h2>
+      <p>{{ etapa().descricao }}</p>
+    </ion-label>
+    <ion-badge slot="end" color="medium">{{
+      etapa().ocorrencias.length
+    }}</ion-badge>
+  </ion-item>
+
+  <div class="column-content">
+    @for (ocorrencia of etapa().ocorrencias; track ocorrencia.id) {
+    <app-ocorrencia [ocorrencia]="ocorrencia" />
+    } @if (etapa().ocorrencias.length === 0) {
+    <div class="empty-state">
+      <ion-text color="medium">
+        <p>Sem ocorrências</p>
+      </ion-text>
+    </div>
+    }
+  </div>
+</div>

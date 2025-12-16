@@ -5,38 +5,80 @@
     </ion-toolbar>
   </ion-header>
 
-  <ion-content class="ion-padding menu-container">
-    <div class="menu-content">
-      @if (isAdministrador) {
-      <ion-button expand="block" color="primary" (click)="goToUsuarios()">
-        <ion-icon name="people" slot="start"></ion-icon>
-        Usuários
-      </ion-button>
-      }
+  <ion-content class="ion-padding">
+    @if (isAdministrador) {
+    <ion-button
+      expand="block"
+      color="primary"
+      (click)="goToUsuarios()"
+      class="ion-margin-bottom"
+    >
+      <ion-icon name="people" slot="start"></ion-icon>
+      Usuários
+    </ion-button>
+    }
 
-      <ion-button expand="block" color="secondary" (click)="goToEventos()">
-        <ion-icon name="warning" slot="start"></ion-icon>
-        Eventos
-      </ion-button>
+    <ion-button
+      expand="block"
+      color="secondary"
+      (click)="toggleOcorrencia()"
+      [class.ion-margin-bottom]="!showOcorrenciasDropdown"
+    >
+      <ion-icon name="warning" slot="start"></ion-icon>
+      <div style="flex: 1; text-align: left">Ocorrências</div>
+      <ion-icon
+        [name]="showOcorrenciasDropdown ? 'chevron-up' : 'chevron-down'"
+        slot="end"
+        size="small"
+      ></ion-icon>
+    </ion-button>
 
-      @if (isAdministrador) {
-      <ion-button expand="block" color="tertiary" (click)="goToNaturezas()">
-        <ion-icon name="bookmarks" slot="start"></ion-icon>
-        Naturezas
-      </ion-button>
-      }
-
+    @if (showOcorrenciasDropdown) {
+    <div class="ion-margin-bottom ion-padding-start">
+      @for (quadro of quadros; track quadro.id) {
       <ion-button
-        class="logout-container"
         expand="block"
-        color="danger"
-        (click)="logOut()"
+        fill="clear"
+        color="dark"
+        (click)="goToQuadro(quadro.id)"
+        class="ion-text-capitalize"
       >
-        <ion-icon name="log-out" slot="start"></ion-icon>
-        Sair
+        <ion-icon name="clipboard-outline" slot="start" size="small"></ion-icon>
+
+        <span style="flex: 1; text-align: left">{{ quadro.nome }}</span>
+
+        <div
+          slot="end"
+          [title]="quadro.descricao"
+          style="cursor: help; display: flex; align-items: center; height: 100%"
+          (click)="$event.stopPropagation()"
+        >
+          <ion-icon name="information-circle-outline" color="medium"></ion-icon>
+        </div>
       </ion-button>
+      } @if (quadros.length === 0) {
+      <p class="ion-text-center ion-text-muted">Nenhum quadro disponível</p>
+      }
     </div>
+    } @if (isAdministrador) {
+    <ion-button
+      expand="block"
+      color="tertiary"
+      (click)="goToNaturezas()"
+      class="ion-margin-bottom"
+    >
+      <ion-icon name="bookmarks" slot="start"></ion-icon>
+      Naturezas
+    </ion-button>
+    }
   </ion-content>
+
+  <ion-footer class="ion-no-border ion-padding">
+    <ion-button expand="block" color="danger" (click)="logOut()">
+      <ion-icon name="log-out" slot="start"></ion-icon>
+      Sair
+    </ion-button>
+  </ion-footer>
 </ion-menu>
 
 <div class="ion-page" id="main-content">
