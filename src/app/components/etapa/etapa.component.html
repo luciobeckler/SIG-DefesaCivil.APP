@@ -21,7 +21,7 @@
     <div cdkDrag [cdkDragData]="ocorrencia" class="card-wrapper">
       <div *cdkDragPlaceholder class="custom-placeholder"></div>
 
-      <app-ocorrencia [ocorrencia]="ocorrencia" />
+      <app-ocorrencia [quadroId]="etapa().quadroId" [ocorrencia]="ocorrencia" />
     </div>
     } @if (etapa().ocorrencias.length === 0) {
     <div class="empty-state">

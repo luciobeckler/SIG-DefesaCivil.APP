@@ -22,9 +22,18 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       {
-        path: '',
-        redirectTo: 'evento-list', // Redireciona para uma tela padrão ao entrar na home
-        pathMatch: 'full',
+        path: 'quadro/:id',
+        loadComponent: () =>
+          import('./pages/ocorrencia/quadro/quadro.component').then(
+            (m) => m.QuadroComponent
+          ),
+      },
+      {
+        path: 'ocorrencia/form/:id',
+        loadComponent: () =>
+          import(
+            './pages/ocorrencia/ocorrencia-form/ocorrencia-form.component'
+          ).then((m) => m.OcorrenciaFormPage),
       },
       {
         path: 'usuarios',
@@ -54,15 +63,6 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/evento/evento-form/evento-form.page').then(
             (m) => m.EventoFormPage
-          ),
-      },
-      // --- QUADROS KANBAN ---
-      // Movido para cá para herdar o SideNav
-      {
-        path: 'quadro/:id',
-        loadComponent: () =>
-          import('./pages/ocorrencia/quadro/quadro.component').then(
-            (m) => m.QuadroComponent
           ),
       },
       // ----------------------

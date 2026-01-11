@@ -10,13 +10,16 @@
 
   // === HEADER ===
   .card-header-item {
-    --background: #1f1f1f;
-    --color: #ffffff;
-    --min-height: 40px;
-    --padding-start: 12px;
-    --inner-padding-end: 12px;
+    background: #1f1f1f;
+    color: #ffffff;
+    min-height: 40px;
+    padding: 10px 12px;
     border-top-left-radius: 12px;
     border-top-right-radius: 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 
     // Wrapper do Protocolo (Esquerda)
     .protocolo-wrapper {

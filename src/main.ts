@@ -56,8 +56,14 @@ import {
   locationSharp,
   personOutline,
 } from 'ionicons/icons';
-import { provideHttpClient } from '@angular/common/http';
+import {
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import { provideNgxMask } from 'ngx-mask';
+import { CookieService } from 'ngx-cookie-service';
+import { TokenInterceptor } from './app/interceptors/token.interceptor';
 
 addIcons({
   people,
@@ -109,7 +115,11 @@ bootstrapApplication(AppComponent, {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
-    provideHttpClient(),
-    provideNgxMask(),
+    provideNgxMask({
+      dropSpecialCharacters: false,
+    }),
+    provideHttpClient(withInterceptorsFromDi()),
+    CookieService,
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
   ],
 });

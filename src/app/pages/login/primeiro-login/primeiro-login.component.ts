@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IAlterarSenha } from 'src/app/interfaces/auth/IAlterarSenha';
-import { AccountsService } from 'src/app/services/accounts.service';
+import { AccountsService } from 'src/app/services/auth.service';
 import { LoadingService } from 'src/app/services/loading.service';
 
 @Component({

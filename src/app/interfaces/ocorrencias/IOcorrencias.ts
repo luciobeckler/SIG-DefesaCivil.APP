@@ -110,3 +110,11 @@ export interface IOcorrenciaDetalhesDTO extends IOcorrenciaDadosBaseDTO {
   anexos: IAnexoDTO[];
   naturezas: INaturezaResumo[];
 }
+
+export interface IHistoricoOcorrenciaDTO {
+  id: string;
+  ocorrenciaId: string;
+  usuarioId: string;
+  acao: string;
+  ultimaAlteracao: string;
+}

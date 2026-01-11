@@ -15,7 +15,7 @@ import {
   IonFooter,
 } from '@ionic/angular/standalone';
 import { IQuadro } from 'src/app/interfaces/ocorrencias/IQuadro';
-import { AccountsService } from 'src/app/services/accounts.service';
+import { AccountsService } from 'src/app/services/auth.service';
 import { QuadrosService } from 'src/app/services/quadros.service';
 @Component({
   selector: 'app-side-nav',
@@ -74,10 +74,9 @@ export class SideNavComponent implements OnInit {
   }
 
   goToQuadro(quadroId: string) {
-    this.router.navigate(['/home/quadro', quadroId]);
+    this.router.navigate(['home/quadro', quadroId]);
   }
 
-  // Outros métodos de navegação...
   goToUsuarios() {
     this.router.navigate(['home/usuarios']);
   }
