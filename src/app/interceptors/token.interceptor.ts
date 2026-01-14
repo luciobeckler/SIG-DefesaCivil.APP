@@ -58,7 +58,6 @@ export class TokenInterceptor implements HttpInterceptor {
   }
 
   private handle401Error(request: HttpRequest<any>, next: HttpHandler) {
-    debugger;
     if (!this.isRefreshing) {
       // CENÁRIO A: Ninguém está renovando ainda. Eu sou o primeiro.
       this.isRefreshing = true;

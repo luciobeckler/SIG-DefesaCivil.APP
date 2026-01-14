@@ -1,8 +1,10 @@
+import { addIcons } from 'ionicons';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   FormGroup,
+  FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
@@ -25,13 +27,21 @@ import {
 } from 'src/app/helper/OcorrenciaEnums';
 import { OcorrenciaService } from 'src/app/services/ocorrencia.service'; // Supondo que exista
 import { formatarLabel } from 'src/app/helper/funcions'; // Se tiver seu helper global
+import { INovoAnexo } from 'src/app/interfaces/anexos/IAnexos';
+import {
+  closeCircle,
+  cloudUpload,
+  documentAttach,
+  trash,
+} from 'ionicons/icons';
+import { AnexoService } from 'src/app/services/anexo.service';
 
 @Component({
   selector: 'app-ocorrencia-form',
   templateUrl: './ocorrencia-form.component.html',
   styleUrls: ['./ocorrencia-form.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule],
+  imports: [IonicModule, CommonModule, ReactiveFormsModule, FormsModule],
 })
 export class OcorrenciaFormPage implements OnInit {
   // Injeção de Dependência
@@ -39,6 +49,7 @@ export class OcorrenciaFormPage implements OnInit {
   private route = inject(ActivatedRoute);
   private navCtrl = inject(NavController);
   private ocorrenciaService = inject(OcorrenciaService);
+  private anexoService = inject(AnexoService);
   private toastCtrl = inject(ToastController);
   private quadroIdOrigem: string | null = null;
 
@@ -60,11 +71,17 @@ export class OcorrenciaFormPage implements OnInit {
   opcoesMotivacao = enumToArray(EMotivacao);
   opcoesAreaAfetada = enumToArray(EAreaAfetada);
 
+  anexosExistentes: any[] = [];
+  idsParaRemover: string[] = [];
+
+  novosAnexos: INovoAnexo[] = [];
+
   // Helper local para usar no template (caso não tenha o global)
   formatarLabel = (val: string) => val.replace(/([A-Z])/g, ' $1').trim();
 
   constructor() {
     this.buildForm();
+    addIcons({ trash, cloudUpload, documentAttach, closeCircle });
   }
 
   ngOnInit() {
@@ -136,42 +153,102 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   carregarDados(id: string) {
+    // 1. Carrega dados do formulário
     this.ocorrenciaService.obterDetalhesPorId(id).subscribe({
-      next: (data) => {
-        // PatchValue preenche o formulário automaticamente com as chaves que batem
-        this.form.patchValue(data);
-      },
-      error: (err) => {
-        console.error(err);
-        this.mostrarToast('Erro ao carregar ocorrência', 'danger');
-      },
+      next: (data) => this.form.patchValue(data),
+      error: () => this.mostrarToast('Erro ao carregar dados', 'danger'),
     });
+
+    // 2. Carrega Anexos
+    this.carregarAnexos(id);
+  }
+
+  carregarAnexos(id: string) {
+    this.ocorrenciaService.obterAnexos(id).subscribe({
+      next: (data) => {
+        this.anexosExistentes = data;
+        this.idsParaRemover = [];
+      },
+      error: (err) => console.error('Erro ao listar anexos', err),
+    });
+  }
+
+  onFileSelected(event: any) {
+    const files = event.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        this.novosAnexos.push({
+          file: file,
+          nome: file.name,
+          tamanho: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+        });
+      }
+    }
+    event.target.value = '';
+  }
+
+  removerNovoAnexo(index: number) {
+    this.novosAnexos.splice(index, 1);
+  }
+
+  marcarParaRemocao(anexo: any) {
+    this.idsParaRemover.push(anexo.id);
+    // Remove visualmente da lista
+    this.anexosExistentes = this.anexosExistentes.filter(
+      (a) => a.id !== anexo.id
+    );
   }
 
   async salvar() {
     if (this.form.invalid) {
-      this.form.markAllAsTouched(); // Mostra erros na tela
+      this.form.markAllAsTouched();
       return;
     }
 
-    const dto = this.form.value;
+    const loading = await this.toastCtrl.create({
+      message: 'Salvando...',
+      duration: 10000,
+    }); // Loader ficticio
+    loading.present();
 
     try {
-      if (this.isEditing && this.ocorrenciaId) {
-        await this.ocorrenciaService
-          .atualizar(this.ocorrenciaId, dto)
-          .toPromise();
-        this.mostrarToast('Ocorrência atualizada com sucesso!', 'success');
+      let idAtual = this.ocorrenciaId;
+      const dto = this.form.value;
+
+      if (this.isEditing && idAtual) {
+        await this.ocorrenciaService.atualizar(idAtual, dto).toPromise();
       } else {
-        // Você precisa passar o quadroId ou similar se sua API exigir na criação
-        // await this.ocorrenciaService.criar(dto).toPromise();
-        console.log('Criar (implementar service):', dto);
-        this.mostrarToast('Ocorrência criada com sucesso!', 'success');
+        // Se for criar, precisamos do ID retornado para vincular os anexos
+        const novaOcorrencia = await this.ocorrenciaService
+          .criar(dto, this.quadroIdOrigem || '')
+          .toPromise();
+        idAtual = novaOcorrencia?.id ?? null;
       }
-      this.navCtrl.back(); // Volta para o Kanban
+
+      if (!idAtual) throw new Error('ID da ocorrência não identificado.');
+
+      // PASSO 2: Remover Anexos (Se houver)
+      if (this.idsParaRemover.length > 0) {
+        await this.anexoService
+          .removerAnexos(idAtual, this.idsParaRemover)
+          .toPromise();
+      }
+
+      // PASSO 3: Upload Novos Anexos (Se houver)
+      if (this.novosAnexos.length > 0) {
+        await this.anexoService
+          .uploadAnexos(idAtual, this.novosAnexos)
+          .toPromise();
+      }
+
+      loading.dismiss();
+      this.mostrarToast('Dados salvos com sucesso!', 'success');
+      this.navCtrl.back();
     } catch (error) {
+      loading.dismiss();
       console.error(error);
-      this.mostrarToast('Erro ao salvar dados.', 'danger');
+      this.mostrarToast('Erro ao processar a solicitação.', 'danger');
     }
   }
 

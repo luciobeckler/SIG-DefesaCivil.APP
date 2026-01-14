@@ -287,6 +287,108 @@
           </ion-item>
         </div>
       </ion-accordion>
+      <ion-accordion value="quantitativo"> </ion-accordion>
+
+      <ion-accordion value="anexos">
+        <ion-item slot="header" color="light">
+          <ion-icon name="document-attach" slot="start"></ion-icon>
+          <ion-label>Anexos & Fotos</ion-label>
+          <ion-badge slot="end" color="secondary">
+            {{ anexosExistentes.length + novosAnexos.length }}
+          </ion-badge>
+        </ion-item>
+
+        <div class="ion-padding" slot="content">
+          <input
+            type="file"
+            #fileInput
+            multiple
+            (change)="onFileSelected($event)"
+            style="display: none"
+          />
+          <ion-button expand="block" fill="outline" (click)="fileInput.click()">
+            <ion-icon name="cloud-upload" slot="start"></ion-icon>
+            Adicionar Arquivos
+          </ion-button>
+
+          <ion-list>
+            <ion-list-header *ngIf="novosAnexos.length > 0">
+              <ion-label>Novos (Ainda não salvos)</ion-label>
+            </ion-list-header>
+
+            <ion-item *ngFor="let item of novosAnexos; let i = index">
+              <ion-icon
+                slot="start"
+                name="document-text-outline"
+                size="large"
+                color="medium"
+              >
+              </ion-icon>
+
+              <ion-input
+                label="Nome do Arquivo"
+                labelPlacement="stacked"
+                [(ngModel)]="item.nome"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="Nome do arquivo"
+              ></ion-input>
+
+              <ion-note slot="end" class="ion-hide-sm-down">{{
+                item.tamanho
+              }}</ion-note>
+
+              <ion-button
+                fill="clear"
+                color="danger"
+                slot="end"
+                (click)="removerNovoAnexo(i)"
+              >
+                <ion-icon slot="icon-only" name="trash"></ion-icon>
+              </ion-button>
+            </ion-item>
+
+            <ion-list-header *ngIf="anexosExistentes.length > 0">
+              <ion-label>Arquivos Salvos</ion-label>
+            </ion-list-header>
+
+            <ion-item-sliding *ngFor="let anexo of anexosExistentes">
+              <ion-item>
+                <ion-label>
+                  <h2>{{ anexo.nomeOriginal }}</h2>
+                  <p>
+                    Enviado em:
+                    {{ anexo.dataUpload | date : "dd/MM/yyyy HH:mm" }}
+                  </p>
+                </ion-label>
+                <ion-button
+                  fill="outline"
+                  slot="end"
+                  [href]="anexo.urlArmazenamento"
+                  target="_blank"
+                >
+                  Ver
+                </ion-button>
+              </ion-item>
+
+              <ion-item-options side="end">
+                <ion-item-option
+                  color="danger"
+                  (click)="marcarParaRemocao(anexo)"
+                >
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          </ion-list>
+
+          <div
+            *ngIf="anexosExistentes.length === 0 && novosAnexos.length === 0"
+            class="ion-text-center ion-padding"
+          >
+            <ion-text color="medium">Nenhum anexo vinculado.</ion-text>
+          </div>
+        </div>
+      </ion-accordion>
     </ion-accordion-group>
 
     <ion-button expand="block" class="ion-margin-top" (click)="salvar()">

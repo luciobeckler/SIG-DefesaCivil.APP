@@ -7,3 +7,9 @@ export interface IAnexo {
   file?: File;
   marcadoParaExcluir?: boolean;
 }
+
+export interface INovoAnexo {
+  file: File;
+  nome: string; // Permite edição
+  tamanho: string;
+}
