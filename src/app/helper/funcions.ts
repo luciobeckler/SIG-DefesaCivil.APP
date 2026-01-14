@@ -53,3 +53,7 @@ export function isTelefoneValido(telefone: string): boolean {
   const tel = telefone.replace(/\D/g, '');
   return tel.length >= 10 && tel.length <= 11;
 }
+
+export function formatarLabel(valor: string): string {
+  return valor.replace(/([A-Z])/g, ' $1').trim();
+}

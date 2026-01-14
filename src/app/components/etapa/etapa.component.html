@@ -1,0 +1,34 @@
+<div class="kanban-column">
+  <ion-item lines="none" class="column-header">
+    <ion-label>
+      <h2>{{ etapa().nome }}</h2>
+      <p>{{ etapa().descricao }}</p>
+    </ion-label>
+    <ion-badge slot="end" color="medium">
+      {{ etapa().ocorrencias.length }}
+    </ion-badge>
+  </ion-item>
+
+  <div
+    class="column-content"
+    cdkDropList
+    [id]="etapa().id"
+    [cdkDropListData]="etapa().ocorrencias"
+    [cdkDropListConnectedTo]="etapa().etapasDestinoId"
+    (cdkDropListDropped)="drop($event)"
+  >
+    @for (ocorrencia of etapa().ocorrencias; track ocorrencia.id) {
+    <div cdkDrag [cdkDragData]="ocorrencia" class="card-wrapper">
+      <div *cdkDragPlaceholder class="custom-placeholder"></div>
+
+      <app-ocorrencia [quadroId]="etapa().quadroId" [ocorrencia]="ocorrencia" />
+    </div>
+    } @if (etapa().ocorrencias.length === 0) {
+    <div class="empty-state">
+      <ion-text color="medium">
+        <p>Arraste aqui</p>
+      </ion-text>
+    </div>
+    }
+  </div>
+</div>

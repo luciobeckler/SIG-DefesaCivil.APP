@@ -12,13 +12,17 @@ import {
   IonButton,
   IonIcon,
   IonRouterOutlet,
+  IonFooter,
 } from '@ionic/angular/standalone';
-import { AccountsService } from 'src/app/services/accounts.service';
+import { IQuadro } from 'src/app/interfaces/ocorrencias/IQuadro';
+import { AccountsService } from 'src/app/services/auth.service';
+import { QuadrosService } from 'src/app/services/quadros.service';
 @Component({
   selector: 'app-side-nav',
   templateUrl: './side-nav.component.html',
   standalone: true,
   imports: [
+    IonFooter,
     IonButton,
     IonButtons,
     IonContent,
@@ -34,37 +38,52 @@ import { AccountsService } from 'src/app/services/accounts.service';
   styleUrls: ['./side-nav.component.scss'],
 })
 export class SideNavComponent implements OnInit {
-  constructor(private router: Router, private accountService: AccountsService) {
-    this.roles = this.accountService.getRole();
-    this.isAdministrador = this.roles.includes('Administrador');
-    console.log(this.isAdministrador);
-  }
-  roles: string[] = [];
-  isAdministrador: boolean = false;
+  isAdministrador = false;
+  showOcorrenciasDropdown = false;
+  quadros: IQuadro[] = [];
 
-  ngOnInit() {}
+  constructor(
+    private router: Router,
+    private authService: AccountsService,
+    private quadroService: QuadrosService
+  ) {}
+
+  ngOnInit() {
+    this.checkPermissoes();
+    this.carregarQuadros();
+  }
+
+  async checkPermissoes() {
+    const role = await this.authService.getRole();
+    // Ajuste conforme sua lógica de role
+    this.isAdministrador = role.includes('Administrador');
+  }
+
+  carregarQuadros() {
+    // Chama seu serviço que retorna a lista de quadros
+    this.quadroService.listarTodos().subscribe({
+      next: (data) => {
+        this.quadros = data;
+      },
+      error: (err) => console.error('Erro ao buscar quadros', err),
+    });
+  }
+
+  toggleOcorrencia() {
+    this.showOcorrenciasDropdown = !this.showOcorrenciasDropdown;
+  }
+
+  goToQuadro(quadroId: string) {
+    this.router.navigate(['home/quadro', quadroId]);
+  }
 
   goToUsuarios() {
-    this.router.navigate(['/home/usuarios']);
+    this.router.navigate(['home/usuarios']);
   }
-
-  goToEventos() {
-    this.router.navigate(['/home/evento-list']);
-  }
-
   goToNaturezas() {
-    this.router.navigate(['/home/naturezas']);
+    this.router.navigate(['home/naturezas']);
   }
-
   logOut() {
-    this.accountService.logOut().subscribe({
-      next: () => {
-        alert('Logout executado com sucesso');
-      },
-      error: (err) => {
-        alert('Erro ao fazer logout');
-        console.error(err);
-      },
-    });
+    this.authService.logOut();
   }
 }

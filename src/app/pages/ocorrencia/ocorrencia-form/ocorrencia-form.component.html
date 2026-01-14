@@ -1,0 +1,398 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="voltar()">
+        <ion-icon slot="icon-only" name="arrow-back"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+
+    <ion-title>{{ tituloPagina }}</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="salvar()" [strong]="true">Salvar</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form">
+    <ion-accordion-group [multiple]="true" [value]="['basicos', 'risco']">
+      <ion-accordion value="basicos">
+        <ion-item slot="header" color="light">
+          <ion-label>Dados Básicos & Solicitante</ion-label>
+        </ion-item>
+        <div class="ion-padding" slot="content">
+          <ion-item>
+            <ion-input label="Data do Ocorrido" labelPlacement="stacked">
+              <ion-datetime-button
+                slot="end"
+                datetime="dtOcorrido"
+              ></ion-datetime-button>
+            </ion-input>
+            <ion-modal [keepContentsMounted]="true">
+              <ng-template>
+                <ion-datetime
+                  id="dtOcorrido"
+                  presentation="date-time"
+                  formControlName="dataEHoraDoOcorrido"
+                ></ion-datetime>
+              </ng-template>
+            </ion-modal>
+          </ion-item>
+
+          <ion-item>
+            <ion-input
+              label="Nome do Solicitante"
+              labelPlacement="stacked"
+              formControlName="solicitanteNome"
+            ></ion-input>
+          </ion-item>
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-input
+                  label="CPF"
+                  labelPlacement="stacked"
+                  formControlName="solicitanteCPF"
+                  placeholder="000.000.000-00"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col>
+              <ion-item>
+                <ion-input
+                  label="RG"
+                  labelPlacement="stacked"
+                  formControlName="solicitanteRG"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="endereco">
+        <ion-item slot="header" color="light">
+          <ion-label>Endereço / Localização</ion-label>
+        </ion-item>
+        <div class="ion-padding" slot="content">
+          <ion-item>
+            <ion-input
+              label="CEP"
+              labelPlacement="stacked"
+              formControlName="enderecoCEP"
+            ></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Rua"
+              labelPlacement="stacked"
+              formControlName="enderecoRua"
+            ></ion-input>
+          </ion-item>
+          <ion-row>
+            <ion-col size="4">
+              <ion-item>
+                <ion-input
+                  label="Número"
+                  labelPlacement="stacked"
+                  formControlName="enderecoNumero"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="8">
+              <ion-item>
+                <ion-input
+                  label="Bairro"
+                  labelPlacement="stacked"
+                  formControlName="enderecoBairro"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-item>
+            <ion-input
+              label="Complemento"
+              labelPlacement="stacked"
+              formControlName="enderecoComplemento"
+            ></ion-input>
+          </ion-item>
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="risco">
+        <ion-item slot="header" color="light">
+          <ion-label>Classificação de Risco</ion-label>
+        </ion-item>
+        <div class="ion-padding" slot="content">
+          <ion-item>
+            <ion-select
+              label="Grau de Risco *"
+              labelPlacement="stacked"
+              formControlName="grauDeRisco"
+              placeholder="Selecione"
+            >
+              @for(op of opcoesGrauRisco; track op) {
+              <ion-select-option [value]="op">{{
+                formatarLabel(op)
+              }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              label="Tipo de Risco"
+              labelPlacement="stacked"
+              formControlName="tipoDeRisco"
+              [multiple]="true"
+            >
+              @for(op of opcoesTipoRisco; track op) {
+              <ion-select-option [value]="op">{{
+                formatarLabel(op)
+              }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              label="Tipificação"
+              labelPlacement="stacked"
+              formControlName="tipificacaoDaOcorrencia"
+              [multiple]="true"
+            >
+              @for(op of opcoesTipificacao; track op) {
+              <ion-select-option [value]="op">{{
+                formatarLabel(op)
+              }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              label="Motivação"
+              labelPlacement="stacked"
+              formControlName="motivacao"
+              [multiple]="true"
+            >
+              @for(op of opcoesMotivacao; track op) {
+              <ion-select-option [value]="op">{{
+                formatarLabel(op)
+              }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              label="Área Afetada"
+              labelPlacement="stacked"
+              formControlName="areasAfetadas"
+              [multiple]="true"
+            >
+              @for(op of opcoesAreaAfetada; track op) {
+              <ion-select-option [value]="op">{{
+                formatarLabel(op)
+              }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="tecnico">
+        <ion-item slot="header" color="light">
+          <ion-label>Características Técnicas</ion-label>
+        </ion-item>
+        <div class="ion-padding" slot="content">
+          <ion-item>
+            <ion-select
+              label="Regime de Ocupação"
+              labelPlacement="stacked"
+              formControlName="regimeDeOcupacaoDoImovel"
+            >
+              @for(op of opcoesRegime; track op) {
+              <ion-select-option [value]="op">{{
+                formatarLabel(op)
+              }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              label="Caracterização Local"
+              labelPlacement="stacked"
+              formControlName="caracterizacaoDoLocal"
+              [multiple]="true"
+            >
+              @for(op of opcoesCaracterizacao; track op) {
+              <ion-select-option [value]="op">{{
+                formatarLabel(op)
+              }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              label="Estrutura"
+              labelPlacement="stacked"
+              formControlName="estrutura"
+              [multiple]="true"
+            >
+              @for(op of opcoesEstrutura; track op) {
+              <ion-select-option [value]="op">{{
+                formatarLabel(op)
+              }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+        </div>
+      </ion-accordion>
+
+      <ion-accordion value="quantitativo">
+        <ion-item slot="header" color="light">
+          <ion-label>Dados Quantitativos</ion-label>
+        </ion-item>
+        <div class="ion-padding" slot="content">
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-input
+                  type="number"
+                  label="Nº Moradias"
+                  labelPlacement="stacked"
+                  formControlName="numeroDeMoradias"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col>
+              <ion-item>
+                <ion-input
+                  type="number"
+                  label="Nº Pessoas"
+                  labelPlacement="stacked"
+                  formControlName="numeroDeAdultos"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-item lines="none">
+            <ion-checkbox formControlName="possuiUnidadeFamiliar"
+              >Possui Unidade Familiar?</ion-checkbox
+            >
+          </ion-item>
+        </div>
+      </ion-accordion>
+      <ion-accordion value="quantitativo"> </ion-accordion>
+
+      <ion-accordion value="anexos">
+        <ion-item slot="header" color="light">
+          <ion-icon name="document-attach" slot="start"></ion-icon>
+          <ion-label>Anexos & Fotos</ion-label>
+          <ion-badge slot="end" color="secondary">
+            {{ anexosExistentes.length + novosAnexos.length }}
+          </ion-badge>
+        </ion-item>
+
+        <div class="ion-padding" slot="content">
+          <input
+            type="file"
+            #fileInput
+            multiple
+            (change)="onFileSelected($event)"
+            style="display: none"
+          />
+          <ion-button expand="block" fill="outline" (click)="fileInput.click()">
+            <ion-icon name="cloud-upload" slot="start"></ion-icon>
+            Adicionar Arquivos
+          </ion-button>
+
+          <ion-list>
+            <ion-list-header *ngIf="novosAnexos.length > 0">
+              <ion-label>Novos (Ainda não salvos)</ion-label>
+            </ion-list-header>
+
+            <ion-item *ngFor="let item of novosAnexos; let i = index">
+              <ion-icon
+                slot="start"
+                name="document-text-outline"
+                size="large"
+                color="medium"
+              >
+              </ion-icon>
+
+              <ion-input
+                label="Nome do Arquivo"
+                labelPlacement="stacked"
+                [(ngModel)]="item.nome"
+                [ngModelOptions]="{ standalone: true }"
+                placeholder="Nome do arquivo"
+              ></ion-input>
+
+              <ion-note slot="end" class="ion-hide-sm-down">{{
+                item.tamanho
+              }}</ion-note>
+
+              <ion-button
+                fill="clear"
+                color="danger"
+                slot="end"
+                (click)="removerNovoAnexo(i)"
+              >
+                <ion-icon slot="icon-only" name="trash"></ion-icon>
+              </ion-button>
+            </ion-item>
+
+            <ion-list-header *ngIf="anexosExistentes.length > 0">
+              <ion-label>Arquivos Salvos</ion-label>
+            </ion-list-header>
+
+            <ion-item-sliding *ngFor="let anexo of anexosExistentes">
+              <ion-item>
+                <ion-label>
+                  <h2>{{ anexo.nomeOriginal }}</h2>
+                  <p>
+                    Enviado em:
+                    {{ anexo.dataUpload | date : "dd/MM/yyyy HH:mm" }}
+                  </p>
+                </ion-label>
+                <ion-button
+                  fill="outline"
+                  slot="end"
+                  [href]="anexo.urlArmazenamento"
+                  target="_blank"
+                >
+                  Ver
+                </ion-button>
+              </ion-item>
+
+              <ion-item-options side="end">
+                <ion-item-option
+                  color="danger"
+                  (click)="marcarParaRemocao(anexo)"
+                >
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          </ion-list>
+
+          <div
+            *ngIf="anexosExistentes.length === 0 && novosAnexos.length === 0"
+            class="ion-text-center ion-padding"
+          >
+            <ion-text color="medium">Nenhum anexo vinculado.</ion-text>
+          </div>
+        </div>
+      </ion-accordion>
+    </ion-accordion-group>
+
+    <ion-button expand="block" class="ion-margin-top" (click)="salvar()">
+      Salvar Dados
+    </ion-button>
+  </form>
+</ion-content>

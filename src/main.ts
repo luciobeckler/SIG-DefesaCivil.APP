@@ -9,15 +9,15 @@ import {
   IonicRouteStrategy,
   provideIonicAngular,
 } from '@ionic/angular/standalone';
-
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
-
 import { addIcons } from 'ionicons';
 import {
   people,
   calendar,
+  filterOutline,
   saveOutline,
+  informationCircleOutline,
   ellipsisVerticalCircleOutline,
   timeOutline,
   documentTextOutline,
@@ -44,15 +44,33 @@ import {
   trashBinOutline,
   trashOutline,
   pencilOutline,
+  alertCircle,
+  thermometer,
+  shieldCheckmark,
+  helpCircle,
+  earth,
+  hammer,
+  leaf,
+  ellipsisHorizontalCircle,
+  alert,
+  locationSharp,
+  personOutline,
 } from 'ionicons/icons';
-import { provideHttpClient } from '@angular/common/http';
+import {
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import { provideNgxMask } from 'ngx-mask';
+import { CookieService } from 'ngx-cookie-service';
+import { TokenInterceptor } from './app/interceptors/token.interceptor';
 
 addIcons({
   people,
   calendar,
   timeOutline,
   saveOutline,
+  filterOutline,
   cloudDownloadOutline,
   documentAttachOutline,
   documentTextOutline,
@@ -63,6 +81,7 @@ addIcons({
   linkOutline,
   eyeOutline,
   trashBinOutline,
+  informationCircleOutline,
   trashOutline,
   add,
   warning,
@@ -77,6 +96,18 @@ addIcons({
   arrowBack,
   logOut,
   personAdd,
+  pencilOutline,
+  alertCircle,
+  thermometer,
+  shieldCheckmark,
+  helpCircle,
+  earth,
+  hammer,
+  leaf,
+  ellipsisHorizontalCircle,
+  alert,
+  locationSharp,
+  personOutline,
 });
 
 bootstrapApplication(AppComponent, {
@@ -84,7 +115,11 @@ bootstrapApplication(AppComponent, {
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
-    provideHttpClient(),
-    provideNgxMask(),
+    provideNgxMask({
+      dropSpecialCharacters: false,
+    }),
+    provideHttpClient(withInterceptorsFromDi()),
+    CookieService,
+    { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
   ],
 });

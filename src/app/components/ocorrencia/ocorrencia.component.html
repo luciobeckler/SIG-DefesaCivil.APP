@@ -1,0 +1,72 @@
+<ion-card
+  class="kanban-card"
+  button="true"
+  [routerLink]="['/home', 'ocorrencia', 'form', ocorrencia().id]"
+  [queryParams]="{ quadroId: quadroId() }"
+>
+  @let grauVisual = getGrauVisual(ocorrencia().grauDeRisco);
+
+  <div class="card-header-item ion-item-mimic">
+    <div slot="start" class="protocolo-wrapper">
+      <span class="protocolo">#{{ ocorrencia().numero }}</span>
+    </div>
+
+    <div class="risk-info">
+      <ion-icon
+        [name]="grauVisual.icon"
+        [color]="grauVisual.color"
+        size="small"
+      ></ion-icon>
+
+      <ion-text [color]="grauVisual.color" class="risco-texto">
+        {{ formatarLabel(ocorrencia().grauDeRisco) }}
+      </ion-text>
+    </div>
+
+    <ion-note slot="end" class="data-nota">
+      {{ ocorrencia().dataEHoraDoOcorrido | date : "dd/MM/yyyy HH:mm" }}
+    </ion-note>
+  </div>
+
+  <ion-card-content>
+    <div class="ion-margin-bottom">
+      <h2 class="endereco-rua">
+        <ion-icon
+          name="location-sharp"
+          color="danger"
+          class="ion-margin-end"
+        ></ion-icon>
+        {{ getRua(ocorrencia().enderecoResumido) }}
+      </h2>
+
+      <p class="endereco-bairro">
+        {{ getBairro(ocorrencia().enderecoResumido) }}
+      </p>
+    </div>
+
+    @if (ocorrencia().solicitanteNome) {
+    <div class="solicitante-info ion-margin-bottom">
+      <ion-icon name="person-outline"></ion-icon>
+      <span>{{ ocorrencia().solicitanteNome }}</span>
+    </div>
+    }
+
+    <div class="footer-actions">
+      <div class="chips-container">
+        @for (tipo of ocorrencia().tipoDeRisco; track tipo) { @let tipoVis =
+        getTipoVisual(tipo);
+        <ion-chip [color]="tipoVis.color" outline="true">
+          <ion-icon [name]="tipoVis.icon"></ion-icon>
+          <ion-label>{{ tipo }}</ion-label>
+        </ion-chip>
+        }
+      </div>
+
+      @if (ocorrencia().emailResponsavel) {
+      <div class="user-avatar" title="{{ ocorrencia().emailResponsavel }}">
+        <span>{{ getIniciais(ocorrencia().emailResponsavel) }}</span>
+      </div>
+      }
+    </div>
+  </ion-card-content>
+</ion-card>

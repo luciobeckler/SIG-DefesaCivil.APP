@@ -1,0 +1,154 @@
+<ion-menu
+  contentId="conteudo-quadro"
+  menuId="menu-filtros"
+  side="end"
+  type="overlay"
+>
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-title>Filtros & Ações</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="ion-padding">
+    <ion-button
+      expand="block"
+      color="success"
+      class="ion-margin-bottom"
+      button="true"
+      (click)="novaOcorrencia()"
+    >
+      <ion-icon slot="start" name="add-circle-outline"></ion-icon>
+      Nova Ocorrência
+    </ion-button>
+
+    <ion-list-header>
+      <ion-label>Filtrar Ocorrências</ion-label>
+    </ion-list-header>
+
+    <ion-list>
+      <ion-item>
+        <ion-input
+          label="Protocolo"
+          labelPlacement="stacked"
+          placeholder="Ex: 2023"
+          type="text"
+          [(ngModel)]="filtros.protocolo"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Rua"
+          labelPlacement="stacked"
+          placeholder="Nome da rua"
+          [(ngModel)]="filtros.rua"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Bairro"
+          labelPlacement="stacked"
+          placeholder="Nome do bairro"
+          [(ngModel)]="filtros.bairro"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Solicitante"
+          labelPlacement="stacked"
+          placeholder="Nome do cidadão"
+          [(ngModel)]="filtros.solicitante"
+        ></ion-input>
+      </ion-item>
+
+      <ion-list-header>
+        <ion-label>Período (DD/MM/AAAA)</ion-label>
+      </ion-list-header>
+
+      <ion-item>
+        <ion-input
+          label="Data Inicial"
+          labelPlacement="stacked"
+          placeholder="DD/MM/AAAA"
+          inputmode="numeric"
+          [value]="filtros.dataInicio"
+          (ionInput)="formatarDataInput($event, 'dataInicio')"
+          maxlength="10"
+        ></ion-input>
+
+        <ion-button
+          slot="end"
+          fill="clear"
+          color="medium"
+          *ngIf="filtros.dataInicio"
+          (click)="filtros.dataInicio = ''"
+        >
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Data Final"
+          labelPlacement="stacked"
+          placeholder="DD/MM/AAAA"
+          inputmode="numeric"
+          [value]="filtros.dataFim"
+          (ionInput)="formatarDataInput($event, 'dataFim')"
+          maxlength="10"
+        ></ion-input>
+
+        <ion-button
+          slot="end"
+          fill="clear"
+          color="medium"
+          *ngIf="filtros.dataFim"
+          (click)="filtros.dataFim = ''"
+        >
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-item>
+    </ion-list>
+
+    <div class="ion-padding-top">
+      <ion-button expand="block" (click)="aplicarFiltros()">
+        <ion-icon slot="start" name="filter-outline"></ion-icon>
+        Filtrar
+      </ion-button>
+
+      <ion-button
+        expand="block"
+        fill="clear"
+        color="medium"
+        (click)="limparFiltros()"
+      >
+        Limpar Filtros
+      </ion-button>
+    </div>
+  </ion-content>
+</ion-menu>
+
+<div class="ion-page" id="conteudo-quadro">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>Gestão de Ocorrências</ion-title>
+
+      <ion-buttons slot="end">
+        <ion-menu-button menu="menu-filtros" autoHide="false">
+          <ion-icon name="filter-outline"></ion-icon>
+        </ion-menu-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content [fullscreen]="true" class="kanban-background">
+    <div class="kanban-board">
+      @for (etapa of etapas; track etapa.id) {
+      <app-etapa [etapa]="etapa" />
+      }
+    </div>
+  </ion-content>
+</div>

@@ -17,11 +17,11 @@ import { IonicModule, ToastController } from '@ionic/angular';
 import { EventoService } from 'src/app/services/evento.service';
 import { first, Subject, takeUntil } from 'rxjs';
 import {
-  IEventoPreview,
-  IEventoDetalhes,
-} from 'src/app/interfaces/eventos/IEvento';
+  IOcorrenciaPreview,
+  IOcorrenciaDetalhes,
+} from 'src/app/interfaces/ocorrencias/IEvento';
 import { NaturezaService } from 'src/app/services/naturezas.service';
-import { IViewNatureza } from 'src/app/interfaces/naturezas/INatureza';
+import { INaturezaResumo } from 'src/app/interfaces/naturezas/INatureza';
 
 @Component({
   selector: 'app-evento-form',
@@ -35,8 +35,8 @@ export class EventoFormPage implements OnInit, OnDestroy {
   eventoForm!: FormGroup;
   isEditMode = false;
   eventoId?: string;
-  eventosDisponiveis: IEventoPreview[] = [];
-  naturezasDisponiveis: IViewNatureza[] = [];
+  eventosDisponiveis: IOcorrenciaPreview[] = [];
+  naturezasDisponiveis: INaturezaResumo[] = [];
   selectedFiles: File[] = [];
 
   private destroy$ = new Subject<void>();
@@ -124,12 +124,12 @@ export class EventoFormPage implements OnInit, OnDestroy {
     this.eventoService
       .getEventoDetalhes(this.eventoId)
       .pipe(first())
-      .subscribe((evento: IEventoDetalhes) => {
+      .subscribe((evento: IOcorrenciaDetalhes) => {
         this.patchFormValues(evento);
       });
   }
 
-  private patchFormValues(evento: IEventoDetalhes): void {
+  private patchFormValues(evento: IOcorrenciaDetalhes): void {
     this.eventoForm.patchValue({
       codigo: evento.codigo,
       titulo: evento.titulo,
@@ -245,13 +245,14 @@ export class EventoFormPage implements OnInit, OnDestroy {
         .createEvento(formData)
         .pipe(takeUntil(this.destroy$))
         .subscribe({
-          next: (response: IEventoDetalhes) => this.handleSaveSuccess(response),
+          next: (response: IOcorrenciaDetalhes) =>
+            this.handleSaveSuccess(response),
           error: (err: any) => this.handleSaveError(err),
         });
     }
   }
 
-  private handleSaveSuccess(response: IEventoDetalhes | null | void): void {
+  private handleSaveSuccess(response: IOcorrenciaDetalhes | null | void): void {
     const message = this.isEditMode
       ? 'Evento atualizado com sucesso!'
       : 'Evento criado com sucesso!';
@@ -259,7 +260,7 @@ export class EventoFormPage implements OnInit, OnDestroy {
 
     const targetId = this.isEditMode
       ? this.eventoId
-      : (response as IEventoDetalhes)?.id;
+      : (response as IOcorrenciaDetalhes)?.id;
     this.router.navigate(['/home/evento-detail', targetId || 'list']);
   }
 

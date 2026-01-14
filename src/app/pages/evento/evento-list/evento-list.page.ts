@@ -7,11 +7,11 @@ import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 import { EventoService } from 'src/app/services/evento.service';
-import { IEventoPreview } from 'src/app/interfaces/eventos/IEvento';
+import { IOcorrenciaPreview } from 'src/app/interfaces/ocorrencias/IEvento';
 import { LoadingService } from 'src/app/services/loading.service';
 import { FormatStatusPipe } from 'src/app/pipes/format-status.pipe';
 import { EStatus } from 'src/app/helper/statusEnum';
-import { IViewNatureza } from 'src/app/interfaces/naturezas/INatureza';
+import { INaturezaResumo } from 'src/app/interfaces/naturezas/INatureza';
 import { NaturezaService } from 'src/app/services/naturezas.service';
 
 @Component({
@@ -32,11 +32,11 @@ export class EventoListPage implements OnInit, OnDestroy {
 
   selectedNaturezas = new FormControl<string[] | null>(null);
 
-  private allEventos: IEventoPreview[] = [];
-  filteredEventos: IEventoPreview[] = [];
-  availableNatures: IViewNatureza[] = [];
+  private allEventos: IOcorrenciaPreview[] = [];
+  filteredEventos: IOcorrenciaPreview[] = [];
+  availableNatures: INaturezaResumo[] = [];
 
-  groupedEvents: { [key in EStatus]?: IEventoPreview[] } = {};
+  groupedEvents: { [key in EStatus]?: IOcorrenciaPreview[] } = {};
 
   statusOrder: EStatus[] = [
     EStatus.Pendente,

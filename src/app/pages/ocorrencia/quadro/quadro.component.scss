@@ -1,0 +1,13 @@
+// Fundo do quadro
+.kanban-background {
+  --background: #f4f5f8;
+}
+
+// Container que segura todas as colunas
+.kanban-board {
+  display: flex;
+  overflow-x: auto;
+  height: 100%;
+  padding: 10px;
+  align-items: flex-start; // Alinha as colunas no topo
+}

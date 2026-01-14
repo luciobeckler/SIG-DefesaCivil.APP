@@ -17,10 +17,24 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'home',
+    path: 'home', // O Layout principal (SideNav) vive aqui
     component: SideNavComponent,
     canActivate: [AuthGuard],
     children: [
+      {
+        path: 'quadro/:id',
+        loadComponent: () =>
+          import('./pages/ocorrencia/quadro/quadro.component').then(
+            (m) => m.QuadroComponent
+          ),
+      },
+      {
+        path: 'ocorrencia/form/:id',
+        loadComponent: () =>
+          import(
+            './pages/ocorrencia/ocorrencia-form/ocorrencia-form.component'
+          ).then((m) => m.OcorrenciaFormPage),
+      },
       {
         path: 'usuarios',
         loadComponent: () =>
@@ -29,6 +43,7 @@ export const routes: Routes = [
           ),
         canActivate: [AdminGuard],
       },
+      // --- EVENTOS / OCORRÊNCIAS ---
       {
         path: 'evento-list',
         loadComponent: () =>
@@ -50,6 +65,7 @@ export const routes: Routes = [
             (m) => m.EventoFormPage
           ),
       },
+      // ----------------------
       {
         path: 'naturezas',
         loadComponent: () =>
@@ -64,5 +80,9 @@ export const routes: Routes = [
     path: '',
     redirectTo: 'login',
     pathMatch: 'full',
+  },
+  {
+    path: '**', // Rota coringa para 404
+    redirectTo: 'login',
   },
 ];

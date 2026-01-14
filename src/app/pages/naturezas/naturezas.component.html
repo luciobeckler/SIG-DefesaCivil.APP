@@ -1,58 +1,137 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Naturezas</ion-title>
+<ion-header class="ion-no-border">
+  <ion-toolbar color="primary">
+    <ion-title>Catálogo de Naturezas</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="criarNatureza()"> Criar natureza</ion-button>
+      <ion-button (click)="criarNatureza()">
+        <ion-icon name="add" slot="start"></ion-icon>
+        Novo
+      </ion-button>
     </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar color="primary">
+    <ion-searchbar
+      placeholder="Buscar natureza..."
+      (ionInput)="handleSearch($event)"
+      showCancelButton="focus"
+    >
+    </ion-searchbar>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ion-padding-top bg-light">
+  <div
+    *ngIf="naturezasFiltradas.length === 0"
+    class="ion-text-center ion-padding"
+  >
+    <ion-text color="medium">
+      <p>Nenhuma natureza encontrada.</p>
+    </ion-text>
+  </div>
+
   <ion-accordion-group [multiple]="true">
     <app-natureza-accordion
-      *ngFor="let natureza of naturezas"
+      *ngFor="let natureza of naturezasFiltradas"
       [natureza]="natureza"
       (editarNaturezaEvent)="abrirModalEdicao($event)"
       (deletarNaturezaEvent)="deletarNatureza($event)"
     ></app-natureza-accordion>
   </ion-accordion-group>
 
-  <!-- Modal -->
-  <ion-modal [isOpen]="modalOpen" (didDismiss)="fecharModal()">
+  <ion-modal
+    [isOpen]="modalOpen"
+    (didDismiss)="fecharModal()"
+    [presentingElement]="null"
+  >
     <ng-template>
       <ion-header>
         <ion-toolbar>
           <ion-title>{{ modalTitle }}</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="fecharModal()">Fechar</ion-button>
+            <ion-button (click)="fecharModal()" color="medium"
+              >Cancelar</ion-button
+            >
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
 
-      <ion-content>
-        <form [formGroup]="form" style="padding: 16px">
-          <ion-item>
-            <ion-label position="stacked">Nome</ion-label>
-            <ion-input formControlName="nome"></ion-input>
-          </ion-item>
+      <ion-content class="ion-padding">
+        <form [formGroup]="form">
+          <ion-list lines="none">
+            <ion-item-group>
+              <ion-item-divider>
+                <ion-label>Identificação</ion-label>
+              </ion-item-divider>
 
-          <ion-item>
-            <ion-label position="stacked">Código Natureza</ion-label>
-            <ion-input formControlName="codigoNatureza"></ion-input>
-          </ion-item>
+              <ion-item class="input-item">
+                <ion-input
+                  label="Código (Ex: 1.1.0)"
+                  labelPlacement="stacked"
+                  formControlName="codigoNatureza"
+                  placeholder="0.0.0.0.0"
+                >
+                </ion-input>
+              </ion-item>
 
-          <ion-item>
-            <ion-label position="stacked">Natureza Pai</ion-label>
-            <ion-input formControlName="codigoNaturezaPai"></ion-input>
-          </ion-item>
+              <ion-item class="input-item">
+                <ion-input
+                  label="Nome da Natureza"
+                  labelPlacement="stacked"
+                  formControlName="nome"
+                  placeholder="Ex: Deslizamento"
+                >
+                </ion-input>
+              </ion-item>
+            </ion-item-group>
 
-          <ion-button
-            expand="block"
-            (click)="salvarNatureza()"
-            [disabled]="form.invalid"
-          >
-            Salvar
-          </ion-button>
+            <ion-item-group>
+              <ion-item-divider>
+                <ion-label>Hierarquia</ion-label>
+              </ion-item-divider>
+
+              <ion-item class="input-item">
+                <ion-input
+                  label="Código do Pai (Opcional)"
+                  labelPlacement="stacked"
+                  formControlName="codigoNaturezaPai"
+                  placeholder="Deixe vazio se for raiz"
+                >
+                </ion-input>
+                <ion-note slot="helper"
+                  >O código deve existir exatamente igual.</ion-note
+                >
+              </ion-item>
+            </ion-item-group>
+
+            <ion-item-group>
+              <ion-item-divider>
+                <ion-label>Detalhes</ion-label>
+              </ion-item-divider>
+
+              <ion-item class="input-item">
+                <ion-textarea
+                  label="Descrição / Definição"
+                  labelPlacement="stacked"
+                  formControlName="descricao"
+                  [autoGrow]="true"
+                  rows="4"
+                  placeholder="Descreva a natureza conforme o COBRADE..."
+                >
+                </ion-textarea>
+              </ion-item>
+            </ion-item-group>
+          </ion-list>
+
+          <div class="ion-padding">
+            <ion-button
+              expand="block"
+              (click)="salvarNatureza()"
+              [disabled]="form.invalid"
+              size="large"
+            >
+              Salvar
+            </ion-button>
+          </div>
         </form>
       </ion-content>
     </ng-template>

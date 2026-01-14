@@ -24,11 +24,11 @@ import {
 } from '@angular/forms';
 
 import {
-  IEventoDetalhes,
-  IEventoPreview,
-} from 'src/app/interfaces/eventos/IEvento';
-import { IEventoHistorico } from 'src/app/interfaces/eventos/IEventoHistorico';
-import { IViewNatureza } from 'src/app/interfaces/naturezas/INatureza';
+  IOcorrenciaDetalhes,
+  IOcorrenciaPreview,
+} from 'src/app/interfaces/ocorrencias/IEvento';
+import { IEventoHistorico } from 'src/app/interfaces/ocorrencias/IEventoHistorico';
+import { INaturezaResumo } from 'src/app/interfaces/naturezas/INatureza';
 
 import { EventoService } from 'src/app/services/evento.service';
 import { NaturezaService } from 'src/app/services/naturezas.service';
@@ -52,14 +52,14 @@ import { IAnexo } from 'src/app/interfaces/anexos/IAnexos';
 export class EventoDetailPage implements OnInit, OnDestroy {
   @ViewChild('fileUpload') fileUploadInput!: ElementRef<HTMLInputElement>;
 
-  evento: IEventoDetalhes | null = null;
+  evento: IOcorrenciaDetalhes | null = null;
   eventoId!: string;
   historico$!: Observable<IEventoHistorico[]>;
 
   eventoForm!: FormGroup;
   isEditMode = false;
-  eventosDisponiveis: IEventoPreview[] = [];
-  naturezasDisponiveis: IViewNatureza[] = [];
+  eventosDisponiveis: IOcorrenciaPreview[] = [];
+  naturezasDisponiveis: INaturezaResumo[] = [];
   anexos: IAnexo[] = [];
   private destroy$ = new Subject<void>();
 
@@ -124,7 +124,7 @@ export class EventoDetailPage implements OnInit, OnDestroy {
     this.historico$ = this.eventoService.getHistoricoDetalhes(this.eventoId);
   }
 
-  private patchFormValues(evento: IEventoDetalhes): void {
+  private patchFormValues(evento: IOcorrenciaDetalhes): void {
     this.eventoForm.patchValue({
       codigo: evento.codigo,
       titulo: evento.titulo,
@@ -245,13 +245,13 @@ export class EventoDetailPage implements OnInit, OnDestroy {
       this.presentToast(`Limite de ${maxFiles} anexos já atingido.`, 'warning');
     } else {
       const filesToAdd = Array.from(files).slice(0, allowedToAdd);
-      filesToAdd.forEach((file) => {
+      /* filesToAdd.forEach((file) => {
         this.anexos.push({
           nomeOriginal: file.name,
           file: file,
           marcadoParaExcluir: false,
         });
-      });
+      }); */
       if (files.length > allowedToAdd) {
         this.presentToast(
           `Limite de ${maxFiles} anexos atingido. Apenas os primeiros ${allowedToAdd} arquivos foram adicionados.`,
@@ -384,7 +384,7 @@ export class EventoDetailPage implements OnInit, OnDestroy {
     await modal.present();
   }
 
-  async deletar(evento: IEventoDetalhes) {
+  async deletar(evento: IOcorrenciaDetalhes) {
     const alert = await this.alertController.create({
       header: 'Confirmação',
       message: `Tem certeza que deseja deletar o evento "${evento.titulo}"? Esta ação tornará o evento invisível...`,
