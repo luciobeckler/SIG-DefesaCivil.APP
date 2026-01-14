@@ -7,8 +7,9 @@
 <ion-content class="ion-padding">
   <form (ngSubmit)="onLogin()" #loginForm="ngForm">
     <ion-item>
-      <ion-label position="floating">Email</ion-label>
       <ion-input
+        label="Email"
+        labelPlacement="floating"
         type="email"
         required
         [(ngModel)]="loginInfo.email"
@@ -16,13 +17,15 @@
         #emailInput="ngModel"
       ></ion-input>
     </ion-item>
+
     <ion-text color="danger" *ngIf="emailInput.invalid && emailInput.touched">
       Email é obrigatório e deve ser válido.
     </ion-text>
 
     <ion-item>
-      <ion-label position="floating">Senha</ion-label>
       <ion-input
+        label="Senha"
+        labelPlacement="floating"
         type="password"
         required
         [(ngModel)]="loginInfo.senha"
@@ -30,6 +33,7 @@
         #passwordInput="ngModel"
       ></ion-input>
     </ion-item>
+
     <ion-text
       color="danger"
       *ngIf="passwordInput.invalid && passwordInput.touched"
