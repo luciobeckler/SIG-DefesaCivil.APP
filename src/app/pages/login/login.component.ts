@@ -6,11 +6,32 @@ import { Router } from '@angular/router';
 import { ILogin } from 'src/app/interfaces/auth/ILogin';
 import { AccountsService } from 'src/app/services/auth.service';
 import { LoadingService } from 'src/app/services/loading.service';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonItem,
+  IonInput,
+  IonText,
+  IonButton,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonItem,
+    IonInput,
+    IonText,
+    IonButton,
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
