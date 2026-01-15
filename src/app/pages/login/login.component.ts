@@ -41,8 +41,7 @@ export class LoginComponent {
   constructor(
     private router: Router,
     private accountService: AccountsService,
-    private loadingService: LoadingService,
-    private accountsService: AccountsService
+    private loadingService: LoadingService
   ) {}
 
   loginInfo: ILogin = {
@@ -51,7 +50,7 @@ export class LoginComponent {
   };
 
   async onLogin() {
-    await this.loadingService.show();
+    //await this.loadingService.show();
     //CODIGO A BAIXO PARA PERMITIR LOGIN RAPIDO
     this.loginInfo.email = 'admin@teste.com';
     this.loginInfo.senha = 'SenhaForte123!';
