@@ -12,15 +12,49 @@ import {
   trashOutline,
 } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
-import { IonicModule, NavController, MenuController } from '@ionic/angular';
+import { NavController, MenuController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { EtapaComponent } from 'src/app/components/etapa/etapa.component';
+import {
+  IonMenu,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonListHeader,
+  IonLabel,
+  IonList,
+  IonItem,
+  IonInput,
+  IonButtons,
+  IonMenuButton,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-quadro',
   templateUrl: './quadro.component.html',
   styleUrls: ['./quadro.component.scss'],
-  imports: [IonicModule, CommonModule, FormsModule, EtapaComponent],
+  imports: [
+    IonMenu,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonButton,
+    IonIcon,
+    IonListHeader,
+    IonLabel,
+    IonList,
+    IonItem,
+    IonInput,
+    IonButtons,
+    IonMenuButton,
+    CommonModule,
+    FormsModule,
+    EtapaComponent,
+  ],
   standalone: true,
 })
 export class QuadroComponent implements OnInit {

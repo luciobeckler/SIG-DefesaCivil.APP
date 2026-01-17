@@ -12,13 +12,57 @@ import {
 import { AlertController } from '@ionic/angular';
 import { LoadingService } from 'src/app/services/loading.service';
 import { NgxMaskDirective } from 'ngx-mask';
+import {
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonCard,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonItem,
+  IonText,
+  IonLabel,
+  IonInput,
+  IonSelect,
+  IonSelectOption,
+  IonToggle,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-usuarios',
   templateUrl: './usuarios.component.html',
   styleUrls: ['./usuarios.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, NgxMaskDirective],
+  imports: [
+    CommonModule,
+    IonContent,
+    IonButton,
+    IonIcon,
+    IonCard,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonModal,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonItem,
+    IonText,
+    IonLabel,
+    IonInput,
+    IonSelect,
+    IonSelectOption,
+    IonToggle,
+    FormsModule,
+    NgxMaskDirective,
+  ],
 })
 export class UsuariosComponent implements OnInit {
   usuarios: IUsuarioInfoId[] = [];

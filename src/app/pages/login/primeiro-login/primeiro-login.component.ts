@@ -1,16 +1,50 @@
 import { Component } from '@angular/core';
-import { IonicModule } from '@ionic/angular';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IAlterarSenha } from 'src/app/interfaces/auth/IAlterarSenha';
 import { AccountsService } from 'src/app/services/auth.service';
 import { LoadingService } from 'src/app/services/loading.service';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonCard,
+  IonCardHeader,
+  IonCardTitle,
+  IonCardContent,
+  IonCardSubtitle,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonButton,
+  IonIcon,
+  IonText,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-primeiro-login',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
+    IonCardSubtitle,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonButton,
+    IonIcon,
+    IonText,
+    FormsModule,
+  ],
   templateUrl: './primeiro-login.component.html',
   styleUrls: ['./primeiro-login.component.scss'],
 })

@@ -43,28 +43,6 @@ export const routes: Routes = [
           ),
         canActivate: [AdminGuard],
       },
-      // --- EVENTOS / OCORRÊNCIAS ---
-      {
-        path: 'evento-list',
-        loadComponent: () =>
-          import('./pages/evento/evento-list/evento-list.page').then(
-            (m) => m.EventoListPage
-          ),
-      },
-      {
-        path: 'evento-detail/:id',
-        loadComponent: () =>
-          import('./pages/evento/evento-detail/evento-detail.page').then(
-            (m) => m.EventoDetailPage
-          ),
-      },
-      {
-        path: 'evento-form/:id',
-        loadComponent: () =>
-          import('./pages/evento/evento-form/evento-form.page').then(
-            (m) => m.EventoFormPage
-          ),
-      },
       // ----------------------
       {
         path: 'naturezas',

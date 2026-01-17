@@ -10,12 +10,31 @@ import {
 } from 'src/app/helper/VisualIconHelper';
 import { formatarLabel } from 'src/app/helper/funcions';
 import { RouterModule } from '@angular/router';
+import {
+  IonCard,
+  IonCardContent,
+  IonIcon,
+  IonText,
+  IonNote,
+  IonChip,
+  IonLabel,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-ocorrencia',
   templateUrl: './ocorrencia.component.html',
   styleUrls: ['./ocorrencia.component.scss'],
-  imports: [IonicModule, CommonModule, RouterModule],
+  imports: [
+    IonCard,
+    IonCardContent,
+    IonIcon,
+    IonText,
+    IonNote,
+    IonChip,
+    IonLabel,
+    CommonModule,
+    RouterModule,
+  ],
   standalone: true,
 })
 export class OcorrenciaComponent {

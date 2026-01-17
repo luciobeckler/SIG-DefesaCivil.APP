@@ -8,7 +8,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { IonicModule, NavController, ToastController } from '@ionic/angular';
+import { NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 
 // Imports dos seus Enums e Helpers
@@ -35,13 +35,71 @@ import {
   trash,
 } from 'ionicons/icons';
 import { AnexoService } from 'src/app/services/anexo.service';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonSelect,
+  IonSelectOption,
+  IonTitle,
+  IonContent,
+  IonAccordionGroup,
+  IonAccordion,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonDatetimeButton,
+  IonModal,
+  IonRow,
+  IonCol,
+  IonBadge,
+  IonList,
+  IonListHeader,
+  IonNote,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
+  IonText,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-ocorrencia-form',
   templateUrl: './ocorrencia-form.component.html',
   styleUrls: ['./ocorrencia-form.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [
+    IonText,
+    IonItemOption,
+    IonItemOptions,
+    IonItemSliding,
+    IonNote,
+    IonListHeader,
+    IonSelect,
+    IonSelectOption,
+    IonList,
+    IonBadge,
+    IonCol,
+    IonRow,
+    IonModal,
+    IonDatetimeButton,
+    IonInput,
+    IonLabel,
+    IonItem,
+    IonAccordion,
+    IonAccordionGroup,
+    IonContent,
+    IonTitle,
+    IonIcon,
+    IonButton,
+    IonButtons,
+    IonToolbar,
+    IonHeader,
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+  ],
 })
 export class OcorrenciaFormPage implements OnInit {
   // Injeção de Dependência
