@@ -137,9 +137,9 @@
       <ion-title>Gestão de Ocorrências</ion-title>
 
       <ion-buttons slot="end">
-        <ion-menu-button menu="menu-filtros" autoHide="false">
-          <ion-icon name="filter-outline"></ion-icon>
-        </ion-menu-button>
+        <ion-button (click)="abrirMenuFiltros()">
+          <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+        </ion-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
@@ -147,7 +147,7 @@
   <ion-content [fullscreen]="true" class="kanban-background">
     <div class="kanban-board">
       @for (etapa of etapas; track etapa.id) {
-      <app-etapa [etapa]="etapa" />
+        <app-etapa [etapa]="etapa" />
       }
     </div>
   </ion-content>

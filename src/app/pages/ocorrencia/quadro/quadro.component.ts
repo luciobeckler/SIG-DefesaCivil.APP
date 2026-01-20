@@ -29,7 +29,6 @@ import {
   IonItem,
   IonInput,
   IonButtons,
-  IonMenuButton,
 } from '@ionic/angular/standalone';
 
 @Component({
@@ -50,7 +49,6 @@ import {
     IonItem,
     IonInput,
     IonButtons,
-    IonMenuButton,
     CommonModule,
     FormsModule,
     EtapaComponent,
@@ -76,7 +74,7 @@ export class QuadroComponent implements OnInit {
     private navCtrl: NavController,
     private quadroService: QuadrosService,
     private route: ActivatedRoute,
-    private menuCtrl: MenuController
+    private menuCtrl: MenuController,
   ) {
     addIcons({
       chevronDown,
@@ -101,7 +99,13 @@ export class QuadroComponent implements OnInit {
   }
 
   ionViewWillLeave() {
+    this.menuCtrl.close('menu-filtros');
     this.menuCtrl.enable(false, 'menu-filtros');
+  }
+
+  async abrirMenuFiltros() {
+    await this.menuCtrl.enable(true, 'menu-filtros');
+    await this.menuCtrl.open('menu-filtros');
   }
 
   getEtapasFromQuadroId() {
