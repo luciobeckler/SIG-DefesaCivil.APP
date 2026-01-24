@@ -17,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 import { EtapaComponent } from 'src/app/components/etapa/etapa.component';
 import {
   IonMenu,
+  IonMenuButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -37,6 +38,7 @@ import {
   styleUrls: ['./quadro.component.scss'],
   imports: [
     IonMenu,
+    IonMenuButton,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -94,16 +96,8 @@ export class QuadroComponent implements OnInit {
     });
   }
 
-  ionViewWillEnter() {
-    this.menuCtrl.enable(true, 'menu-filtros');
-  }
-
-  ionViewWillLeave() {
-    this.menuCtrl.close('menu-filtros');
-    this.menuCtrl.enable(false, 'menu-filtros');
-  }
-
   async abrirMenuFiltros() {
+    console.log('teste');
     await this.menuCtrl.enable(true, 'menu-filtros');
     await this.menuCtrl.open('menu-filtros');
   }

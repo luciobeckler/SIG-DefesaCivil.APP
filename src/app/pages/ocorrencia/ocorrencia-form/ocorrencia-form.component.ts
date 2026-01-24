@@ -10,8 +10,7 @@ import {
 } from '@angular/forms';
 import { NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
-
-// Imports dos seus Enums e Helpers
+import { format, parse, parseISO } from 'date-fns';
 import {
   enumToArray,
   EGrauRisco,
@@ -50,6 +49,8 @@ import {
   IonItem,
   IonLabel,
   IonInput,
+  IonDatetime,
+  IonCheckbox,
   IonDatetimeButton,
   IonModal,
   IonRow,
@@ -63,6 +64,7 @@ import {
   IonItemOption,
   IonText,
 } from '@ionic/angular/standalone';
+import { NgxMaskDirective } from 'ngx-mask';
 
 @Component({
   selector: 'app-ocorrencia-form',
@@ -78,11 +80,14 @@ import {
     IonListHeader,
     IonSelect,
     IonSelectOption,
+    NgxMaskDirective,
     IonList,
     IonBadge,
     IonCol,
     IonRow,
     IonModal,
+    IonDatetime,
+    IonCheckbox,
     IonDatetimeButton,
     IonInput,
     IonLabel,
@@ -162,6 +167,25 @@ export class OcorrenciaFormPage implements OnInit {
         });
       }
     });
+  }
+
+  buscarCEP() {
+    debugger;
+    const cep = this.form.get('enderecoCEP')?.value;
+    if (cep && cep.length === 8) {
+      // Chame seu serviço ou use fetch direto para ViaCEP
+      fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.erro) {
+            this.form.patchValue({
+              enderecoRua: data.logradouro,
+              enderecoBairro: data.bairro,
+              enderecoNumero: data.numero,
+            });
+          }
+        });
+    }
   }
 
   buildForm() {
@@ -254,11 +278,12 @@ export class OcorrenciaFormPage implements OnInit {
     this.idsParaRemover.push(anexo.id);
     // Remove visualmente da lista
     this.anexosExistentes = this.anexosExistentes.filter(
-      (a) => a.id !== anexo.id
+      (a) => a.id !== anexo.id,
     );
   }
 
   async salvar() {
+    debugger;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -272,7 +297,16 @@ export class OcorrenciaFormPage implements OnInit {
 
     try {
       let idAtual = this.ocorrenciaId;
-      const dto = this.form.value;
+      const dto = { ...this.form.value };
+
+      if (dto.dataEHoraDoOcorrido && dto.dataEHoraDoOcorrido.length >= 16) {
+        const dataObj = parse(
+          dto.dataEHoraDoOcorrido,
+          'dd/MM/yyyy HH:mm',
+          new Date(),
+        );
+        dto.dataEHoraDoOcorrido = dataObj.toISOString();
+      }
 
       if (this.isEditing && idAtual) {
         await this.ocorrenciaService.atualizar(idAtual, dto).toPromise();

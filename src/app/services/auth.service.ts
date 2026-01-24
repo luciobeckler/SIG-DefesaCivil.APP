@@ -20,7 +20,7 @@ export class AccountsService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private cookieService: CookieService // <--- Injete o serviço
+    private cookieService: CookieService, // <--- Injete o serviço
   ) {}
 
   // --- GERENCIAMENTO DE TOKENS (COOKIES) ---
@@ -79,7 +79,7 @@ export class AccountsService {
             return of(loginResponse);
           }
           return this.getAccountRole().pipe(map(() => loginResponse));
-        })
+        }),
       );
   }
 
@@ -92,12 +92,11 @@ export class AccountsService {
       .pipe(
         tap((tokens) => {
           this.saveTokens(tokens.accessToken, tokens.refreshToken);
-        })
+        }),
       );
   }
 
   logOut(): Observable<any> {
-    // Chama endpoint de logout (opcional, para invalidar no back) e limpa front
     return this.http.post(`${this.endPoint}/logout`, {}).pipe(
       tap(() => {
         this.limparSessao();
@@ -108,7 +107,7 @@ export class AccountsService {
         this.limparSessao();
         this.router.navigate(['/login']);
         return of(null);
-      })
+      }),
     );
   }
 

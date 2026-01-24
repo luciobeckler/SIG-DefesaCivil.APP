@@ -45,7 +45,7 @@ export class SideNavComponent implements OnInit {
   constructor(
     private router: Router,
     private authService: AccountsService,
-    private quadroService: QuadrosService
+    private quadroService: QuadrosService,
   ) {}
 
   ngOnInit() {
@@ -84,6 +84,6 @@ export class SideNavComponent implements OnInit {
     this.router.navigate(['home/naturezas']);
   }
   logOut() {
-    this.authService.logOut();
+    this.authService.logOut().subscribe();
   }
 }

@@ -37,7 +37,7 @@ export interface IOcorrenciaDadosBaseDTO {
   numeroDeMoradias: number | null;
   numeroDeComodos: number | null;
   numeroDePavimentos: number | null;
-  possuiUnidadeFamiliar: boolean | null;
+  possuiUnidadeFamiliar: boolean;
   numeroDeDeficientes: number | null;
   numeroDeCriancas: number | null;
   numeroDeAdultos: number | null;

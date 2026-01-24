@@ -19,30 +19,30 @@
       </ion-row>
 
       @for (user of usuarios; track user.id) {
-      <ion-row class="bordered-row">
-        <ion-col class="bordered-col">{{ user.nome }}</ion-col>
-        <ion-col class="bordered-col">{{ user.cargo }}</ion-col>
-        <ion-col class="bordered-col">{{ user.permissao }}</ion-col>
-        <ion-col class="bordered-col">
-          <ion-button
-            size="small"
-            color="tertiary"
-            fill="clear"
-            (click)="abrirModalUsuario(user)"
-          >
-            <ion-icon name="pencil" slot="icon-only"></ion-icon>
-          </ion-button>
+        <ion-row class="bordered-row">
+          <ion-col class="bordered-col">{{ user.nome }}</ion-col>
+          <ion-col class="bordered-col">{{ user.cargo }}</ion-col>
+          <ion-col class="bordered-col">{{ user.permissao }}</ion-col>
+          <ion-col class="bordered-col">
+            <ion-button
+              size="small"
+              color="tertiary"
+              fill="clear"
+              (click)="abrirModalUsuario(user)"
+            >
+              <ion-icon name="pencil" slot="icon-only"></ion-icon>
+            </ion-button>
 
-          <ion-button
-            size="small"
-            color="danger"
-            fill="clear"
-            (click)="confirmarExclusao(user)"
-          >
-            <ion-icon name="trash" slot="icon-only"></ion-icon>
-          </ion-button>
-        </ion-col>
-      </ion-row>
+            <ion-button
+              size="small"
+              color="danger"
+              fill="clear"
+              (click)="confirmarExclusao(user)"
+            >
+              <ion-icon name="trash" slot="icon-only"></ion-icon>
+            </ion-button>
+          </ion-col>
+        </ion-row>
       }
     </ion-grid>
   </ion-card>
@@ -114,11 +114,14 @@
             #telefone="ngModel"
           />
         </ion-item>
-        @if (telefone.valid && telefone.touched &&
-        !validarTelefone(usuarioSelecionado.telefone)) {
-        <ion-text color="danger"
-          >Telefone inválido. Informe DDD + número.</ion-text
-        >
+        @if (
+          telefone.valid &&
+          telefone.touched &&
+          !validarTelefone(usuarioSelecionado.telefone)
+        ) {
+          <ion-text color="danger"
+            >Telefone inválido. Informe DDD + número.</ion-text
+          >
         }
 
         <ion-item>
@@ -136,12 +139,13 @@
             #cpf="ngModel"
           />
         </ion-item>
-        @if (cpf.invalid && cpf.touched) { @if (cpf.errors?.['minlength'] ||
-        cpf.errors?.['maxlength']) {
-        <ion-text color="danger">CPF deve ter 11 dígitos.</ion-text>
-        } } @if (cpf.valid && cpf.touched &&
-        !validarCPF(usuarioSelecionado.cpf)) {
-        <ion-text color="danger">CPF inválido.</ion-text>
+        @if (cpf.invalid && cpf.touched) {
+          @if (cpf.errors?.["minlength"] || cpf.errors?.["maxlength"]) {
+            <ion-text color="danger">CPF deve ter 11 dígitos.</ion-text>
+          }
+        }
+        @if (cpf.valid && cpf.touched && !validarCPF(usuarioSelecionado.cpf)) {
+          <ion-text color="danger">CPF inválido.</ion-text>
         }
 
         <ion-item>
@@ -170,10 +174,9 @@
             #permissao="ngModel"
             interface="popover"
           >
-            <ion-select-option value="Usuário de campo"
-              >Usuário de campo</ion-select-option
+            <ion-select-option value="AgenteDeCampo"
+              >Agente de campo</ion-select-option
             >
-            <ion-select-option value="Gerente">Gerente</ion-select-option>
             <ion-select-option value="Diretor">Diretor</ion-select-option>
             <ion-select-option value="Administrador"
               >Administrador</ion-select-option

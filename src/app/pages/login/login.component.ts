@@ -41,7 +41,7 @@ export class LoginComponent {
   constructor(
     private router: Router,
     private accountService: AccountsService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
   ) {}
 
   loginInfo: ILogin = {

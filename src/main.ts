@@ -55,15 +55,21 @@ import {
   alert,
   locationSharp,
   personOutline,
+  locationOutline,
+  warningOutline,
+  fileTrayFullOutline,
+  constructOutline,
 } from 'ionicons/icons';
 import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
+  withInterceptors,
   withInterceptorsFromDi,
 } from '@angular/common/http';
 import { provideNgxMask } from 'ngx-mask';
 import { CookieService } from 'ngx-cookie-service';
 import { TokenInterceptor } from './app/interceptors/token.interceptor';
+import { loadingInterceptor } from './app/interceptors/loading.interceptor';
 
 addIcons({
   people,
@@ -71,6 +77,7 @@ addIcons({
   timeOutline,
   saveOutline,
   filterOutline,
+  locationOutline,
   cloudDownloadOutline,
   documentAttachOutline,
   documentTextOutline,
@@ -78,6 +85,9 @@ addIcons({
   attachOutline,
   arrowUndoOutline,
   closeCircleOutline,
+  warningOutline,
+  fileTrayFullOutline,
+  constructOutline,
   linkOutline,
   eyeOutline,
   trashBinOutline,
@@ -116,9 +126,13 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideNgxMask({
-      dropSpecialCharacters: false,
+      dropSpecialCharacters: true,
+      validation: true,
     }),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(
+      withInterceptorsFromDi(),
+      withInterceptors([loadingInterceptor]),
+    ),
     CookieService,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
   ],

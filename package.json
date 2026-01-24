@@ -28,6 +28,7 @@
     "@capacitor/keyboard": "6.0.0",
     "@capacitor/status-bar": "6.0.0",
     "@ionic/angular": "^8.2.0",
+    "date-fns": "^4.1.0",
     "ionicons": "^7.0.0",
     "ngx-cookie-service": "^18.0.0",
     "ngx-mask": "^18.0.0",
