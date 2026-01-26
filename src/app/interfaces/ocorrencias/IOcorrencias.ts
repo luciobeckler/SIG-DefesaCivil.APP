@@ -69,6 +69,7 @@ export interface ICreateOrEditOcorrenciaDTO extends IOcorrenciaDadosBaseDTO {
 // --- DTO de Preview ---
 export interface IOcorrenciaPreviewDTO {
   id: string;
+  usuarioCriadorId: string;
   numero: number;
   isVisible: boolean;
   emailResponsavel: string | null;
@@ -115,6 +116,7 @@ export interface IHistoricoOcorrenciaDTO {
   id: string;
   ocorrenciaId: string;
   usuarioId: string;
+  usuarioNome: string;
   acao: string;
   ultimaAlteracao: string;
 }

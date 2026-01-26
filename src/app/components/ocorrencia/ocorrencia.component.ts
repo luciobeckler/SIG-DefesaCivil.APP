@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input } from '@angular/core';
+import { Component, computed, Inject, inject, input } from '@angular/core';
 import { IonicModule, NavController } from '@ionic/angular';
 import { IOcorrenciaPreviewDTO } from 'src/app/interfaces/ocorrencias/IOcorrencias';
 import {
@@ -19,6 +19,10 @@ import {
   IonChip,
   IonLabel,
 } from '@ionic/angular/standalone';
+import { AuthService } from '../../services/auth.service';
+import { PermissionService } from 'src/app/services/permission.service';
+import { ToastController } from '@ionic/angular/standalone';
+import { EPermission } from 'src/app/auth/permissions.enum';
 
 @Component({
   selector: 'app-ocorrencia',
@@ -41,8 +45,13 @@ export class OcorrenciaComponent {
   ocorrencia = input.required<IOcorrenciaPreviewDTO>();
   quadroId = input.required<string>();
 
-  protected readonly formatarLabel = formatarLabel;
   private navCtrl = inject(NavController);
+  private authService = inject(AuthService);
+  private permService = inject(PermissionService);
+  private toastCtrl = inject(ToastController);
+
+  protected readonly formatarLabel = formatarLabel;
+  perms = EPermission;
 
   getRua(endereco: string | null): string {
     if (!endereco) return 'Local não informado';
@@ -67,4 +76,37 @@ export class OcorrenciaComponent {
   getTipoVisual(tipo: string): IVisualConfig {
     return getVisual(TipoRiscoVisual, tipo);
   }
+
+  // --- AÇÃO DE NAVEGAR ---
+  async navegar() {
+    if (this.canAccess()) {
+      this.navCtrl.navigateForward(
+        ['/home', 'ocorrencia', 'form', this.ocorrencia().id],
+        {
+          queryParams: { quadroId: this.quadroId() },
+        },
+      );
+    } else {
+      const toast = await this.toastCtrl.create({
+        message: 'Você não tem permissão para visualizar esta ocorrência.',
+        duration: 2000,
+        color: 'warning',
+        icon: 'lock-closed',
+      });
+      toast.present();
+    }
+  }
+
+  canAccess = computed(() => {
+    const dadosOcorrencia = this.ocorrencia();
+    const userId = this.authService.getUserId();
+
+    const temPermissaoGlobal = this.permService.hasPermission(
+      this.perms.OCORRENCIA_VISUALIZAR_TODAS,
+    );
+
+    const ehDono = dadosOcorrencia.usuarioCriadorId === userId;
+
+    return temPermissaoGlobal || ehDono;
+  });
 }

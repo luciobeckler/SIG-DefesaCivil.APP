@@ -1,3 +1,6 @@
+import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
+import { isValid, parse } from "date-fns";
+
 /**
  * Converte uma data JavaScript para o formato "YYYY-MM-DD",
  * compatível com DateOnly no back-end .NET.
@@ -56,4 +59,19 @@ export function isTelefoneValido(telefone: string): boolean {
 
 export function formatarLabel(valor: string): string {
   return valor.replace(/([A-Z])/g, ' $1').trim();
+}
+
+export function dateValidator(): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) return null;
+
+    const date = parse(value, 'dd/MM/yyyy HH:mm', new Date());
+
+    if (!isValid(date) || date.getFullYear() < 1900) {
+      return { invalidDate: true };
+    }
+
+    return null;
+  };
 }

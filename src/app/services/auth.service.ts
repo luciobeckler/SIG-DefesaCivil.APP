@@ -1,17 +1,18 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, switchMap, map, of } from 'rxjs';
+import { Observable, tap, of } from 'rxjs';
 import { Router } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service'; // <--- Importe o serviço
-import { URL } from 'src/app/helper/constantes';
+import { CookieService } from 'ngx-cookie-service';
 import { ILogin } from 'src/app/interfaces/auth/ILogin';
 import { catchError } from 'rxjs/operators';
+import { jwtDecode } from 'jwt-decode';
+import { environmentApiUrl } from 'src/app/helper/constantes'; // Ajuste seu import
 
 @Injectable({
   providedIn: 'root',
 })
-export class AccountsService {
-  private endPoint = `${URL}/auth`;
+export class AuthService {
+  private endPoint = `${environmentApiUrl}/auth`;
 
   // Nomes das chaves nos Cookies
   private readonly ACCESS_TOKEN_KEY = 'access_token';
@@ -20,7 +21,7 @@ export class AccountsService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private cookieService: CookieService, // <--- Injete o serviço
+    private cookieService: CookieService,
   ) {}
 
   // --- GERENCIAMENTO DE TOKENS (COOKIES) ---
@@ -34,15 +35,10 @@ export class AccountsService {
   }
 
   saveTokens(access: string, refresh: string) {
-    // Expiração: Exemplo de 1 dia (ajuste conforme a regra do seu token JWT)
-    // path: '/' permite que o cookie seja acessível em todas as rotas
-    // secure: true (só funciona em HTTPS ou localhost)
-    // sameSite: 'Strict' ou 'Lax' para proteção CSRF
-
     this.cookieService.set(this.ACCESS_TOKEN_KEY, access, {
       expires: 1,
       path: '/',
-      secure: true,
+      secure: true, // Lembre-se: true exige HTTPS
       sameSite: 'Strict',
     });
     this.cookieService.set(this.REFRESH_TOKEN_KEY, refresh, {
@@ -56,39 +52,24 @@ export class AccountsService {
   limparSessao() {
     this.cookieService.delete(this.ACCESS_TOKEN_KEY, '/');
     this.cookieService.delete(this.REFRESH_TOKEN_KEY, '/');
-    localStorage.removeItem('roles'); // Roles podem continuar no localStorage se preferir, ou mover para cookie
   }
 
   // --- MÉTODOS DE API ---
 
   login(data: ILogin): Observable<any> {
-    return this.http
-      .post(`${this.endPoint}/login`, data) // withCredentials geralmente não é necessário se vc manda token no Header via Interceptor
-      .pipe(
-        // 1. Salva os tokens assim que o login dá sucesso
-        tap((response: any) => {
-          // Assumindo que seu backend retorna { accessToken: '...', refreshToken: '...' }
-          // Se os nomes vierem maiúsculos (AccessToken), ajuste aqui.
-          if (response.accessToken && response.refreshToken) {
-            this.saveTokens(response.accessToken, response.refreshToken);
-          }
-        }),
-        // 2. Continua o fluxo original
-        switchMap((loginResponse: any) => {
-          if (loginResponse.primeiroAcesso === true) {
-            return of(loginResponse);
-          }
-          return this.getAccountRole().pipe(map(() => loginResponse));
-        }),
-      );
+    return this.http.post(`${this.endPoint}/login`, data).pipe(
+      tap((response: any) => {
+        if (response.accessToken && response.refreshToken) {
+          this.saveTokens(response.accessToken, response.refreshToken);
+        }
+      }),
+    );
   }
 
   refreshToken(): Observable<any> {
     const refreshToken = this.getRefreshToken();
-
-    // Envia o refresh token para obter um novo par
     return this.http
-      .post<any>(`${URL}/auth/refresh-token`, { refreshToken })
+      .post<any>(`${this.endPoint}/refresh-token`, { refreshToken }) // Ajustei a URL para usar this.endPoint
       .pipe(
         tap((tokens) => {
           this.saveTokens(tokens.accessToken, tokens.refreshToken);
@@ -98,43 +79,93 @@ export class AccountsService {
 
   logOut(): Observable<any> {
     return this.http.post(`${this.endPoint}/logout`, {}).pipe(
-      tap(() => {
-        this.limparSessao();
-        this.router.navigate(['/login']);
-      }),
-      // Garante que limpa mesmo se a API der erro
+      tap(() => this.finalizarLogOut()),
       catchError(() => {
-        this.limparSessao();
-        this.router.navigate(['/login']);
+        this.finalizarLogOut();
         return of(null);
       }),
     );
   }
 
-  alterarSenha(data: string): Observable<any> {
+  private finalizarLogOut() {
+    this.limparSessao();
+    this.router.navigate(['/login']);
+  }
+
+  alterarSenha(senha: string): Observable<any> {
     return this.http.post(`${this.endPoint}/alterar-senha`, {
-      novaSenha: data,
+      novaSenha: senha,
     });
   }
 
-  // --- ROLES (Mantendo lógica original ou movendo para cookie se quiser) ---
+  // --- MÉTODOS DE PERMISSÃO E ROLE (LEITURA DO TOKEN) ---
 
-  private getAccountRole(): Observable<any> {
-    return this.http
-      .get(`${this.endPoint}/get-account-roles`)
-      .pipe(tap((res: any) => this.setRole(res)));
-  }
+  /**
+   * Extrai a lista de Permissões (ex: ['ocorrencia:criar']) do Token
+   */
+  public getUserPermissions(): string[] {
+    // CORREÇÃO: Usar o método getter correto, não a string 'token'
+    const token = this.getAccessToken();
+    if (!token) return [];
 
-  private setRole(roles: string[]) {
-    // Roles costumam ser arrays grandes, localStorage é melhor que Cookie (limite 4kb) para isso
-    localStorage.setItem('roles', JSON.stringify(roles));
-  }
+    try {
+      const decoded: any = jwtDecode(token);
 
-  getRole(): string[] {
-    const roles = localStorage.getItem('roles');
-    if (roles) {
-      return JSON.parse(roles);
+      // Procura pela claim "Permissions" ou "permissions"
+      // Se o .NET serializar diferente, você verá aqui.
+      const permissions =
+        decoded.Permissions ||
+        decoded.permissions ||
+        decoded['custom:permissions'] ||
+        [];
+
+      // Garante que retorna sempre um array, mesmo se vier string única
+      return Array.isArray(permissions) ? permissions : [permissions];
+    } catch (error) {
+      return [];
     }
-    return [];
+  }
+
+  /**
+   * (Opcional) Extrai o Nome do Cargo (ex: 'Admin') apenas para exibição na UI
+   * Não use isso para lógica de segurança (use permissions), apenas para mostrar "Olá, Admin"
+   */
+  public getRoleName(): string {
+    const token = this.getAccessToken();
+    if (!token) return '';
+
+    try {
+      const decoded: any = jwtDecode(token);
+      // Padrão do .NET para Role ou string simples 'role'
+      return (
+        decoded[
+          'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+        ] ||
+        decoded.role ||
+        decoded.Role ||
+        ''
+      );
+    } catch {
+      return '';
+    }
+  }
+
+  public getUserId(): string | null {
+    const token = this.getAccessToken();
+    if (!token) return null;
+
+    try {
+      const decoded: any = jwtDecode(token);
+      return (
+        decoded.nameid ||
+        decoded.sub ||
+        decoded[
+          'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
+        ] ||
+        null
+      );
+    } catch {
+      return null;
+    }
   }
 }

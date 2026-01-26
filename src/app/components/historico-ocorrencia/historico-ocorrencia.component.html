@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Histórico de Alterações</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="fechar()">
+        <ion-icon slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="ion-text-center ion-padding" *ngIf="historico.length === 0">
+    <ion-icon name="time-outline" size="large" color="medium"></ion-icon>
+    <p><ion-text color="medium">Nenhum registro encontrado.</ion-text></p>
+  </div>
+
+  <ion-list *ngIf="historico.length > 0">
+    <ion-item *ngFor="let item of historico">
+      <ion-icon
+        slot="start"
+        name="person-circle-outline"
+        size="large"
+        color="secondary"
+      ></ion-icon>
+
+      <ion-label class="ion-text-wrap">
+        <h2>{{ item.usuarioNome }}</h2>
+        <p>{{ item.acao }}</p>
+      </ion-label>
+
+      <ion-note
+        slot="end"
+        style="
+          font-size: 0.8rem;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+        "
+      >
+        <span>{{ item.ultimaAlteracao | date: "dd/MM/yyyy" }}</span>
+        <span>{{ item.ultimaAlteracao | date: "HH:mm" }}</span>
+      </ion-note>
+    </ion-item>
+  </ion-list>
+</ion-content>

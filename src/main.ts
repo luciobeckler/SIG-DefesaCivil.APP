@@ -59,6 +59,7 @@ import {
   warningOutline,
   fileTrayFullOutline,
   constructOutline,
+  lockClosed,
 } from 'ionicons/icons';
 import {
   HTTP_INTERCEPTORS,
@@ -70,6 +71,8 @@ import { provideNgxMask } from 'ngx-mask';
 import { CookieService } from 'ngx-cookie-service';
 import { TokenInterceptor } from './app/interceptors/token.interceptor';
 import { loadingInterceptor } from './app/interceptors/loading.interceptor';
+import { APP_INITIALIZER } from '@angular/core';
+import { PermissionService } from './app/services/permission.service';
 
 addIcons({
   people,
@@ -85,6 +88,7 @@ addIcons({
   attachOutline,
   arrowUndoOutline,
   closeCircleOutline,
+  lockClosed,
   warningOutline,
   fileTrayFullOutline,
   constructOutline,
@@ -120,9 +124,19 @@ addIcons({
   personOutline,
 });
 
+export function initPermissions(permService: PermissionService) {
+  return () => permService.loadPermissions();
+}
+
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initPermissions,
+      deps: [PermissionService],
+      multi: true,
+    },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideNgxMask({

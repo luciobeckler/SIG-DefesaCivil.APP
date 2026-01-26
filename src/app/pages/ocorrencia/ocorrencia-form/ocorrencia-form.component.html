@@ -9,6 +9,16 @@
     <ion-title>{{ tituloPagina }}</ion-title>
 
     <ion-buttons slot="end">
+      <ng-container *appHasPermission="perms.OCORRENCIA_VISUALIZAR_HISTORICO">
+        <ion-button
+          *ngIf="isEditing && ocorrenciaId"
+          (click)="abrirHistorico()"
+          title="Ver Histórico"
+        >
+          <ion-icon slot="icon-only" name="time-outline"></ion-icon>
+        </ion-button>
+      </ng-container>
+
       <ion-button (click)="salvar()" [strong]="true">Salvar</ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -26,25 +36,66 @@
           ></ion-icon>
           <ion-label>Dados Básicos & Solicitante</ion-label>
         </ion-item>
+
         <div class="ion-padding" slot="content">
           <ion-item>
-            <ion-label position="stacked">Data do Ocorrido</ion-label>
+            <ion-label position="stacked">Data do Ocorrido *</ion-label>
             <input
               type="text"
               formControlName="dataEHoraDoOcorrido"
               placeholder="DD/MM/AAAA HH:mm"
               mask="d0/M0/0000 Hh:m0"
               [dropSpecialCharacters]="false"
-              style="
-                flex: 1;
-                border: none;
-                outline: none;
-                background: transparent;
-                padding: 10px 0;
-                font-size: 16px;
-              "
+              class="custom-input-date"
             />
           </ion-item>
+          <ion-item
+            lines="none"
+            *ngIf="
+              form.get('dataEHoraDoOcorrido')?.invalid &&
+              form.get('dataEHoraDoOcorrido')?.touched
+            "
+          >
+            <ion-text color="danger" style="font-size: 0.8rem">
+              <span
+                *ngIf="form.get('dataEHoraDoOcorrido')?.errors?.['required']"
+                >Data é obrigatória.</span
+              >
+              <span
+                *ngIf="form.get('dataEHoraDoOcorrido')?.errors?.['invalidDate']"
+                >Data ou hora inválida.</span
+              >
+            </ion-text>
+          </ion-item>
+
+          <ion-row>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Início Atendimento</ion-label>
+                <input
+                  type="text"
+                  formControlName="dataEHoraInicioAtendimento"
+                  placeholder="DD/MM/AAAA HH:mm"
+                  mask="d0/M0/0000 Hh:m0"
+                  [dropSpecialCharacters]="false"
+                  class="custom-input-date"
+                />
+              </ion-item>
+            </ion-col>
+            <ion-col>
+              <ion-item>
+                <ion-label position="stacked">Fim Atendimento</ion-label>
+                <input
+                  type="text"
+                  formControlName="dataEHoraTerminoAtendimento"
+                  placeholder="DD/MM/AAAA HH:mm"
+                  mask="d0/M0/0000 Hh:m0"
+                  [dropSpecialCharacters]="false"
+                  class="custom-input-date"
+                />
+              </ion-item>
+            </ion-col>
+          </ion-row>
 
           <ion-item>
             <ion-input
@@ -53,25 +104,18 @@
               formControlName="solicitanteNome"
             ></ion-input>
           </ion-item>
+
           <ion-row>
             <ion-col>
               <ion-item>
                 <ion-label position="stacked">CPF</ion-label>
-
                 <input
                   type="text"
                   formControlName="solicitanteCPF"
                   placeholder="000.000.000-00"
                   mask="000.000.000-00"
                   [dropSpecialCharacters]="true"
-                  style="
-                    width: 100%;
-                    border: none;
-                    outline: none;
-                    background: transparent;
-                    padding-top: 10px;
-                    padding-bottom: 10px;
-                  "
+                  class="custom-input-native"
                 />
               </ion-item>
             </ion-col>
@@ -107,14 +151,7 @@
               mask="00000-000"
               [dropSpecialCharacters]="true"
               (blur)="buscarCEP()"
-              style="
-                width: 100%;
-                border: none;
-                outline: none;
-                background: transparent;
-                padding-top: 10px;
-                padding-bottom: 10px;
-              "
+              class="custom-input-native"
             />
           </ion-item>
           <ion-item>
@@ -178,6 +215,17 @@
               }
             </ion-select>
           </ion-item>
+          <ion-item
+            lines="none"
+            *ngIf="
+              form.get('grauDeRisco')?.invalid &&
+              form.get('grauDeRisco')?.touched
+            "
+          >
+            <ion-text color="danger" style="font-size: 0.8rem">
+              O Grau de Risco é obrigatório.
+            </ion-text>
+          </ion-item>
 
           <ion-item>
             <ion-select
@@ -187,6 +235,21 @@
               [multiple]="true"
             >
               @for (op of opcoesTipoRisco; track op) {
+                <ion-select-option [value]="op">{{
+                  formatarLabel(op)
+                }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
+              label="Análise Preliminar"
+              labelPlacement="stacked"
+              formControlName="analisePreliminar"
+              [multiple]="true"
+            >
+              @for (op of opcoesAnalise; track op) {
                 <ion-select-option [value]="op">{{
                   formatarLabel(op)
                 }}</ion-select-option>
@@ -242,8 +305,8 @@
       </ion-accordion>
 
       <ion-accordion value="tecnico">
-        <ion-item slot="header" color="light"
-          ><ion-icon
+        <ion-item slot="header" color="light">
+          <ion-icon
             name="construct-outline"
             slot="start"
             color="medium"
@@ -282,6 +345,21 @@
 
           <ion-item>
             <ion-select
+              label="Tipo de Edificação"
+              labelPlacement="stacked"
+              formControlName="edificacao"
+              [multiple]="true"
+            >
+              @for (op of opcoesEdificacao; track op) {
+                <ion-select-option [value]="op">{{
+                  formatarLabel(op)
+                }}</ion-select-option>
+              }
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-select
               label="Estrutura"
               labelPlacement="stacked"
               formControlName="estrutura"
@@ -307,8 +385,11 @@
           <ion-label>Dados Quantitativos</ion-label>
         </ion-item>
         <div class="ion-padding" slot="content">
+          <ion-list-header
+            ><ion-label>Estrutura Física</ion-label></ion-list-header
+          >
           <ion-row>
-            <ion-col>
+            <ion-col size="6">
               <ion-item>
                 <ion-input
                   type="number"
@@ -318,17 +399,96 @@
                 ></ion-input>
               </ion-item>
             </ion-col>
-            <ion-col>
+            <ion-col size="6">
               <ion-item>
                 <ion-input
                   type="number"
-                  label="Nº Pessoas"
+                  label="Nº Cômodos"
+                  labelPlacement="stacked"
+                  formControlName="numeroDeComodos"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-row>
+            <ion-col size="6">
+              <ion-item>
+                <ion-input
+                  type="number"
+                  label="Nº Pavimentos"
+                  labelPlacement="stacked"
+                  formControlName="numeroDePavimentos"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6">
+              <ion-item>
+                <ion-select
+                  label="Possui IPTU?"
+                  labelPlacement="stacked"
+                  formControlName="possuiIPTU"
+                  placeholder="Selecione"
+                >
+                  <ion-select-option value="Sim">Sim</ion-select-option>
+                  <ion-select-option value="Nao">Não</ion-select-option>
+                  <ion-select-option value="Desconhecido"
+                    >Desconhecido</ion-select-option
+                  >
+                </ion-select>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+
+          <ion-list-header
+            ><ion-label>Pessoas Afetadas</ion-label></ion-list-header
+          >
+          <ion-row>
+            <ion-col size="6">
+              <ion-item>
+                <ion-input
+                  type="number"
+                  label="Adultos"
                   labelPlacement="stacked"
                   formControlName="numeroDeAdultos"
                 ></ion-input>
               </ion-item>
             </ion-col>
+            <ion-col size="6">
+              <ion-item>
+                <ion-input
+                  type="number"
+                  label="Crianças"
+                  labelPlacement="stacked"
+                  formControlName="numeroDeCriancas"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
           </ion-row>
+
+          <ion-row>
+            <ion-col size="6">
+              <ion-item>
+                <ion-input
+                  type="number"
+                  label="Idosos"
+                  labelPlacement="stacked"
+                  formControlName="numeroDeIdosos"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+            <ion-col size="6">
+              <ion-item>
+                <ion-input
+                  type="number"
+                  label="PCDs"
+                  title="Pessoas com Deficiência"
+                  labelPlacement="stacked"
+                  formControlName="numeroDeDeficientes"
+                ></ion-input>
+              </ion-item>
+            </ion-col>
+          </ion-row>
+
           <ion-item lines="none">
             <ion-checkbox formControlName="possuiUnidadeFamiliar"
               >Possui Unidade Familiar?</ion-checkbox
@@ -336,7 +496,6 @@
           </ion-item>
         </div>
       </ion-accordion>
-      <ion-accordion value="quantitativo"> </ion-accordion>
 
       <ion-accordion value="anexos">
         <ion-item slot="header" color="light">
@@ -439,9 +598,5 @@
         </div>
       </ion-accordion>
     </ion-accordion-group>
-
-    <ion-button expand="block" class="ion-margin-top" (click)="salvar()">
-      Salvar Dados
-    </ion-button>
   </form>
 </ion-content>

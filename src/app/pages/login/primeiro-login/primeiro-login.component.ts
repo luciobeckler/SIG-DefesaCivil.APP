@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IAlterarSenha } from 'src/app/interfaces/auth/IAlterarSenha';
-import { AccountsService } from 'src/app/services/auth.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import {
   IonHeader,
@@ -51,8 +51,8 @@ import {
 export class PrimeiroLoginComponent {
   constructor(
     private router: Router,
-    private accountService: AccountsService,
-    private loadingService: LoadingService
+    private accountService: AuthService,
+    private loadingService: LoadingService,
   ) {}
 
   alterarSenhaInfo: IAlterarSenha = {
@@ -127,7 +127,7 @@ export class PrimeiroLoginComponent {
         error: (err) => {
           this.loadingService.hide();
           alert(
-            'Erro ao alterar senha. Verifique se a senha atual está correta.'
+            'Erro ao alterar senha. Verifique se a senha atual está correta.',
           );
           console.error('Erro ao alterar senha:', err);
         },

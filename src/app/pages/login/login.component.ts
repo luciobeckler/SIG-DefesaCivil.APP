@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ILogin } from 'src/app/interfaces/auth/ILogin';
-import { AccountsService } from 'src/app/services/auth.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import {
   IonHeader,
@@ -40,7 +40,7 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
-    private accountService: AccountsService,
+    private accountService: AuthService,
     private loadingService: LoadingService,
   ) {}
 
@@ -51,7 +51,8 @@ export class LoginComponent {
 
   async onLogin() {
     //await this.loadingService.show();
-    //CODIGO A BAIXO PARA PERMITIR LOGIN RAPIDO
+    //CODIGO A BAIXO PARA PERMITIR LOGIN RAPIDOÄÄ
+    //this.loginInfo.email = 'agenteDeCampo@gmail.com';
     this.loginInfo.email = 'admin@teste.com';
     this.loginInfo.senha = 'SenhaForte123!';
 
