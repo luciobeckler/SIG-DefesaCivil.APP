@@ -132,13 +132,20 @@ export class UsuariosComponent implements OnInit {
   ): Date | null {
     if (!dateString) return null;
 
-    const parts = dateString.split('/');
-    if (parts.length === 3) {
-      const date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+    const cleanDate = dateString.replace(/\D/g, '');
+
+    if (cleanDate.length === 8) {
+      const day = cleanDate.substring(0, 2);
+      const month = cleanDate.substring(2, 4);
+      const year = cleanDate.substring(4, 8);
+
+      const date = new Date(`${year}-${month}-${day}T00:00:00`);
+
       if (!isNaN(date.getTime())) {
         return date;
       }
     }
+
     return null;
   }
 
