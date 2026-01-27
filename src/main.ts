@@ -55,15 +55,24 @@ import {
   alert,
   locationSharp,
   personOutline,
+  locationOutline,
+  warningOutline,
+  fileTrayFullOutline,
+  constructOutline,
+  lockClosed,
 } from 'ionicons/icons';
 import {
   HTTP_INTERCEPTORS,
   provideHttpClient,
+  withInterceptors,
   withInterceptorsFromDi,
 } from '@angular/common/http';
 import { provideNgxMask } from 'ngx-mask';
 import { CookieService } from 'ngx-cookie-service';
 import { TokenInterceptor } from './app/interceptors/token.interceptor';
+import { loadingInterceptor } from './app/interceptors/loading.interceptor';
+import { APP_INITIALIZER } from '@angular/core';
+import { PermissionService } from './app/services/permission.service';
 
 addIcons({
   people,
@@ -71,6 +80,7 @@ addIcons({
   timeOutline,
   saveOutline,
   filterOutline,
+  locationOutline,
   cloudDownloadOutline,
   documentAttachOutline,
   documentTextOutline,
@@ -78,6 +88,10 @@ addIcons({
   attachOutline,
   arrowUndoOutline,
   closeCircleOutline,
+  lockClosed,
+  warningOutline,
+  fileTrayFullOutline,
+  constructOutline,
   linkOutline,
   eyeOutline,
   trashBinOutline,
@@ -110,15 +124,29 @@ addIcons({
   personOutline,
 });
 
+export function initPermissions(permService: PermissionService) {
+  return () => permService.loadPermissions();
+}
+
 bootstrapApplication(AppComponent, {
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initPermissions,
+      deps: [PermissionService],
+      multi: true,
+    },
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideNgxMask({
-      dropSpecialCharacters: false,
+      dropSpecialCharacters: true,
+      validation: true,
     }),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(
+      withInterceptorsFromDi(),
+      withInterceptors([loadingInterceptor]),
+    ),
     CookieService,
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
   ],

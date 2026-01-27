@@ -4,7 +4,7 @@ export interface IRegister {
   telefone: string;
   cpf: string;
   cargo: string;
-  permissao: 'Usuário de campo' | 'Gerente' | 'Diretor' | 'Administrador';
+  permissao: 'AgenteDeCampo' | 'Diretor' | 'Administrador';
   isAtivo: boolean;
 
   //Dados opcionais

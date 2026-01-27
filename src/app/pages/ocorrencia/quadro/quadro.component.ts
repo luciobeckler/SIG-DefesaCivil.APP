@@ -12,15 +12,49 @@ import {
   trashOutline,
 } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
-import { IonicModule, NavController, MenuController } from '@ionic/angular';
+import { NavController, MenuController } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { EtapaComponent } from 'src/app/components/etapa/etapa.component';
+import {
+  IonMenu,
+  IonMenuButton,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonListHeader,
+  IonLabel,
+  IonList,
+  IonItem,
+  IonInput,
+  IonButtons,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-quadro',
   templateUrl: './quadro.component.html',
   styleUrls: ['./quadro.component.scss'],
-  imports: [IonicModule, CommonModule, FormsModule, EtapaComponent],
+  imports: [
+    IonMenu,
+    IonMenuButton,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonButton,
+    IonIcon,
+    IonListHeader,
+    IonLabel,
+    IonList,
+    IonItem,
+    IonInput,
+    IonButtons,
+    CommonModule,
+    FormsModule,
+    EtapaComponent,
+  ],
   standalone: true,
 })
 export class QuadroComponent implements OnInit {
@@ -42,7 +76,7 @@ export class QuadroComponent implements OnInit {
     private navCtrl: NavController,
     private quadroService: QuadrosService,
     private route: ActivatedRoute,
-    private menuCtrl: MenuController
+    private menuCtrl: MenuController,
   ) {
     addIcons({
       chevronDown,
@@ -62,12 +96,10 @@ export class QuadroComponent implements OnInit {
     });
   }
 
-  ionViewWillEnter() {
-    this.menuCtrl.enable(true, 'menu-filtros');
-  }
-
-  ionViewWillLeave() {
-    this.menuCtrl.enable(false, 'menu-filtros');
+  async abrirMenuFiltros() {
+    console.log('teste');
+    await this.menuCtrl.enable(true, 'menu-filtros');
+    await this.menuCtrl.open('menu-filtros');
   }
 
   getEtapasFromQuadroId() {

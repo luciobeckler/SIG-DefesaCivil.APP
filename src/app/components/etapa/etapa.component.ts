@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, input } from '@angular/core';
-import { IonicModule, ToastController } from '@ionic/angular';
+import { ToastController } from '@ionic/angular';
 import { OcorrenciaComponent } from '../ocorrencia/ocorrencia.component';
 
 // CDK
@@ -16,13 +16,27 @@ import { IEtapa } from 'src/app/interfaces/ocorrencias/IEtapa';
 import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
 import { LoadingService } from 'src/app/services/loading.service';
 import { IOcorrenciaPreviewDTO } from 'src/app/interfaces/ocorrencias/IOcorrencias';
+import {
+  IonItem,
+  IonLabel,
+  IonBadge,
+  IonText,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-etapa',
   templateUrl: './etapa.component.html',
   styleUrls: ['./etapa.component.scss'],
   standalone: true,
-  imports: [CommonModule, IonicModule, OcorrenciaComponent, DragDropModule],
+  imports: [
+    CommonModule,
+    OcorrenciaComponent,
+    IonItem,
+    IonLabel,
+    IonBadge,
+    IonText,
+    DragDropModule,
+  ],
 })
 export class EtapaComponent {
   etapa = input.required<IEtapa>();

@@ -1,0 +1,27 @@
+ion-item input {
+  font-family: var(--ion-font-family, inherit);
+  color: var(--ion-text-color, #000);
+  font-size: inherit;
+
+  &::placeholder {
+    color: var(--ion-placeholder-color, #999);
+  }
+}
+
+.custom-input-native {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.custom-input-date {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 10px 0;
+  font-size: 16px;
+  width: 100%;
+}

@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { EventoHistoricoModalComponent } from './evento-historico-modal.component';
+import { HistoricoOcorrenciaComponent } from './historico-ocorrencia.component';
 
-describe('EventoHistoricoModalComponent', () => {
-  let component: EventoHistoricoModalComponent;
-  let fixture: ComponentFixture<EventoHistoricoModalComponent>;
+describe('HistoricoOcorrenciaComponent', () => {
+  let component: HistoricoOcorrenciaComponent;
+  let fixture: ComponentFixture<HistoricoOcorrenciaComponent>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ EventoHistoricoModalComponent ],
+      declarations: [ HistoricoOcorrenciaComponent ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(EventoHistoricoModalComponent);
+    fixture = TestBed.createComponent(HistoricoOcorrenciaComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

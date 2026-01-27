@@ -4,13 +4,34 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ILogin } from 'src/app/interfaces/auth/ILogin';
-import { AccountsService } from 'src/app/services/auth.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { LoadingService } from 'src/app/services/loading.service';
+import {
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonItem,
+  IonInput,
+  IonText,
+  IonButton,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonContent,
+    IonItem,
+    IonInput,
+    IonText,
+    IonButton,
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
@@ -19,9 +40,8 @@ export class LoginComponent {
 
   constructor(
     private router: Router,
-    private accountService: AccountsService,
+    private accountService: AuthService,
     private loadingService: LoadingService,
-    private accountsService: AccountsService
   ) {}
 
   loginInfo: ILogin = {
@@ -30,10 +50,11 @@ export class LoginComponent {
   };
 
   async onLogin() {
-    await this.loadingService.show();
-    //CODIGO A BAIXO PARA PERMITIR LOGIN RAPIDO
-    this.loginInfo.email = 'admin@teste.com';
-    this.loginInfo.senha = 'SenhaForte123!';
+    //await this.loadingService.show();
+    //CODIGO A BAIXO PARA PERMITIR LOGIN RAPIDOÄÄ
+    //this.loginInfo.email = 'agenteDeCampo@gmail.com';
+    //this.loginInfo.email = 'admin@teste.com';
+    //this.loginInfo.senha = 'SenhaForte123!';
 
     if (this.loginInfo.email && this.loginInfo.senha) {
       await this.accountService.login(this.loginInfo).subscribe({

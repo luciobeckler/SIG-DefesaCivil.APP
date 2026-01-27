@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { URL } from '../helper/constantes';
+import { environmentApiUrl } from '../helper/constantes';
 import { Observable } from 'rxjs';
 // ... outros imports
 
@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class AnexoService {
-  private anexoUrl = `${URL}/Anexo`;
+  private anexoUrl = `${environmentApiUrl}/Anexo`;
 
   constructor(private http: HttpClient) {}
   removerAnexos(entidadeId: string, idsAnexos: string[]): Observable<void> {
@@ -17,17 +17,16 @@ export class AnexoService {
         entidadeTipo: 'Ocorrencia',
         idsAnexos: idsAnexos,
       },
-      withCredentials: true,
     };
 
     return this.http.delete<void>(
       `${this.anexoUrl}/${entidadeId}/anexos`,
-      options
+      options,
     );
   }
   uploadAnexos(
     ocorrenciaId: string,
-    listaArquivos: { file: File; nome: string }[]
+    listaArquivos: { file: File; nome: string }[],
   ): Observable<any> {
     const formData = new FormData();
 
@@ -42,8 +41,6 @@ export class AnexoService {
       formData.append('arquivos', item.file, nomeFinal);
     });
 
-    return this.http.post(`${this.anexoUrl}/${ocorrenciaId}/anexos`, formData, {
-      withCredentials: true,
-    });
+    return this.http.post(`${this.anexoUrl}/${ocorrenciaId}/anexos`, formData);
   }
 }

@@ -14,8 +14,10 @@ import {
   IonRouterOutlet,
   IonFooter,
 } from '@ionic/angular/standalone';
+import { EPermission } from 'src/app/auth/permissions.enum';
+import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
 import { IQuadro } from 'src/app/interfaces/ocorrencias/IQuadro';
-import { AccountsService } from 'src/app/services/auth.service';
+import { AuthService } from 'src/app/services/auth.service';
 import { QuadrosService } from 'src/app/services/quadros.service';
 @Component({
   selector: 'app-side-nav',
@@ -34,29 +36,23 @@ import { QuadrosService } from 'src/app/services/quadros.service';
     IonIcon,
     IonRouterOutlet,
     CommonModule,
+    HasPermissionDirective,
   ],
   styleUrls: ['./side-nav.component.scss'],
 })
 export class SideNavComponent implements OnInit {
-  isAdministrador = false;
   showOcorrenciasDropdown = false;
   quadros: IQuadro[] = [];
+  perms = EPermission;
 
   constructor(
     private router: Router,
-    private authService: AccountsService,
-    private quadroService: QuadrosService
+    private authService: AuthService,
+    private quadroService: QuadrosService,
   ) {}
 
   ngOnInit() {
-    this.checkPermissoes();
     this.carregarQuadros();
-  }
-
-  async checkPermissoes() {
-    const role = await this.authService.getRole();
-    // Ajuste conforme sua lógica de role
-    this.isAdministrador = role.includes('Administrador');
   }
 
   carregarQuadros() {
@@ -84,6 +80,6 @@ export class SideNavComponent implements OnInit {
     this.router.navigate(['home/naturezas']);
   }
   logOut() {
-    this.authService.logOut();
+    this.authService.logOut().subscribe();
   }
 }

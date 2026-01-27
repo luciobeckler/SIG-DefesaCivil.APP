@@ -1,4 +1,3 @@
-import { IOcorrenciaPreview } from './IEvento';
 import { IOcorrenciaPreviewDTO } from './IOcorrencias';
 
 export interface IEtapa extends IRegrasDeTransicaoEtapa {

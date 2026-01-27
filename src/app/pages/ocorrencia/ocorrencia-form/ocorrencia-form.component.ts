@@ -8,10 +8,9 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { IonicModule, NavController, ToastController } from '@ionic/angular';
+import { NavController, ToastController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
-
-// Imports dos seus Enums e Helpers
+import { format, parse, parseISO } from 'date-fns';
 import {
   enumToArray,
   EGrauRisco,
@@ -26,7 +25,7 @@ import {
   ERegimeOcupacao,
 } from 'src/app/helper/OcorrenciaEnums';
 import { OcorrenciaService } from 'src/app/services/ocorrencia.service'; // Supondo que exista
-import { formatarLabel } from 'src/app/helper/funcions'; // Se tiver seu helper global
+import { dateValidator, formatarLabel } from 'src/app/helper/funcions'; // Se tiver seu helper global
 import { INovoAnexo } from 'src/app/interfaces/anexos/IAnexos';
 import {
   closeCircle,
@@ -35,13 +34,79 @@ import {
   trash,
 } from 'ionicons/icons';
 import { AnexoService } from 'src/app/services/anexo.service';
+import {
+  IonHeader,
+  IonToolbar,
+  IonButtons,
+  IonButton,
+  IonIcon,
+  IonSelect,
+  IonSelectOption,
+  IonTitle,
+  IonContent,
+  IonAccordionGroup,
+  IonAccordion,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonDatetime,
+  IonCheckbox,
+  IonDatetimeButton,
+  IonModal,
+  IonRow,
+  IonCol,
+  IonBadge,
+  IonList,
+  IonListHeader,
+  IonNote,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
+  IonText,
+  ModalController,
+} from '@ionic/angular/standalone';
+import { NgxMaskDirective } from 'ngx-mask';
+import { HistoricoOcorrenciaComponent } from 'src/app/components/historico-ocorrencia/historico-ocorrencia.component';
+import { EPermission } from 'src/app/auth/permissions.enum';
+import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
 
 @Component({
   selector: 'app-ocorrencia-form',
   templateUrl: './ocorrencia-form.component.html',
   styleUrls: ['./ocorrencia-form.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [
+    IonText,
+    IonItemOption,
+    IonItemOptions,
+    IonItemSliding,
+    IonNote,
+    IonListHeader,
+    IonSelect,
+    IonSelectOption,
+    NgxMaskDirective,
+    IonList,
+    IonBadge,
+    IonCol,
+    IonRow,
+    IonCheckbox,
+    IonInput,
+    IonLabel,
+    IonItem,
+    IonAccordion,
+    IonAccordionGroup,
+    IonContent,
+    IonTitle,
+    IonIcon,
+    IonButton,
+    IonButtons,
+    IonToolbar,
+    IonHeader,
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    HasPermissionDirective,
+  ],
 })
 export class OcorrenciaFormPage implements OnInit {
   // Injeção de Dependência
@@ -52,12 +117,13 @@ export class OcorrenciaFormPage implements OnInit {
   private anexoService = inject(AnexoService);
   private toastCtrl = inject(ToastController);
   private quadroIdOrigem: string | null = null;
-
+  private modalCtrl = inject(ModalController);
   hrefVoltar = '/home';
   form!: FormGroup;
   isEditing = false;
   ocorrenciaId: string | null = null;
   tituloPagina = 'Nova Ocorrência';
+  perms = EPermission;
 
   // --- Listas para os Selects ---
   opcoesGrauRisco = enumToArray(EGrauRisco);
@@ -99,19 +165,38 @@ export class OcorrenciaFormPage implements OnInit {
         this.tituloPagina = 'Editar Ocorrência';
         this.carregarDados(id);
       } else {
+        const agora = format(new Date(), 'dd/MM/yyyy HH:mm');
         this.form.patchValue({
-          dataEHoraDoOcorrido: new Date().toISOString(),
+          dataEHoraDoOcorrido: agora,
         });
       }
     });
   }
 
+  buscarCEP() {
+    const cep = this.form.get('enderecoCEP')?.value;
+    if (cep && cep.length === 8) {
+      // Chame seu serviço ou use fetch direto para ViaCEP
+      fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.erro) {
+            this.form.patchValue({
+              enderecoRua: data.logradouro,
+              enderecoBairro: data.bairro,
+              enderecoNumero: data.numero,
+            });
+          }
+        });
+    }
+  }
+
   buildForm() {
     this.form = this.fb.group({
       // --- Dados Básicos ---
-      dataEHoraDoOcorrido: [null],
-      dataEHoraInicioAtendimento: [null],
-      dataEHoraTerminoAtendimento: [null],
+      dataEHoraDoOcorrido: [null, [Validators.required, dateValidator()]],
+      dataEHoraInicioAtendimento: [null, [dateValidator()]],
+      dataEHoraTerminoAtendimento: [null, [dateValidator()]],
 
       // --- Endereço ---
       enderecoRua: [''],
@@ -153,13 +238,30 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   carregarDados(id: string) {
-    // 1. Carrega dados do formulário
     this.ocorrenciaService.obterDetalhesPorId(id).subscribe({
-      next: (data) => this.form.patchValue(data),
+      next: (data) => {
+        if (data.dataEHoraDoOcorrido) {
+          const dataObj = parseISO(data.dataEHoraDoOcorrido);
+          data.dataEHoraDoOcorrido = format(dataObj, 'dd/MM/yyyy HH:mm');
+        }
+
+        if (data.dataEHoraInicioAtendimento) {
+          const dataObj = parseISO(data.dataEHoraInicioAtendimento);
+          data.dataEHoraInicioAtendimento = format(dataObj, 'dd/MM/yyyy HH:mm');
+        }
+
+        if (data.dataEHoraTerminoAtendimento) {
+          const dataObj = parseISO(data.dataEHoraTerminoAtendimento);
+          data.dataEHoraTerminoAtendimento = format(
+            dataObj,
+            'dd/MM/yyyy HH:mm',
+          );
+        }
+
+        this.form.patchValue(data);
+      },
       error: () => this.mostrarToast('Erro ao carregar dados', 'danger'),
     });
-
-    // 2. Carrega Anexos
     this.carregarAnexos(id);
   }
 
@@ -196,14 +298,22 @@ export class OcorrenciaFormPage implements OnInit {
     this.idsParaRemover.push(anexo.id);
     // Remove visualmente da lista
     this.anexosExistentes = this.anexosExistentes.filter(
-      (a) => a.id !== anexo.id
+      (a) => a.id !== anexo.id,
     );
   }
 
   async salvar() {
     if (this.form.invalid) {
+      console.error('--- FORMULÁRIO INVÁLIDO ---');
+      Object.keys(this.form.controls).forEach((key) => {
+        const control = this.form.get(key);
+        if (control?.invalid) {
+          console.log(`Campo: ${key}, Erros:`, control.errors);
+          console.log(`Valor atual:`, control.value);
+        }
+      });
       this.form.markAllAsTouched();
-      return;
+      return; // Para aqui para você ver o log
     }
 
     const loading = await this.toastCtrl.create({
@@ -214,7 +324,15 @@ export class OcorrenciaFormPage implements OnInit {
 
     try {
       let idAtual = this.ocorrenciaId;
-      const dto = this.form.value;
+      const dto = { ...this.form.value };
+
+      dto.dataEHoraDoOcorrido = this.converterParaISO(dto.dataEHoraDoOcorrido);
+      dto.dataEHoraInicioAtendimento = this.converterParaISO(
+        dto.dataEHoraInicioAtendimento,
+      );
+      dto.dataEHoraTerminoAtendimento = this.converterParaISO(
+        dto.dataEHoraTerminoAtendimento,
+      );
 
       if (this.isEditing && idAtual) {
         await this.ocorrenciaService.atualizar(idAtual, dto).toPromise();
@@ -268,4 +386,28 @@ export class OcorrenciaFormPage implements OnInit {
       this.navCtrl.navigateBack('/home');
     }
   }
+
+  async abrirHistorico() {
+    if (!this.ocorrenciaId) return;
+
+    const modal = await this.modalCtrl.create({
+      component: HistoricoOcorrenciaComponent,
+      componentProps: {
+        ocorrenciaId: this.ocorrenciaId,
+      },
+    });
+
+    await modal.present();
+  }
+
+  converterParaISO = (valorData: string | null) => {
+    if (!valorData || valorData.length < 16) return null;
+    try {
+      const dataObj = parse(valorData, 'dd/MM/yyyy HH:mm', new Date());
+      return dataObj.toISOString();
+    } catch (e) {
+      console.error('Erro ao converter data:', valorData);
+      return null;
+    }
+  };
 }

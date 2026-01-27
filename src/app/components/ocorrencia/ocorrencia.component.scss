@@ -143,3 +143,9 @@
     }
   }
 }
+
+.disabled-card {
+  opacity: 0.8;
+  cursor: not-allowed;
+  background-color: var(--ion-color-light-shade);
+}

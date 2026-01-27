@@ -1,12 +1,15 @@
 <ion-card
   class="kanban-card"
-  button="true"
-  [routerLink]="['/home', 'ocorrencia', 'form', ocorrencia().id]"
-  [queryParams]="{ quadroId: quadroId() }"
+  [button]="canAccess()"
+  (click)="navegar()"
+  [class.disabled-card]="!canAccess()"
 >
   @let grauVisual = getGrauVisual(ocorrencia().grauDeRisco);
 
   <div class="card-header-item ion-item-mimic">
+    @if (!canAccess()) {
+      <ion-icon name="lock-closed" color="medium" slot="end"></ion-icon>
+    }
     <div slot="start" class="protocolo-wrapper">
       <span class="protocolo">#{{ ocorrencia().numero }}</span>
     </div>
@@ -24,7 +27,7 @@
     </div>
 
     <ion-note slot="end" class="data-nota">
-      {{ ocorrencia().dataEHoraDoOcorrido | date : "dd/MM/yyyy HH:mm" }}
+      {{ ocorrencia().dataEHoraDoOcorrido | date: "dd/MM/yyyy HH:mm" }}
     </ion-note>
   </div>
 
@@ -45,27 +48,27 @@
     </div>
 
     @if (ocorrencia().solicitanteNome) {
-    <div class="solicitante-info ion-margin-bottom">
-      <ion-icon name="person-outline"></ion-icon>
-      <span>{{ ocorrencia().solicitanteNome }}</span>
-    </div>
+      <div class="solicitante-info ion-margin-bottom">
+        <ion-icon name="person-outline"></ion-icon>
+        <span>{{ ocorrencia().solicitanteNome }}</span>
+      </div>
     }
 
     <div class="footer-actions">
       <div class="chips-container">
-        @for (tipo of ocorrencia().tipoDeRisco; track tipo) { @let tipoVis =
-        getTipoVisual(tipo);
-        <ion-chip [color]="tipoVis.color" outline="true">
-          <ion-icon [name]="tipoVis.icon"></ion-icon>
-          <ion-label>{{ tipo }}</ion-label>
-        </ion-chip>
+        @for (tipo of ocorrencia().tipoDeRisco; track tipo) {
+          @let tipoVis = getTipoVisual(tipo);
+          <ion-chip [color]="tipoVis.color" outline="true">
+            <ion-icon [name]="tipoVis.icon"></ion-icon>
+            <ion-label>{{ tipo }}</ion-label>
+          </ion-chip>
         }
       </div>
 
       @if (ocorrencia().emailResponsavel) {
-      <div class="user-avatar" title="{{ ocorrencia().emailResponsavel }}">
-        <span>{{ getIniciais(ocorrencia().emailResponsavel) }}</span>
-      </div>
+        <div class="user-avatar" title="{{ ocorrencia().emailResponsavel }}">
+          <span>{{ getIniciais(ocorrencia().emailResponsavel) }}</span>
+        </div>
       }
     </div>
   </ion-card-content>

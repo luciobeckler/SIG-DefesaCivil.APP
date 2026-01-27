@@ -12,13 +12,57 @@ import {
 import { AlertController } from '@ionic/angular';
 import { LoadingService } from 'src/app/services/loading.service';
 import { NgxMaskDirective } from 'ngx-mask';
+import {
+  IonContent,
+  IonButton,
+  IonIcon,
+  IonCard,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonModal,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonButtons,
+  IonItem,
+  IonText,
+  IonLabel,
+  IonInput,
+  IonSelect,
+  IonSelectOption,
+  IonToggle,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-usuarios',
   templateUrl: './usuarios.component.html',
   styleUrls: ['./usuarios.component.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule, NgxMaskDirective],
+  imports: [
+    CommonModule,
+    IonContent,
+    IonButton,
+    IonIcon,
+    IonCard,
+    IonGrid,
+    IonRow,
+    IonCol,
+    IonModal,
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonItem,
+    IonText,
+    IonLabel,
+    IonInput,
+    IonSelect,
+    IonSelectOption,
+    IonToggle,
+    FormsModule,
+    NgxMaskDirective,
+  ],
 })
 export class UsuariosComponent implements OnInit {
   usuarios: IUsuarioInfoId[] = [];
@@ -32,7 +76,7 @@ export class UsuariosComponent implements OnInit {
     dataAdmissao: null,
     dataDeNascimento: null,
     cargo: '',
-    permissao: 'Usuário de campo',
+    permissao: 'AgenteDeCampo',
     isAtivo: true,
   };
   mostrarModal = false;
@@ -45,7 +89,7 @@ export class UsuariosComponent implements OnInit {
   constructor(
     private alertController: AlertController,
     private usuarioService: UsuariosService,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
   ) {
     const today = new Date();
     const max = today.toISOString();
@@ -74,17 +118,17 @@ export class UsuariosComponent implements OnInit {
     }
 
     this.dataNascimentoString = this.formatDateToInput(
-      this.usuarioSelecionado.dataDeNascimento
+      this.usuarioSelecionado.dataDeNascimento,
     );
     this.dataAdmissaoString = this.formatDateToInput(
-      this.usuarioSelecionado.dataAdmissao
+      this.usuarioSelecionado.dataAdmissao,
     );
 
     this.mostrarModal = true;
   }
 
   private convertStringToDate(
-    dateString: string | null | undefined
+    dateString: string | null | undefined,
   ): Date | null {
     if (!dateString) return null;
 
@@ -119,14 +163,14 @@ export class UsuariosComponent implements OnInit {
     if (this.dataNascimentoString && !dataNascObj) {
       this.presentAlert(
         'Data Inválida',
-        'Data de Nascimento inválida. Use o formato DD/MM/YYYY.'
+        'Data de Nascimento inválida. Use o formato DD/MM/YYYY.',
       );
       return;
     }
     if (this.dataAdmissaoString && !dataAdmiObj) {
       this.presentAlert(
         'Data Inválida',
-        'Data de Admissão inválida. Use o formato DD/MM/YYYY.'
+        'Data de Admissão inválida. Use o formato DD/MM/YYYY.',
       );
       return;
     }
@@ -141,7 +185,7 @@ export class UsuariosComponent implements OnInit {
     if (!this.validarTelefone(this.usuarioSelecionado.telefone)) {
       this.presentAlert(
         'Telefone Inválido',
-        'Telefone inválido! Informe DDD + número.'
+        'Telefone inválido! Informe DDD + número.',
       );
       return;
     }
@@ -168,7 +212,7 @@ export class UsuariosComponent implements OnInit {
       dataDeNascimento: null,
       dataAdmissao: null,
       cargo: '',
-      permissao: 'Usuário de campo',
+      permissao: 'AgenteDeCampo',
       isAtivo: true,
     };
     this.dataNascimentoString = '';
@@ -240,7 +284,7 @@ export class UsuariosComponent implements OnInit {
         this.getOutrosUsuarios();
         this.presentAlert(
           'Sucesso',
-          `Usuário ${user.nome} editado com sucesso.`
+          `Usuário ${user.nome} editado com sucesso.`,
         );
         this.mostrarModal = false;
         this.loadingService.hide();
@@ -260,7 +304,7 @@ export class UsuariosComponent implements OnInit {
         this.getOutrosUsuarios();
         this.presentAlert(
           'Sucesso',
-          `Usuário ${user.nome} deletado com sucesso.`
+          `Usuário ${user.nome} deletado com sucesso.`,
         );
         this.loadingService.hide();
       },

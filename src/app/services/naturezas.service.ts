@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { INatureza, ISendNatureza } from '../interfaces/naturezas/INatureza';
-import { URL } from '../helper/constantes';
+import { environmentApiUrl } from '../helper/constantes';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NaturezaService {
-  private endPoint = `${URL}/Natureza`;
+  private endPoint = `${environmentApiUrl}/Natureza`;
 
   constructor(private http: HttpClient) {}
 

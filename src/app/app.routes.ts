@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { SideNavComponent } from './components/side-nav/side-nav.component';
-import { AuthGuard } from './services/routeAuth/auth.guard';
-import { AdminGuard } from './services/routeAuth/admin.guard';
+import { permissionGuard } from './services/guards/permission.guard';
+import { EPermission } from './auth/permissions.enum';
 
 export const routes: Routes = [
   {
@@ -13,66 +13,45 @@ export const routes: Routes = [
     path: 'primeiro-login',
     loadComponent: () =>
       import('./pages/login/primeiro-login/primeiro-login.component').then(
-        (m) => m.PrimeiroLoginComponent
+        (m) => m.PrimeiroLoginComponent,
       ),
   },
   {
     path: 'home', // O Layout principal (SideNav) vive aqui
     component: SideNavComponent,
-    canActivate: [AuthGuard],
     children: [
       {
         path: 'quadro/:id',
         loadComponent: () =>
           import('./pages/ocorrencia/quadro/quadro.component').then(
-            (m) => m.QuadroComponent
+            (m) => m.QuadroComponent,
           ),
       },
       {
         path: 'ocorrencia/form/:id',
         loadComponent: () =>
-          import(
-            './pages/ocorrencia/ocorrencia-form/ocorrencia-form.component'
-          ).then((m) => m.OcorrenciaFormPage),
+          import('./pages/ocorrencia/ocorrencia-form/ocorrencia-form.component').then(
+            (m) => m.OcorrenciaFormPage,
+          ),
       },
       {
         path: 'usuarios',
         loadComponent: () =>
           import('./pages/usuarios/usuarios.component').then(
-            (m) => m.UsuariosComponent
+            (m) => m.UsuariosComponent,
           ),
-        canActivate: [AdminGuard],
-      },
-      // --- EVENTOS / OCORRÊNCIAS ---
-      {
-        path: 'evento-list',
-        loadComponent: () =>
-          import('./pages/evento/evento-list/evento-list.page').then(
-            (m) => m.EventoListPage
-          ),
-      },
-      {
-        path: 'evento-detail/:id',
-        loadComponent: () =>
-          import('./pages/evento/evento-detail/evento-detail.page').then(
-            (m) => m.EventoDetailPage
-          ),
-      },
-      {
-        path: 'evento-form/:id',
-        loadComponent: () =>
-          import('./pages/evento/evento-form/evento-form.page').then(
-            (m) => m.EventoFormPage
-          ),
+        canActivate: [permissionGuard],
+        data: { requiredPermission: EPermission.USUARIOS_GERENCIAR },
       },
       // ----------------------
       {
         path: 'naturezas',
         loadComponent: () =>
           import('./pages/naturezas/naturezas.component').then(
-            (m) => m.NaturezasComponent
+            (m) => m.NaturezasComponent,
           ),
-        canActivate: [AdminGuard],
+        canActivate: [permissionGuard],
+        data: { requiredPermission: EPermission.NATUREZAS_GERENCIAR },
       },
     ],
   },
