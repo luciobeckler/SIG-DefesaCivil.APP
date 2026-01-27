@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { IQuadro, IQuadroDetalhes } from '../interfaces/ocorrencias/IQuadro';
-import { environmentApiUrl } from '../helper/constantes';
 import { Observable } from 'rxjs';
+import { environmentApiUrl } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',

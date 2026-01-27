@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { INatureza, ISendNatureza } from '../interfaces/naturezas/INatureza';
-import { environmentApiUrl } from '../helper/constantes';
+import { environmentApiUrl } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',

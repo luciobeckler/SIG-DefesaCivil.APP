@@ -1,12 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { environmentApiUrl } from '../helper/constantes'; // Sua constante com localhost ou produção
 import { Observable } from 'rxjs';
 import {
   ICreateOrEditOcorrenciaDTO,
   IOcorrenciaDetalhesDTO,
   IHistoricoOcorrenciaDTO,
 } from '../interfaces/ocorrencias/IOcorrencias';
+import { environmentApiUrl } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',

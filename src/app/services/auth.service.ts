@@ -6,7 +6,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { ILogin } from 'src/app/interfaces/auth/ILogin';
 import { catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
-import { environmentApiUrl } from 'src/app/helper/constantes'; // Ajuste seu import
+import { environmentApiUrl } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',

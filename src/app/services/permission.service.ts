@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { AuthService } from './auth.service';
-import { environmentApiUrl } from '../helper/constantes';
 import { lastValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
+import { environmentApiUrl } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PermissionService {

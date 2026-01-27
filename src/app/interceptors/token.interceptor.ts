@@ -7,7 +7,7 @@ import {
   HttpErrorResponse,
 } from '@angular/common/http';
 import { Observable, throwError, BehaviorSubject } from 'rxjs';
-import { catchError, filter, take, switchMap } from 'rxjs/operators';
+import { catchError, filter, take, switchMap, finalize } from 'rxjs/operators';
 import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
@@ -31,13 +31,15 @@ export class TokenInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<unknown>> {
     let authReq = request;
     const token = this.cookieService.get('access_token');
+
     const isAuthRequest =
-      request.url.includes('/refresh-token') || request.url.includes('/login');
+      request.url.includes('/refresh-token') ||
+      request.url.includes('/login') ||
+      request.url.includes('/logout');
 
     if (token && !isAuthRequest) {
       authReq = this.addTokenHeader(request, token);
     }
-    // ---------------------
 
     return next.handle(authReq).pipe(
       catchError((error) => {
@@ -46,7 +48,6 @@ export class TokenInterceptor implements HttpInterceptor {
 
         if (isResponse401) {
           if (isAuthRequest) {
-            this.accountsService.logOut().subscribe();
             return throwError(() => error);
           } else {
             return this.handle401Error(authReq, next);
@@ -66,16 +67,29 @@ export class TokenInterceptor implements HttpInterceptor {
       return this.accountsService.refreshToken().pipe(
         switchMap((tokenResponse: any) => {
           this.isRefreshing = false;
+
           const newToken =
             tokenResponse.accessToken || tokenResponse.access_token;
 
-          this.refreshTokenSubject.next(newToken);
+          if (newToken) {
+            this.cookieService.set('access_token', newToken);
+            this.refreshTokenSubject.next(newToken);
+            return next.handle(this.addTokenHeader(request, newToken));
+          }
 
-          return next.handle(this.addTokenHeader(request, newToken));
+          this.accountsService.logOut().subscribe();
+          return throwError(() => new Error('Token refresh failed'));
         }),
         catchError((err) => {
           this.isRefreshing = false;
-          this.accountsService.logOut().subscribe();
+
+          this.accountsService.logOut().subscribe({
+            error: () => {
+              this.cookieService.delete('access_token');
+              this.router.navigate(['/login']);
+            },
+          });
+
           return throwError(() => err);
         }),
       );

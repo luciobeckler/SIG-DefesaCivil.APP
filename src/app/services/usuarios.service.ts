@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environmentApiUrl } from 'src/app/helper/constantes';
+import { environmentApiUrl } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
