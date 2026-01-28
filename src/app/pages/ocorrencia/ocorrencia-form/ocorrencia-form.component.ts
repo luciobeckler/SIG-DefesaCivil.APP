@@ -167,7 +167,7 @@ export class OcorrenciaFormPage implements OnInit {
       } else {
         const agora = format(new Date(), 'dd/MM/yyyy HH:mm');
         this.form.patchValue({
-          dataEHoraDoOcorrido: agora,
+          dataEHoraInicioAtendimento: agora,
         });
       }
     });
@@ -303,6 +303,7 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   async salvar() {
+    debugger;
     if (this.form.invalid) {
       console.error('--- FORMULÁRIO INVÁLIDO ---');
       Object.keys(this.form.controls).forEach((key) => {

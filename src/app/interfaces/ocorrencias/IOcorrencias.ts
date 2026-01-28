@@ -118,5 +118,5 @@ export interface IHistoricoOcorrenciaDTO {
   usuarioId: string;
   usuarioNome: string;
   acao: string;
-  ultimaAlteracao: string;
+  horarios: string[];
 }

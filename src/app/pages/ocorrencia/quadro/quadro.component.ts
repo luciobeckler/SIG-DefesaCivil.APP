@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { IEtapa } from 'src/app/interfaces/ocorrencias/IEtapa';
-import { IQuadroDetalhes } from 'src/app/interfaces/ocorrencias/IQuadro';
-import { QuadrosService } from 'src/app/services/quadros.service';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NavController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
   chevronDown,
@@ -10,14 +10,19 @@ import {
   addCircleOutline,
   filterOutline,
   trashOutline,
+  closeOutline, // Ícone para fechar o modal
 } from 'ionicons/icons';
-import { CommonModule } from '@angular/common';
-import { NavController, MenuController } from '@ionic/angular';
-import { FormsModule } from '@angular/forms';
+
+// Interfaces e Services
+import { IEtapa } from 'src/app/interfaces/ocorrencias/IEtapa';
+import { IQuadroDetalhes } from 'src/app/interfaces/ocorrencias/IQuadro';
+import { QuadrosService } from 'src/app/services/quadros.service';
+
+// Componentes Filhos
 import { EtapaComponent } from 'src/app/components/etapa/etapa.component';
+
+// Ionic Standalone Imports
 import {
-  IonMenu,
-  IonMenuButton,
   IonHeader,
   IonToolbar,
   IonTitle,
@@ -30,15 +35,18 @@ import {
   IonItem,
   IonInput,
   IonButtons,
+  IonModal, // Importante: IonModal adicionado
 } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-quadro',
   templateUrl: './quadro.component.html',
   styleUrls: ['./quadro.component.scss'],
+  standalone: true,
   imports: [
-    IonMenu,
-    IonMenuButton,
+    CommonModule,
+    FormsModule,
+    EtapaComponent,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -51,18 +59,17 @@ import {
     IonItem,
     IonInput,
     IonButtons,
-    CommonModule,
-    FormsModule,
-    EtapaComponent,
+    IonModal, // Adicionado
   ],
-  standalone: true,
 })
 export class QuadroComponent implements OnInit {
   etapas: IEtapa[] = [];
   etapasOriginais: IEtapa[] = [];
   public quadroId: string = '';
 
-  // Filtros agora armazenam string pura: "DD/MM/AAAA"
+  // Controle do Modal
+  public isModalOpen = false;
+
   filtros = {
     protocolo: '',
     rua: '',
@@ -76,7 +83,7 @@ export class QuadroComponent implements OnInit {
     private navCtrl: NavController,
     private quadroService: QuadrosService,
     private route: ActivatedRoute,
-    private menuCtrl: MenuController,
+    private cdr: ChangeDetectorRef,
   ) {
     addIcons({
       chevronDown,
@@ -84,6 +91,7 @@ export class QuadroComponent implements OnInit {
       addCircleOutline,
       filterOutline,
       trashOutline,
+      closeOutline,
     });
   }
 
@@ -96,17 +104,20 @@ export class QuadroComponent implements OnInit {
     });
   }
 
-  async abrirMenuFiltros() {
-    console.log('teste');
-    await this.menuCtrl.enable(true, 'menu-filtros');
-    await this.menuCtrl.open('menu-filtros');
+  // --- CONTROLE DO MODAL ---
+  setModalOpen(isOpen: boolean) {
+    this.isModalOpen = isOpen;
   }
 
+  // --- LÓGICA DE DADOS ---
   getEtapasFromQuadroId() {
     this.quadroService.obterPorId(this.quadroId).subscribe({
       next: (data: IQuadroDetalhes) => {
+        // Deep copy para preservar os originais
         this.etapasOriginais = JSON.parse(JSON.stringify(data.etapas));
         this.etapas = data.etapas;
+
+        this.aplicarFiltros();
       },
       error: (err) => console.error('Erro ao buscar detalhes', err),
     });
@@ -114,35 +125,27 @@ export class QuadroComponent implements OnInit {
 
   // --- LÓGICA DE MÁSCARA MANUAL (DD/MM/AAAA) ---
   formatarDataInput(event: any, campo: 'dataInicio' | 'dataFim') {
-    let valor = event.target.value.replace(/\D/g, ''); // Remove tudo que não é número
+    let valor = event.target.value.replace(/\D/g, '');
 
     if (valor.length > 8) {
-      valor = valor.substring(0, 8); // Limita a 8 números
+      valor = valor.substring(0, 8);
     }
 
-    // Adiciona as barras
     if (valor.length > 4) {
       valor = valor.replace(/^(\d{2})(\d{2})(\d)/, '$1/$2/$3');
     } else if (valor.length > 2) {
       valor = valor.replace(/^(\d{2})(\d)/, '$1/$2');
     }
 
-    // Atualiza o model
     this.filtros[campo] = valor;
   }
 
-  // Helper para converter "25/12/2023" -> "2023-12-25"
+  // --- FILTROS ---
   private converterParaISO(dataBR: string): string | null {
     if (!dataBR || dataBR.length !== 10) return null;
-
     const partes = dataBR.split('/');
     if (partes.length !== 3) return null;
-
-    const dia = partes[0];
-    const mes = partes[1];
-    const ano = partes[2];
-
-    return `${ano}-${mes}-${dia}`;
+    return `${partes[2]}-${partes[1]}-${partes[0]}`;
   }
 
   aplicarFiltros() {
@@ -156,7 +159,7 @@ export class QuadroComponent implements OnInit {
       !this.filtros.dataFim
     ) {
       this.etapas = JSON.parse(JSON.stringify(this.etapasOriginais));
-      this.menuCtrl.close('menu-filtros');
+      this.setModalOpen(false); // Fecha o modal
       return;
     }
 
@@ -165,12 +168,10 @@ export class QuadroComponent implements OnInit {
     const termoRua = this.filtros.rua.toLowerCase();
     const termoBairro = this.filtros.bairro.toLowerCase();
     const termoSolicitante = this.filtros.solicitante.toLowerCase();
-
-    // 3. Converte as datas de texto para ISO (YYYY-MM-DD) para comparação
     const dataInicioISO = this.converterParaISO(this.filtros.dataInicio);
     const dataFimISO = this.converterParaISO(this.filtros.dataFim);
 
-    // 4. Executa o Filtro
+    // 3. Executa o Filtro
     this.etapas = this.etapasOriginais.map((etapa) => {
       const etapaCopia = { ...etapa };
 
@@ -195,19 +196,12 @@ export class QuadroComponent implements OnInit {
 
           // Filtro de Data
           let matchData = true;
-
           if (oc.dataEHoraDoOcorrido) {
-            // Pega apenas a parte YYYY-MM-DD da ocorrência
             const dataOcorrencia = oc.dataEHoraDoOcorrido.split('T')[0];
-
-            if (dataInicioISO && dataOcorrencia < dataInicioISO) {
+            if (dataInicioISO && dataOcorrencia < dataInicioISO)
               matchData = false;
-            }
-            if (dataFimISO && dataOcorrencia > dataFimISO) {
-              matchData = false;
-            }
+            if (dataFimISO && dataOcorrencia > dataFimISO) matchData = false;
           } else if (dataInicioISO || dataFimISO) {
-            // Se tem filtro de data mas a ocorrência não tem data -> oculta
             matchData = false;
           }
 
@@ -223,7 +217,7 @@ export class QuadroComponent implements OnInit {
       return etapaCopia;
     });
 
-    this.menuCtrl.close('menu-filtros');
+    this.setModalOpen(false); // Fecha o modal após filtrar
   }
 
   limparFiltros() {
@@ -236,9 +230,13 @@ export class QuadroComponent implements OnInit {
       dataFim: '',
     };
     this.etapas = JSON.parse(JSON.stringify(this.etapasOriginais));
+
+    this.setModalOpen(false);
   }
 
   novaOcorrencia() {
+    this.setModalOpen(false);
+    this.cdr.detectChanges();
     this.navCtrl.navigateForward(['/home', 'ocorrencia', 'form', 'nova'], {
       queryParams: { quadroId: this.quadroId },
     });

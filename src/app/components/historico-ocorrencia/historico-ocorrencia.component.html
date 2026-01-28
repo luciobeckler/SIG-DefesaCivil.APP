@@ -22,6 +22,7 @@
         name="person-circle-outline"
         size="large"
         color="secondary"
+        style="align-self: flex-start; margin-top: 10px"
       ></ion-icon>
 
       <ion-label class="ion-text-wrap">
@@ -29,17 +30,11 @@
         <p>{{ item.acao }}</p>
       </ion-label>
 
-      <ion-note
-        slot="end"
-        style="
-          font-size: 0.8rem;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-        "
-      >
-        <span>{{ item.ultimaAlteracao | date: "dd/MM/yyyy" }}</span>
-        <span>{{ item.ultimaAlteracao | date: "HH:mm" }}</span>
+      <ion-note slot="end" class="horarios-note">
+        <div *ngFor="let data of item.horarios" class="horario-item">
+          <span class="data">{{ data | date: "dd/MM/yyyy" }}</span>
+          <span class="hora">{{ data | date: "HH:mm" }}</span>
+        </div>
       </ion-note>
     </ion-item>
   </ion-list>
