@@ -238,29 +238,29 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   carregarDados(id: string) {
+    debugger;
     this.ocorrenciaService.obterDetalhesPorId(id).subscribe({
-      next: (data) => {
-        if (data.dataEHoraDoOcorrido) {
-          const dataObj = parseISO(data.dataEHoraDoOcorrido);
-          data.dataEHoraDoOcorrido = format(dataObj, 'dd/MM/yyyy HH:mm');
-        }
+      next: (data: any) => {
+        const camposData = [
+          'dataEHoraDoOcorrido',
+          'dataEHoraInicioAtendimento',
+          'dataEHoraTerminoAtendimento',
+        ];
+        console.log(data)
 
-        if (data.dataEHoraInicioAtendimento) {
-          const dataObj = parseISO(data.dataEHoraInicioAtendimento);
-          data.dataEHoraInicioAtendimento = format(dataObj, 'dd/MM/yyyy HH:mm');
-        }
-
-        if (data.dataEHoraTerminoAtendimento) {
-          const dataObj = parseISO(data.dataEHoraTerminoAtendimento);
-          data.dataEHoraTerminoAtendimento = format(
-            dataObj,
-            'dd/MM/yyyy HH:mm',
-          );
-        }
+        camposData.forEach((campo) => {
+          if (data[campo]) {
+            const dataObjeto = parseISO(data[campo]);
+            data[campo] = format(dataObjeto, 'dd/MM/yyyy HH:mm');
+          }
+        });
 
         this.form.patchValue(data);
       },
-      error: () => this.mostrarToast('Erro ao carregar dados', 'danger'),
+      error: () => {
+        this.mostrarToast('Erro ao carregar dados', 'danger');
+        this.navCtrl.navigateBack(this.hrefVoltar);
+      },
     });
     this.carregarAnexos(id);
   }
@@ -325,15 +325,19 @@ export class OcorrenciaFormPage implements OnInit {
 
     try {
       let idAtual = this.ocorrenciaId;
-      const dto = { ...this.form.value };
-
-      dto.dataEHoraDoOcorrido = this.converterParaISO(dto.dataEHoraDoOcorrido);
-      dto.dataEHoraInicioAtendimento = this.converterParaISO(
-        dto.dataEHoraInicioAtendimento,
-      );
-      dto.dataEHoraTerminoAtendimento = this.converterParaISO(
-        dto.dataEHoraTerminoAtendimento,
-      );
+      const dto = {
+        ...this.form.value,
+        dataEHoraDoOcorrido: this.converterParaUTC(
+          this.form.value.dataEHoraDoOcorrido,
+        ),
+        dataEHoraInicioAtendimento: this.converterParaUTC(
+          this.form.value.dataEHoraInicioAtendimento,
+        ),
+        dataEHoraTerminoAtendimento: this.converterParaUTC(
+          this.form.value.dataEHoraTerminoAtendimento,
+        ),
+      };
+      console.log(dto);
 
       if (this.isEditing && idAtual) {
         await this.ocorrenciaService.atualizar(idAtual, dto).toPromise();
@@ -401,10 +405,14 @@ export class OcorrenciaFormPage implements OnInit {
     await modal.present();
   }
 
-  converterParaISO = (valorData: string | null) => {
+  converterParaUTC = (valorData: string | null) => {
     if (!valorData || valorData.length < 16) return null;
     try {
+      // 1. Transforma a string "dd/MM/yyyy HH:mm" em um objeto Date (Fuso Local)
       const dataObj = parse(valorData, 'dd/MM/yyyy HH:mm', new Date());
+
+      // 2. O toISOString() converte automaticamente para UTC (Z)
+      // Se for 10:00 em Brasília, ele gera "2026-02-02T13:00:00.000Z"
       return dataObj.toISOString();
     } catch (e) {
       console.error('Erro ao converter data:', valorData);
