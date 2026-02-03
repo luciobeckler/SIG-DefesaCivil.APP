@@ -8,7 +8,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NavController, ToastController } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 import { ActivatedRoute } from '@angular/router';
 import { format, parse, parseISO } from 'date-fns';
 import {
@@ -69,6 +69,7 @@ import { NgxMaskDirective } from 'ngx-mask';
 import { HistoricoOcorrenciaComponent } from 'src/app/components/historico-ocorrencia/historico-ocorrencia.component';
 import { EPermission } from 'src/app/auth/permissions.enum';
 import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
+import { LoadingService } from 'src/app/services/loading.service';
 
 @Component({
   selector: 'app-ocorrencia-form',
@@ -115,7 +116,8 @@ export class OcorrenciaFormPage implements OnInit {
   private navCtrl = inject(NavController);
   private ocorrenciaService = inject(OcorrenciaService);
   private anexoService = inject(AnexoService);
-  private toastCtrl = inject(ToastController);
+  private loadingService = inject(LoadingService);
+
   private quadroIdOrigem: string | null = null;
   private modalCtrl = inject(ModalController);
   hrefVoltar = '/home';
@@ -246,7 +248,7 @@ export class OcorrenciaFormPage implements OnInit {
           'dataEHoraInicioAtendimento',
           'dataEHoraTerminoAtendimento',
         ];
-        console.log(data)
+        console.log(data);
 
         camposData.forEach((campo) => {
           if (data[campo]) {
@@ -258,7 +260,6 @@ export class OcorrenciaFormPage implements OnInit {
         this.form.patchValue(data);
       },
       error: () => {
-        this.mostrarToast('Erro ao carregar dados', 'danger');
         this.navCtrl.navigateBack(this.hrefVoltar);
       },
     });
@@ -303,27 +304,16 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   async salvar() {
-    debugger;
-    if (this.form.invalid) {
-      console.error('--- FORMULÁRIO INVÁLIDO ---');
-      Object.keys(this.form.controls).forEach((key) => {
-        const control = this.form.get(key);
-        if (control?.invalid) {
-          console.log(`Campo: ${key}, Erros:`, control.errors);
-          console.log(`Valor atual:`, control.value);
-        }
-      });
-      this.form.markAllAsTouched();
-      return; // Para aqui para você ver o log
-    }
-
-    const loading = await this.toastCtrl.create({
-      message: 'Salvando...',
-      duration: 10000,
-    }); // Loader ficticio
-    loading.present();
-
+    console.log('Iniciando processo de salvamento...');
     try {
+      if (this.form.invalid) {
+        console.warn('Formulário inválido!', this.form.value);
+        this.form.markAllAsTouched();
+        return;
+      }
+
+      this.loadingService.show();
+      console.log('Convertendo datas...');
       let idAtual = this.ocorrenciaId;
       const dto = {
         ...this.form.value,
@@ -337,7 +327,7 @@ export class OcorrenciaFormPage implements OnInit {
           this.form.value.dataEHoraTerminoAtendimento,
         ),
       };
-      console.log(dto);
+      console.log('DTO preparado para envio:', dto);
 
       if (this.isEditing && idAtual) {
         await this.ocorrenciaService.atualizar(idAtual, dto).toPromise();
@@ -365,23 +355,12 @@ export class OcorrenciaFormPage implements OnInit {
           .toPromise();
       }
 
-      loading.dismiss();
-      this.mostrarToast('Dados salvos com sucesso!', 'success');
+      this.loadingService.hide();
       this.navCtrl.back();
     } catch (error) {
-      loading.dismiss();
+      this.loadingService.hide();
       console.error(error);
-      this.mostrarToast('Erro ao processar a solicitação.', 'danger');
     }
-  }
-
-  async mostrarToast(msg: string, color: string) {
-    const toast = await this.toastCtrl.create({
-      message: msg,
-      duration: 2000,
-      color: color,
-    });
-    toast.present();
   }
 
   voltar() {
@@ -408,14 +387,16 @@ export class OcorrenciaFormPage implements OnInit {
   converterParaUTC = (valorData: string | null) => {
     if (!valorData || valorData.length < 16) return null;
     try {
-      // 1. Transforma a string "dd/MM/yyyy HH:mm" em um objeto Date (Fuso Local)
       const dataObj = parse(valorData, 'dd/MM/yyyy HH:mm', new Date());
 
-      // 2. O toISOString() converte automaticamente para UTC (Z)
-      // Se for 10:00 em Brasília, ele gera "2026-02-02T13:00:00.000Z"
+      if (isNaN(dataObj.getTime())) {
+        console.error('Data inválida no parser:', valorData);
+        return null;
+      }
+
       return dataObj.toISOString();
     } catch (e) {
-      console.error('Erro ao converter data:', valorData);
+      console.error('Erro fatal na conversão:', e);
       return null;
     }
   };
