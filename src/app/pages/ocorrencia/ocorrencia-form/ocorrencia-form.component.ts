@@ -240,7 +240,6 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   carregarDados(id: string) {
-    debugger;
     this.ocorrenciaService.obterDetalhesPorId(id).subscribe({
       next: (data: any) => {
         const camposData = [
