@@ -53,8 +53,8 @@ export class LoginComponent {
     //await this.loadingService.show();
     //CODIGO A BAIXO PARA PERMITIR LOGIN RAPIDOÄÄ
     //this.loginInfo.email = 'agenteDeCampo@gmail.com';
-    this.loginInfo.email = 'admin@teste.com';
-    this.loginInfo.senha = 'SenhaForte123!';
+    //this.loginInfo.email = 'admin@teste.com';
+    //this.loginInfo.senha = 'SenhaForte123!';
 
     if (this.loginInfo.email && this.loginInfo.senha) {
       await this.accountService.login(this.loginInfo).subscribe({
