@@ -1,0 +1,36 @@
+// Estilo base dos botões do menu
+ion-button {
+  --justify-content: flex-start; // Alinha ícone e texto à esquerda
+  margin-bottom: 8px;
+
+  // Cor padrão quando INATIVO (cinza escuro/preto)
+  --color: var(--ion-color-dark);
+  --background: transparent;
+
+  ion-icon {
+    margin-right: 12px;
+  }
+}
+
+// Classe aplicada automaticamente pelo Angular quando a rota está ativa
+.active-route {
+  // Muda a cor para destacar (Ex: Roxo/Primary/Tertiary)
+  --background: var(--ion-color-tertiary);
+  --color: var(--ion-color-tertiary-contrast);
+  font-weight: bold;
+
+  // Opcional: Adicionar uma borda ou sombra
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Estilo para os títulos das seções (ex: "Gerenciamento")
+.section-title {
+  padding-left: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+  margin-top: 20px;
+  margin-bottom: 5px;
+  display: block;
+}

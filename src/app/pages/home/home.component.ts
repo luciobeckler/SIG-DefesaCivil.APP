@@ -8,8 +8,6 @@ import { SideNavComponent } from '../../components/side-nav/side-nav.component';
   standalone: true,
   imports: [SideNavComponent],
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent {
   constructor() {}
-
-  ngOnInit() {}
 }

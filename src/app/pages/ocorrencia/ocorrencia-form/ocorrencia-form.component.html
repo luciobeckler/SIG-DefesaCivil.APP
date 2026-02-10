@@ -11,7 +11,7 @@
     <ion-buttons slot="end">
       <ng-container *appHasPermission="perms.OCORRENCIA_VISUALIZAR_HISTORICO">
         <ion-button
-          *ngIf="isEditing && ocorrenciaId"
+          *ngIf="isEditing"
           (click)="abrirHistorico()"
           title="Ver Histórico"
         >

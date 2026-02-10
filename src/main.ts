@@ -60,6 +60,10 @@ import {
   fileTrayFullOutline,
   constructOutline,
   lockClosed,
+  shieldHalfOutline,
+  peopleOutline,
+  pricetagOutline,
+  pricetagsOutline,
 } from 'ionicons/icons';
 import {
   HTTP_INTERCEPTORS,
@@ -71,8 +75,9 @@ import { provideNgxMask } from 'ngx-mask';
 import { CookieService } from 'ngx-cookie-service';
 import { TokenInterceptor } from './app/interceptors/token.interceptor';
 import { loadingInterceptor } from './app/interceptors/loading.interceptor';
-import { APP_INITIALIZER } from '@angular/core';
+import { APP_INITIALIZER, importProvidersFrom } from '@angular/core';
 import { PermissionService } from './app/services/permission.service';
+import { IonicStorageModule } from '@ionic/storage-angular';
 
 addIcons({
   people,
@@ -97,6 +102,9 @@ addIcons({
   trashBinOutline,
   informationCircleOutline,
   trashOutline,
+  shieldHalfOutline,
+  peopleOutline,
+  pricetagsOutline,
   add,
   warning,
   bookmarks,
@@ -138,6 +146,7 @@ bootstrapApplication(AppComponent, {
       multi: true,
     },
     provideIonicAngular(),
+    importProvidersFrom(IonicStorageModule.forRoot()),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideNgxMask({
       dropSpecialCharacters: true,

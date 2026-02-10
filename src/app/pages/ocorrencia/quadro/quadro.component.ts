@@ -1,21 +1,21 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
+  addCircleOutline,
   chevronDown,
   chevronUp,
-  addCircleOutline,
+  closeOutline,
   filterOutline,
   trashOutline,
-  closeOutline, // Ícone para fechar o modal
 } from 'ionicons/icons';
 
 // Interfaces e Services
 import { IEtapa } from 'src/app/interfaces/ocorrencias/IEtapa';
-import { IQuadroDetalhes } from 'src/app/interfaces/ocorrencias/IQuadro';
+import { IQuadro } from 'src/app/interfaces/ocorrencias/IQuadro';
 import { QuadrosService } from 'src/app/services/quadros.service';
 
 // Componentes Filhos
@@ -23,20 +23,25 @@ import { EtapaComponent } from 'src/app/components/etapa/etapa.component';
 
 // Ionic Standalone Imports
 import {
-  IonHeader,
-  IonToolbar,
-  IonTitle,
-  IonContent,
   IonButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
   IonIcon,
-  IonListHeader,
+  IonInput,
+  IonItem,
   IonLabel,
   IonList,
-  IonItem,
-  IonInput,
-  IonButtons,
-  IonModal, // Importante: IonModal adicionado
+  IonListHeader,
+  IonModal,
+  IonSelect,
+  IonSelectOption,
+  IonText,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/angular/standalone';
+import { firstValueFrom } from 'rxjs';
+import { StorageService } from 'src/app/services/storage/storage.service';
 
 @Component({
   selector: 'app-quadro',
@@ -60,12 +65,16 @@ import {
     IonInput,
     IonButtons,
     IonModal, // Adicionado
+    IonText,
+    IonSelect,
+    IonSelectOption,
   ],
 })
 export class QuadroComponent implements OnInit {
+  quadros: IQuadro[] = [];
   etapas: IEtapa[] = [];
   etapasOriginais: IEtapa[] = [];
-  public quadroId: string = '';
+  public quadroAtualId: string = '';
 
   // Controle do Modal
   public isModalOpen = false;
@@ -84,6 +93,7 @@ export class QuadroComponent implements OnInit {
     private quadroService: QuadrosService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
+    private storageService: StorageService,
   ) {
     addIcons({
       chevronDown,
@@ -95,32 +105,55 @@ export class QuadroComponent implements OnInit {
     });
   }
 
-  ngOnInit() {
-    this.route.paramMap.subscribe((params) => {
-      this.quadroId = params.get('id') ?? '';
-      if (this.quadroId && this.quadroId !== 'null') {
-        this.getEtapasFromQuadroId();
-      }
-    });
-  }
-
-  // --- CONTROLE DO MODAL ---
   setModalOpen(isOpen: boolean) {
     this.isModalOpen = isOpen;
   }
+  async ngOnInit() {
+    await this.loadData();
+  }
 
-  // --- LÓGICA DE DADOS ---
-  getEtapasFromQuadroId() {
-    this.quadroService.obterPorId(this.quadroId).subscribe({
-      next: (data: IQuadroDetalhes) => {
-        // Deep copy para preservar os originais
-        this.etapasOriginais = JSON.parse(JSON.stringify(data.etapas));
-        this.etapas = data.etapas;
+  async loadData() {
+    try {
+      // 1. Aguarda carregar a lista de quadros
+      await this.carregarQuadros();
 
-        this.aplicarFiltros();
-      },
-      error: (err) => console.error('Erro ao buscar detalhes', err),
-    });
+      // 2. Só tenta buscar etapas se houver um quadro selecionado
+      if (this.quadroAtualId) {
+        await this.getEtapasFromQuadroId();
+      }
+    } catch (error) {
+      console.error('Erro na sequência de carregamento:', error);
+    }
+  }
+
+  // Transformamos em Promise para o await do loadData funcionar
+  async carregarQuadros() {
+    const data = await firstValueFrom(this.quadroService.getAllPreview());
+    if (data && data.length > 0) {
+      this.quadros = data;
+      if (!this.quadroAtualId) {
+        this.quadroAtualId = this.quadros[0].id;
+      }
+    }
+  }
+
+  // Chamado quando o usuário troca o quadro no select
+  async trocarQuadro(event: any) {
+    this.quadroAtualId = event.detail.value;
+    await this.getEtapasFromQuadroId();
+  }
+
+  async getEtapasFromQuadroId() {
+    if (!this.quadroAtualId) return;
+
+    const data = await firstValueFrom(
+      this.quadroService.getDetailsById(this.quadroAtualId),
+    );
+    // Deep copy para preservar os originais e permitir filtros
+    this.etapasOriginais = JSON.parse(JSON.stringify(data.etapas));
+    this.etapas = data.etapas;
+    this.aplicarFiltros();
+    this.cdr.detectChanges(); // Garante que o Angular perceba a mudança
   }
 
   // --- LÓGICA DE MÁSCARA MANUAL (DD/MM/AAAA) ---
@@ -238,7 +271,7 @@ export class QuadroComponent implements OnInit {
     this.setModalOpen(false);
     this.cdr.detectChanges();
     this.navCtrl.navigateForward(['/home', 'ocorrencia', 'form', 'nova'], {
-      queryParams: { quadroId: this.quadroId },
+      queryParams: { quadroId: this.quadroAtualId },
     });
   }
 }

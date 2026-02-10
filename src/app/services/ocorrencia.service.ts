@@ -7,6 +7,7 @@ import {
   IHistoricoOcorrenciaDTO,
 } from '../interfaces/ocorrencias/IOcorrencias';
 import { environmentApiUrl } from 'src/environments/environment';
+import { StorageService } from './storage/storage.service';
 
 @Injectable({
   providedIn: 'root',
@@ -14,7 +15,10 @@ import { environmentApiUrl } from 'src/environments/environment';
 export class OcorrenciaService {
   private apiUrl = `${environmentApiUrl}/Ocorrencia`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private storageService: StorageService,
+  ) {}
 
   /**
    * GET api/Ocorrencia/{id}/detalhes
@@ -100,5 +104,21 @@ export class OcorrenciaService {
     };
 
     return this.http.post(`${this.apiUrl}/alterar-etapa`, body);
+  }
+
+  public async getFilaOffline(): Promise<any[]> {
+    return (await this.storageService.get('fila_ocorrencias')) || [];
+  }
+
+  public async adicionarNaFila(item: any) {
+    const fila = await this.getFilaOffline();
+    fila.push(item);
+    await this.storageService.set('fila_ocorrencias', fila);
+
+    console.log(fila);
+  }
+
+  public async limparFila() {
+    await this.storageService.remove('fila_ocorrencias');
   }
 }

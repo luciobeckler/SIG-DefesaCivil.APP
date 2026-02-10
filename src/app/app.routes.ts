@@ -2,6 +2,8 @@ import { Routes } from '@angular/router';
 import { SideNavComponent } from './components/side-nav/side-nav.component';
 import { permissionGuard } from './services/guards/permission.guard';
 import { EPermission } from './auth/permissions.enum';
+// Recomendo criar um authGuard para proteger toda a rota 'home'
+// import { authGuard } from './services/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -17,16 +19,23 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'home', // O Layout principal (SideNav) vive aqui
+    path: 'home',
     component: SideNavComponent,
+    // canActivate: [authGuard], // Protege o acesso a qualquer sub-rota de home
     children: [
       {
-        path: 'quadro/:id',
+        path: '',
+        redirectTo: 'quadro',
+        pathMatch: 'full',
+      },
+      {
+        path: 'quadro',
         loadComponent: () =>
           import('./pages/ocorrencia/quadro/quadro.component').then(
             (m) => m.QuadroComponent,
           ),
       },
+      // Movido para fora de 'quadro' para evitar problemas de Outlet aninhado
       {
         path: 'ocorrencia/form/:id',
         loadComponent: () =>
@@ -43,7 +52,6 @@ export const routes: Routes = [
         canActivate: [permissionGuard],
         data: { requiredPermission: EPermission.USUARIOS_GERENCIAR },
       },
-      // ----------------------
       {
         path: 'naturezas',
         loadComponent: () =>
@@ -61,7 +69,7 @@ export const routes: Routes = [
     pathMatch: 'full',
   },
   {
-    path: '**', // Rota coringa para 404
+    path: '**',
     redirectTo: 'login',
   },
 ];

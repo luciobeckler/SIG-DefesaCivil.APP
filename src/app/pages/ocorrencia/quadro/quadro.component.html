@@ -1,24 +1,41 @@
-<div class="ion-page">
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>Gestão de Ocorrências</ion-title>
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="end">
+      <ion-item lines="none" color="primary">
+        <ion-select
+          interface="popover"
+          [value]="quadroAtualId"
+          (ionChange)="trocarQuadro($event)"
+          placeholder="Selecionar Quadro"
+        >
+          @for (q of quadros; track q.id) {
+            <ion-select-option [value]="q.id">{{ q.nome }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-item>
 
-      <ion-buttons slot="end">
-        <ion-button (click)="setModalOpen(true)">
-          <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
+      <ion-button (click)="setModalOpen(true)">
+        <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
-  <ion-content [fullscreen]="true" class="kanban-background">
+<ion-content [fullscreen]="true" class="kanban-background">
+  @if (etapas && etapas.length > 0) {
     <div class="kanban-board">
       @for (etapa of etapas; track etapa.id) {
         <app-etapa [etapa]="etapa" />
       }
     </div>
-  </ion-content>
-</div>
+  } @else {
+    <div class="ion-text-center ion-padding" style="margin-top: 50px">
+      <ion-text color="medium">
+        <p>Nenhuma etapa encontrada para este quadro.</p>
+      </ion-text>
+    </div>
+  }
+</ion-content>
 
 <ion-modal [isOpen]="isModalOpen" (didDismiss)="setModalOpen(false)">
   <ng-template>

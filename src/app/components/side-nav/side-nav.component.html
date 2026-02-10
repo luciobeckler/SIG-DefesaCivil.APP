@@ -1,97 +1,86 @@
 <ion-menu contentId="main-content">
   <ion-header>
     <ion-toolbar>
-      <ion-title>Módulos</ion-title>
+      <ion-icon
+        [name]="sideNavObject.icon"
+        slot="start"
+        size="large"
+        class="ion-margin-start"
+        color="primary"
+      ></ion-icon>
+      <ion-label style="flex: 1; text-align: left" class="ion-padding-start">
+        <h2>{{ sideNavObject.title }}</h2>
+        <p>
+          <ion-note color="medium">{{ sideNavObject.subTitle }}</ion-note>
+        </p>
+      </ion-label>
     </ion-toolbar>
   </ion-header>
 
   <ion-content class="ion-padding">
-    <ion-button
-      expand="block"
-      color="primary"
-      (click)="goToUsuarios()"
-      class="ion-margin-bottom"
-      *appHasPermission="perms.USUARIOS_GERENCIAR"
-    >
-      <ion-icon name="people" slot="start"></ion-icon>
-      Usuários
-    </ion-button>
+    @for (section of sideNavObject.sections; track section.title) {
+      @if (section.title) {
+        <span class="section-title">{{ section.title }}</span>
+      }
 
-    <ion-button
-      expand="block"
-      color="secondary"
-      (click)="toggleOcorrencia()"
-      [class.ion-margin-bottom]="!showOcorrenciasDropdown"
-    >
-      <ion-icon name="warning" slot="start"></ion-icon>
-      <div style="flex: 1; text-align: left">Ocorrências</div>
-      <ion-icon
-        [name]="showOcorrenciasDropdown ? 'chevron-up' : 'chevron-down'"
-        slot="end"
-        size="small"
-      ></ion-icon>
-    </ion-button>
+      @for (opt of section.sideNavOptions; track opt.title) {
+        @if (opt.permission) {
+          <ng-container *appHasPermission="opt.permission">
+            <ng-container
+              *ngTemplateOutlet="botaoMenu; context: { $implicit: opt }"
+            ></ng-container>
+          </ng-container>
+        } @else {
+          <ng-container
+            *ngTemplateOutlet="botaoMenu; context: { $implicit: opt }"
+          ></ng-container>
+        }
+      }
+    }
 
-    @if (showOcorrenciasDropdown) {
-      <div class="ion-margin-bottom ion-padding-start">
-        @for (quadro of quadros; track quadro.id) {
+    @if (itensPendentesDeEnvio.length > 0) {
+      <ion-card color="warning" class="ion-margin-bottom">
+        <ion-card-content>
+          <p>
+            <strong>{{ itensPendentesDeEnvio.length }}</strong> ocorrências
+            salvas offline.
+          </p>
           <ion-button
             expand="block"
-            fill="clear"
             color="dark"
-            (click)="goToQuadro(quadro.id)"
-            class="ion-text-capitalize"
+            size="small"
+            class="ion-margin-top"
+            (click)="sincronizarAgora()"
           >
-            <ion-icon
-              name="clipboard-outline"
-              slot="start"
-              size="small"
-            ></ion-icon>
-
-            <span style="flex: 1; text-align: left">{{ quadro.nome }}</span>
-
-            <div
-              slot="end"
-              [title]="quadro.descricao"
-              style="
-                cursor: help;
-                display: flex;
-                align-items: center;
-                height: 100%;
-              "
-              (click)="$event.stopPropagation()"
-            >
-              <ion-icon
-                name="information-circle-outline"
-                color="medium"
-              ></ion-icon>
-            </div>
+            <ion-icon name="cloud-upload" slot="start"></ion-icon>
+            Sincronizar Agora
           </ion-button>
-        }
-        @if (quadros.length === 0) {
-          <p class="ion-text-center ion-text-muted">Nenhum quadro disponível</p>
-        }
-      </div>
+        </ion-card-content>
+      </ion-card>
     }
-    <ion-button
-      expand="block"
-      color="tertiary"
-      (click)="goToNaturezas()"
-      class="ion-margin-bottom"
-      *appHasPermission="perms.NATUREZAS_GERENCIAR"
-    >
-      <ion-icon name="bookmarks" slot="start"></ion-icon>
-      Naturezas
-    </ion-button>
   </ion-content>
 
   <ion-footer class="ion-no-border ion-padding">
-    <ion-button expand="block" color="danger" (click)="logOut()">
-      <ion-icon name="log-out" slot="start"></ion-icon>
+    <ion-button expand="block" color="danger" fill="outline" (click)="logOut()">
+      <ion-icon name="log-out-outline" slot="start"></ion-icon>
       Sair
     </ion-button>
   </ion-footer>
 </ion-menu>
+
+<ng-template #botaoMenu let-opt>
+  <ion-button
+    expand="block"
+    fill="clear"
+    class="ion-text-capitalize"
+    [routerLink]="[opt.path]"
+    routerLinkActive="active-route"
+    [routerLinkActiveOptions]="{ exact: false }"
+  >
+    <ion-icon [name]="opt.icon" slot="start"></ion-icon>
+    {{ opt.title }}
+  </ion-button>
+</ng-template>
 
 <div class="ion-page" id="main-content">
   <ion-header>
@@ -99,7 +88,7 @@
       <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
-      <ion-title>SIG - Defesa Civil de Sabará</ion-title>
+      <ion-title>{{ sideNavObject.title }}</ion-title>
     </ion-toolbar>
   </ion-header>
 

@@ -1,6 +1,6 @@
-import { addIcons } from 'ionicons';
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import {
   FormBuilder,
   FormGroup,
@@ -8,32 +8,22 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { NavController } from '@ionic/angular';
-import { ActivatedRoute } from '@angular/router';
-import { format, parse, parseISO } from 'date-fns';
+import { lastValueFrom } from 'rxjs'; // Moderno substituto para .toPromise()
+
+// --- Ionic & Capacitor ---
 import {
-  enumToArray,
-  EGrauRisco,
-  ETipoRisco,
-  EAnalisePreliminar,
-  ECaracterizacaoLocal,
-  ETipoEdificacao,
-  ETipoEstrutura,
-  ETipificacaoOcorrencia,
-  EMotivacao,
-  EAreaAfetada,
-  ERegimeOcupacao,
-} from 'src/app/helper/OcorrenciaEnums';
-import { OcorrenciaService } from 'src/app/services/ocorrencia.service'; // Supondo que exista
-import { dateValidator, formatarLabel } from 'src/app/helper/funcions'; // Se tiver seu helper global
-import { INovoAnexo } from 'src/app/interfaces/anexos/IAnexos';
+  NavController,
+  ToastController,
+  ModalController,
+} from '@ionic/angular/standalone';
+import { Network } from '@capacitor/network';
+import { addIcons } from 'ionicons';
 import {
   closeCircle,
   cloudUpload,
   documentAttach,
   trash,
 } from 'ionicons/icons';
-import { AnexoService } from 'src/app/services/anexo.service';
 import {
   IonHeader,
   IonToolbar,
@@ -49,9 +39,7 @@ import {
   IonItem,
   IonLabel,
   IonInput,
-  IonDatetime,
   IonCheckbox,
-  IonDatetimeButton,
   IonModal,
   IonRow,
   IonCol,
@@ -63,13 +51,36 @@ import {
   IonItemOptions,
   IonItemOption,
   IonText,
-  ModalController,
 } from '@ionic/angular/standalone';
+
+// --- Utils & Libs ---
+import { format, parse, parseISO } from 'date-fns';
 import { NgxMaskDirective } from 'ngx-mask';
-import { HistoricoOcorrenciaComponent } from 'src/app/components/historico-ocorrencia/historico-ocorrencia.component';
+
+// --- Local Enums & Interfaces ---
+import {
+  enumToArray,
+  EGrauRisco,
+  ETipoRisco,
+  EAnalisePreliminar,
+  ECaracterizacaoLocal,
+  ETipoEdificacao,
+  ETipoEstrutura,
+  ETipificacaoOcorrencia,
+  EMotivacao,
+  EAreaAfetada,
+  ERegimeOcupacao,
+} from 'src/app/helper/OcorrenciaEnums';
+import { INovoAnexo } from 'src/app/interfaces/anexos/IAnexos';
 import { EPermission } from 'src/app/auth/permissions.enum';
-import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
+
+// --- Services & Helpers ---
+import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
+import { AnexoService } from 'src/app/services/anexo.service';
 import { LoadingService } from 'src/app/services/loading.service';
+import { dateValidator } from 'src/app/helper/funcions';
+import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
+import { HistoricoOcorrenciaComponent } from 'src/app/components/historico-ocorrencia/historico-ocorrencia.component';
 
 @Component({
   selector: 'app-ocorrencia-form',
@@ -77,75 +88,77 @@ import { LoadingService } from 'src/app/services/loading.service';
   styleUrls: ['./ocorrencia-form.component.scss'],
   standalone: true,
   imports: [
-    IonText,
-    IonItemOption,
-    IonItemOptions,
-    IonItemSliding,
-    IonNote,
-    IonListHeader,
-    IonSelect,
-    IonSelectOption,
-    NgxMaskDirective,
-    IonList,
-    IonBadge,
-    IonCol,
-    IonRow,
-    IonCheckbox,
-    IonInput,
-    IonLabel,
-    IonItem,
-    IonAccordion,
-    IonAccordionGroup,
-    IonContent,
-    IonTitle,
-    IonIcon,
-    IonButton,
-    IonButtons,
-    IonToolbar,
-    IonHeader,
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    NgxMaskDirective,
     HasPermissionDirective,
+    // Ionic Components
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonContent,
+    IonList,
+    IonListHeader,
+    IonItem,
+    IonLabel,
+    IonInput,
+    IonText,
+    IonNote,
+    IonSelect,
+    IonSelectOption,
+    IonCheckbox,
+    IonBadge,
+    IonRow,
+    IonCol,
+    IonAccordion,
+    IonAccordionGroup,
+    IonItemSliding,
+    IonItemOptions,
+    IonItemOption,
   ],
 })
 export class OcorrenciaFormPage implements OnInit {
-  // Injeção de Dependência
+  // --- Injeções de Dependência ---
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private navCtrl = inject(NavController);
+  private modalCtrl = inject(ModalController);
+  private toastCtrl = inject(ToastController);
   private ocorrenciaService = inject(OcorrenciaService);
   private anexoService = inject(AnexoService);
   private loadingService = inject(LoadingService);
 
+  // --- Estado do Formulário e Página ---
+  public form!: FormGroup;
+  public tituloPagina = 'Nova Ocorrência';
+  public hrefVoltar = '/home';
+  public isEditing = false;
+  public perms = EPermission;
+
+  // --- Dados de Controle ---
+  private ocorrenciaId: string | null = null;
   private quadroIdOrigem: string | null = null;
-  private modalCtrl = inject(ModalController);
-  hrefVoltar = '/home';
-  form!: FormGroup;
-  isEditing = false;
-  ocorrenciaId: string | null = null;
-  tituloPagina = 'Nova Ocorrência';
-  perms = EPermission;
 
-  // --- Listas para os Selects ---
-  opcoesGrauRisco = enumToArray(EGrauRisco);
-  opcoesRegime = enumToArray(ERegimeOcupacao);
-  opcoesAnalise = enumToArray(EAnalisePreliminar);
-  opcoesCaracterizacao = enumToArray(ECaracterizacaoLocal);
-  opcoesEdificacao = enumToArray(ETipoEdificacao);
-  opcoesEstrutura = enumToArray(ETipoEstrutura);
-  opcoesTipoRisco = enumToArray(ETipoRisco);
-  opcoesTipificacao = enumToArray(ETipificacaoOcorrencia);
-  opcoesMotivacao = enumToArray(EMotivacao);
-  opcoesAreaAfetada = enumToArray(EAreaAfetada);
+  // --- Listas para Selects (Enums) ---
+  public readonly opcoesGrauRisco = enumToArray(EGrauRisco);
+  public readonly opcoesRegime = enumToArray(ERegimeOcupacao);
+  public readonly opcoesAnalise = enumToArray(EAnalisePreliminar);
+  public readonly opcoesCaracterizacao = enumToArray(ECaracterizacaoLocal);
+  public readonly opcoesEdificacao = enumToArray(ETipoEdificacao);
+  public readonly opcoesEstrutura = enumToArray(ETipoEstrutura);
+  public readonly opcoesTipoRisco = enumToArray(ETipoRisco);
+  public readonly opcoesTipificacao = enumToArray(ETipificacaoOcorrencia);
+  public readonly opcoesMotivacao = enumToArray(EMotivacao);
+  public readonly opcoesAreaAfetada = enumToArray(EAreaAfetada);
 
-  anexosExistentes: any[] = [];
-  idsParaRemover: string[] = [];
-
-  novosAnexos: INovoAnexo[] = [];
-
-  // Helper local para usar no template (caso não tenha o global)
-  formatarLabel = (val: string) => val.replace(/([A-Z])/g, ' $1').trim();
+  // --- Controle de Anexos ---
+  public anexosExistentes: any[] = [];
+  public novosAnexos: INovoAnexo[] = [];
+  private idsParaRemover: string[] = [];
 
   constructor() {
     this.buildForm();
@@ -154,7 +167,6 @@ export class OcorrenciaFormPage implements OnInit {
 
   ngOnInit() {
     this.quadroIdOrigem = this.route.snapshot.queryParamMap.get('quadroId');
-
     if (this.quadroIdOrigem) {
       this.hrefVoltar = `/home/quadro/${this.quadroIdOrigem}`;
     }
@@ -162,23 +174,76 @@ export class OcorrenciaFormPage implements OnInit {
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id && id !== 'nova') {
-        this.isEditing = true;
-        this.ocorrenciaId = id;
-        this.tituloPagina = 'Editar Ocorrência';
-        this.carregarDados(id);
+        this.configurarModoEdicao(id);
       } else {
-        const agora = format(new Date(), 'dd/MM/yyyy HH:mm');
-        this.form.patchValue({
-          dataEHoraInicioAtendimento: agora,
-        });
+        this.configurarModoCriacao();
       }
     });
   }
 
+  // --- Inicialização e Configuração ---
+
+  private configurarModoEdicao(id: string) {
+    this.isEditing = true;
+    this.ocorrenciaId = id;
+    this.tituloPagina = 'Editar Ocorrência';
+    this.carregarDados(id);
+  }
+
+  private configurarModoCriacao() {
+    const agora = format(new Date(), 'dd/MM/yyyy HH:mm');
+    this.form.patchValue({ dataEHoraInicioAtendimento: agora });
+  }
+
+  private buildForm() {
+    this.form = this.fb.group({
+      // Dados Básicos
+      dataEHoraDoOcorrido: [null, [Validators.required, dateValidator()]],
+      dataEHoraInicioAtendimento: [null, [dateValidator()]],
+      dataEHoraTerminoAtendimento: [null, [dateValidator()]],
+
+      // Endereço
+      enderecoRua: [''],
+      enderecoNumero: [''],
+      enderecoComplemento: [''],
+      enderecoBairro: [''],
+      enderecoCEP: [''],
+
+      // Solicitante
+      solicitanteNome: [''],
+      solicitanteCPF: [''],
+      solicitanteRG: [''],
+
+      // Classificações
+      grauDeRisco: [null, Validators.required],
+      regimeDeOcupacaoDoImovel: [null],
+      analisePreliminar: [[]],
+      caracterizacaoDoLocal: [[]],
+      edificacao: [[]],
+      estrutura: [[]],
+      tipoDeRisco: [[]],
+      tipificacaoDaOcorrencia: [[]],
+      motivacao: [[]],
+      areasAfetadas: [[]],
+
+      // Quantitativos
+      possuiIPTU: [''],
+      numeroDeMoradias: [null],
+      numeroDeComodos: [null],
+      numeroDePavimentos: [null],
+      possuiUnidadeFamiliar: [false],
+      numeroDeDeficientes: [null],
+      numeroDeCriancas: [null],
+      numeroDeAdultos: [null],
+      numeroDeIdosos: [null],
+    });
+  }
+
+  // --- Integrações de API e Carregamento ---
+
   buscarCEP() {
     const cep = this.form.get('enderecoCEP')?.value;
     if (cep && cep.length === 8) {
-      // Chame seu serviço ou use fetch direto para ViaCEP
       fetch(`https://viacep.com.br/ws/${cep}/json/`)
         .then((res) => res.json())
         .then((data) => {
@@ -193,74 +258,23 @@ export class OcorrenciaFormPage implements OnInit {
     }
   }
 
-  buildForm() {
-    this.form = this.fb.group({
-      // --- Dados Básicos ---
-      dataEHoraDoOcorrido: [null, [Validators.required, dateValidator()]],
-      dataEHoraInicioAtendimento: [null, [dateValidator()]],
-      dataEHoraTerminoAtendimento: [null, [dateValidator()]],
-
-      // --- Endereço ---
-      enderecoRua: [''],
-      enderecoNumero: [''],
-      enderecoComplemento: [''],
-      enderecoBairro: [''],
-      enderecoCEP: [''],
-
-      // --- Solicitante ---
-      solicitanteNome: [''],
-      solicitanteCPF: [''],
-      solicitanteRG: [''],
-
-      // --- Classificação de Risco (Single) ---
-      grauDeRisco: [null, Validators.required],
-      regimeDeOcupacaoDoImovel: [null],
-
-      // --- Classificação Múltipla (Arrays) ---
-      analisePreliminar: [[]],
-      caracterizacaoDoLocal: [[]],
-      edificacao: [[]],
-      estrutura: [[]],
-      tipoDeRisco: [[]],
-      tipificacaoDaOcorrencia: [[]],
-      motivacao: [[]],
-      areasAfetadas: [[]],
-
-      // --- Dados Quantitativos ---
-      possuiIPTU: [''], // Pode ser string ou bool dependendo do seu backend/enum
-      numeroDeMoradias: [null],
-      numeroDeComodos: [null],
-      numeroDePavimentos: [null],
-      possuiUnidadeFamiliar: [false],
-      numeroDeDeficientes: [null],
-      numeroDeCriancas: [null],
-      numeroDeAdultos: [null],
-      numeroDeIdosos: [null],
-    });
-  }
-
   carregarDados(id: string) {
     this.ocorrenciaService.obterDetalhesPorId(id).subscribe({
       next: (data: any) => {
-        const camposData = [
+        // Formata datas ISO para string visual
+        [
           'dataEHoraDoOcorrido',
           'dataEHoraInicioAtendimento',
           'dataEHoraTerminoAtendimento',
-        ];
-        console.log(data);
-
-        camposData.forEach((campo) => {
+        ].forEach((campo) => {
           if (data[campo]) {
-            const dataObjeto = parseISO(data[campo]);
-            data[campo] = format(dataObjeto, 'dd/MM/yyyy HH:mm');
+            data[campo] = format(parseISO(data[campo]), 'dd/MM/yyyy HH:mm');
           }
         });
 
         this.form.patchValue(data);
       },
-      error: () => {
-        this.navCtrl.navigateBack(this.hrefVoltar);
-      },
+      error: () => this.navCtrl.navigateBack(this.hrefVoltar),
     });
     this.carregarAnexos(id);
   }
@@ -275,17 +289,18 @@ export class OcorrenciaFormPage implements OnInit {
     });
   }
 
+  // --- Manipulação de Arquivos ---
+
   onFileSelected(event: any) {
     const files = event.target.files;
     if (files) {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
+      Array.from(files).forEach((file: any) => {
         this.novosAnexos.push({
           file: file,
           nome: file.name,
           tamanho: (file.size / 1024 / 1024).toFixed(2) + ' MB',
         });
-      }
+      });
     }
     event.target.value = '';
   }
@@ -296,78 +311,151 @@ export class OcorrenciaFormPage implements OnInit {
 
   marcarParaRemocao(anexo: any) {
     this.idsParaRemover.push(anexo.id);
-    // Remove visualmente da lista
     this.anexosExistentes = this.anexosExistentes.filter(
       (a) => a.id !== anexo.id,
     );
   }
 
+  // --- Lógica Principal: Salvar ---
+
   async salvar() {
     console.log('Iniciando processo de salvamento...');
+    if (this.form.invalid) {
+      console.warn('Formulário inválido!', this.form.value);
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loadingService.show();
+
     try {
-      if (this.form.invalid) {
-        console.warn('Formulário inválido!', this.form.value);
-        this.form.markAllAsTouched();
-        return;
-      }
+      const dto = this.criarDTO();
+      const status = await Network.getStatus();
 
-      this.loadingService.show();
-      console.log('Convertendo datas...');
-      let idAtual = this.ocorrenciaId;
-      const dto = {
-        ...this.form.value,
-        dataEHoraDoOcorrido: this.converterParaUTC(
-          this.form.value.dataEHoraDoOcorrido,
-        ),
-        dataEHoraInicioAtendimento: this.converterParaUTC(
-          this.form.value.dataEHoraInicioAtendimento,
-        ),
-        dataEHoraTerminoAtendimento: this.converterParaUTC(
-          this.form.value.dataEHoraTerminoAtendimento,
-        ),
-      };
-      console.log('DTO preparado para envio:', dto);
-
-      if (this.isEditing && idAtual) {
-        await this.ocorrenciaService.atualizar(idAtual, dto).toPromise();
+      if (!status.connected) {
+        await this.processarSalvamentoOffline(dto);
       } else {
-        // Se for criar, precisamos do ID retornado para vincular os anexos
-        const novaOcorrencia = await this.ocorrenciaService
-          .criar(dto, this.quadroIdOrigem || '')
-          .toPromise();
-        idAtual = novaOcorrencia?.id ?? null;
+        await this.processarSalvamentoOnline(dto);
       }
 
-      if (!idAtual) throw new Error('ID da ocorrência não identificado.');
-
-      // PASSO 2: Remover Anexos (Se houver)
-      if (this.idsParaRemover.length > 0) {
-        await this.anexoService
-          .removerAnexos(idAtual, this.idsParaRemover)
-          .toPromise();
-      }
-
-      // PASSO 3: Upload Novos Anexos (Se houver)
-      if (this.novosAnexos.length > 0) {
-        await this.anexoService
-          .uploadAnexos(idAtual, this.novosAnexos)
-          .toPromise();
-      }
-
-      this.loadingService.hide();
       this.navCtrl.back();
-    } catch (error) {
+    } catch (error: any) {
+      this.exibirErro(error);
+    } finally {
       this.loadingService.hide();
-      console.error(error);
     }
   }
 
-  voltar() {
-    if (this.quadroIdOrigem) {
-      this.navCtrl.navigateBack(['/home/quadro', this.quadroIdOrigem]);
-    } else {
-      this.navCtrl.navigateBack('/home');
+  private criarDTO() {
+    const values = this.form.value;
+    return {
+      ...values,
+      dataEHoraDoOcorrido: this.converterParaUTC(values.dataEHoraDoOcorrido),
+      dataEHoraInicioAtendimento: this.converterParaUTC(
+        values.dataEHoraInicioAtendimento,
+      ),
+      dataEHoraTerminoAtendimento: this.converterParaUTC(
+        values.dataEHoraTerminoAtendimento,
+      ),
+    };
+  }
+
+  private async processarSalvamentoOffline(dto: any) {
+    debugger;
+    if (this.isEditing && this.ocorrenciaId) {
+      throw new Error(
+        'Edição offline não permitida para itens já sincronizados.',
+      );
     }
+
+    console.log('Sem internet. Salvando localmente...');
+
+    // Processa anexos em paralelo
+    const anexosOffline = await Promise.all(
+      this.novosAnexos.map(async (anexo) => ({
+        nome: anexo.nome,
+        tamanho: anexo.tamanho,
+        base64: await this.anexoService.fileToBase64(anexo.file),
+      })),
+    );
+
+    const itemOffline = {
+      tempId: Date.now(),
+      dto: dto,
+      quadroId: this.quadroIdOrigem,
+      novosAnexos: anexosOffline,
+      dataCriacao: new Date(),
+    };
+
+    await this.ocorrenciaService.adicionarNaFila(itemOffline);
+    await this.exibirToast(
+      'Sem internet. Ocorrência salva no dispositivo.',
+      'warning',
+      'cloud-offline',
+    );
+  }
+
+  private async processarSalvamentoOnline(dto: any) {
+    let idAtual = this.ocorrenciaId;
+
+    // 1. Persistência dos Dados
+    if (this.isEditing && idAtual) {
+      await lastValueFrom(this.ocorrenciaService.atualizar(idAtual, dto));
+    } else {
+      const novaOcorrencia = await lastValueFrom(
+        this.ocorrenciaService.criar(dto, this.quadroIdOrigem || ''),
+      );
+      idAtual = novaOcorrencia?.id ?? null;
+    }
+
+    if (!idAtual) throw new Error('ID da ocorrência não identificado.');
+
+    // 2. Gestão de Anexos (Paralelo)
+    const tasks = [];
+
+    if (this.idsParaRemover.length > 0) {
+      tasks.push(
+        lastValueFrom(
+          this.anexoService.removerAnexos(idAtual, this.idsParaRemover),
+        ),
+      );
+    }
+
+    if (this.novosAnexos.length > 0) {
+      tasks.push(
+        lastValueFrom(
+          this.anexoService.uploadAnexos(idAtual, this.novosAnexos),
+        ),
+      );
+    }
+
+    if (tasks.length > 0) {
+      await Promise.all(tasks);
+    }
+  }
+
+  // --- UI Helpers & Navegação ---
+
+  async exibirErro(error: any) {
+    console.error(error);
+    await this.exibirToast(
+      error.message || 'Erro ao processar solicitação',
+      'danger',
+    );
+  }
+
+  async exibirToast(message: string, color: string = 'primary', icon?: string) {
+    const toast = await this.toastCtrl.create({
+      message,
+      duration: 3000,
+      color,
+      icon,
+    });
+    await toast.present();
+  }
+
+  voltar() {
+    this.navCtrl.navigateBack(['/home/quadro']);
   }
 
   async abrirHistorico() {
@@ -375,28 +463,25 @@ export class OcorrenciaFormPage implements OnInit {
 
     const modal = await this.modalCtrl.create({
       component: HistoricoOcorrenciaComponent,
-      componentProps: {
-        ocorrenciaId: this.ocorrenciaId,
-      },
+      componentProps: { ocorrenciaId: this.ocorrenciaId },
     });
-
     await modal.present();
   }
 
-  converterParaUTC = (valorData: string | null) => {
+  // --- Pure Helpers ---
+
+  formatarLabel(val: string): string {
+    return val.replace(/([A-Z])/g, ' $1').trim();
+  }
+
+  private converterParaUTC(valorData: string | null): string | null {
     if (!valorData || valorData.length < 16) return null;
     try {
       const dataObj = parse(valorData, 'dd/MM/yyyy HH:mm', new Date());
-
-      if (isNaN(dataObj.getTime())) {
-        console.error('Data inválida no parser:', valorData);
-        return null;
-      }
-
+      if (isNaN(dataObj.getTime())) return null;
       return dataObj.toISOString();
-    } catch (e) {
-      console.error('Erro fatal na conversão:', e);
+    } catch {
       return null;
     }
-  };
+  }
 }
