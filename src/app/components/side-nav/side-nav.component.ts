@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
   IonButtons,
@@ -18,7 +18,7 @@ import {
   IonCardContent,
   IonCard,
 } from '@ionic/angular/standalone';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
 import { EPermission } from 'src/app/auth/permissions.enum';
 import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
 import { ISideNav } from 'src/app/interfaces/side-nav/ISideNavOptions';
@@ -59,8 +59,8 @@ import { alert } from 'ionicons/icons';
     IonNote,
   ],
 })
-export class SideNavComponent implements OnInit {
-  quadros: any;
+export class SideNavComponent implements OnInit, OnDestroy {
+  boards: any;
   sideNavObject: ISideNav = {
     icon: 'shield-half-outline',
     title: 'Defesa Civil',
@@ -88,19 +88,10 @@ export class SideNavComponent implements OnInit {
           },
         ],
       },
-      {
-        title: 'Ações',
-        sideNavOptions: [
-          {
-            icon: 'warning-outline',
-            title: 'Chamado urgente',
-            path: '/home/ocorrencia/form',
-          },
-        ],
-      },
     ],
   };
-  itensPendentesDeEnvio: any[] = [];
+  penddingItens: any[] = [];
+  stackSub!: Subscription;
 
   private ocorrenciaService = inject(OcorrenciaService);
   private anexoService = inject(AnexoService);
@@ -114,21 +105,25 @@ export class SideNavComponent implements OnInit {
   async ngOnInit() {
     await this.carregarQuadros();
     await this.verificarPendencias();
+
+    this.stackSub = this.ocorrenciaService.offlineStackChanged.subscribe(() => {
+      this.verificarPendencias();
+    });
   }
 
   async carregarQuadros() {
-    this.quadros = await this.storageService.get('quadros');
-    if (this.quadros == null) {
+    this.boards = await this.storageService.get('quadros');
+    if (this.boards == null) {
       const status = await Network.getStatus();
       if (status.connected) {
-        this.quadros = await firstValueFrom(this.quadroService.getAllPreview());
-        this.storageService.set('quadros', this.quadros);
+        this.boards = await firstValueFrom(this.quadroService.getAllPreview());
+        this.storageService.set('quadros', this.boards);
       }
     }
   }
 
   async verificarPendencias() {
-    this.itensPendentesDeEnvio = await this.ocorrenciaService.getFilaOffline();
+    this.penddingItens = await this.ocorrenciaService.getFilaOffline();
   }
 
   async sincronizarAgora() {
@@ -144,7 +139,7 @@ export class SideNavComponent implements OnInit {
       return;
     }
 
-    if (this.itensPendentesDeEnvio.length === 0) return;
+    if (this.penddingItens.length === 0) return;
 
     // 2. Buscar Quadros disponíveis (Online) para o usuário selecionar
     this.loadingService.show();
@@ -205,7 +200,7 @@ export class SideNavComponent implements OnInit {
     const itensFalha = [];
 
     // Processa a fila
-    for (const item of this.itensPendentesDeEnvio) {
+    for (const item of this.penddingItens) {
       try {
         // --- ALTERAÇÃO IMPORTANTE ---
         // Usamos o quadroIdSelecionado pelo usuário, ignorando o que foi salvo offline (se houver)
@@ -242,7 +237,7 @@ export class SideNavComponent implements OnInit {
 
     // Atualiza a fila no Storage
     await this.storageService.set('fila_ocorrencias', itensFalha);
-    this.itensPendentesDeEnvio = itensFalha;
+    this.penddingItens = itensFalha;
 
     this.loadingService.hide();
 
@@ -260,5 +255,11 @@ export class SideNavComponent implements OnInit {
   }
   logOut() {
     this.authService.logOut().subscribe();
+  }
+
+  ngOnDestroy() {
+    if (this.stackSub) {
+      this.stackSub.unsubscribe();
+    }
   }
 }

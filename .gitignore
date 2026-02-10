@@ -68,3 +68,15 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Builds nativos (temporários)
+/android/app/build
+/android/.gradle
+/ios/App/App/public
+/android
+
+# Arquivos de ambiente e logs
+.DS_Store
+npm-debug.log*
+
+

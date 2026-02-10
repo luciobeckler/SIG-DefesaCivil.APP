@@ -79,7 +79,6 @@ export class OcorrenciaComponent {
 
   // --- AÇÃO DE NAVEGAR ---
   async navegar() {
-    debugger;
     if (this.canAccess()) {
       this.navCtrl.navigateForward(
         ['/home', 'ocorrencia', 'form', this.ocorrencia().id],

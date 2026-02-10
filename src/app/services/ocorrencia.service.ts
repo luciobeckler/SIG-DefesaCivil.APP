@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import {
   ICreateOrEditOcorrenciaDTO,
   IOcorrenciaDetalhesDTO,
@@ -14,6 +14,7 @@ import { StorageService } from './storage/storage.service';
 })
 export class OcorrenciaService {
   private apiUrl = `${environmentApiUrl}/Ocorrencia`;
+  public offlineStackChanged = new Subject<void>();
 
   constructor(
     private http: HttpClient,
@@ -115,10 +116,11 @@ export class OcorrenciaService {
     fila.push(item);
     await this.storageService.set('fila_ocorrencias', fila);
 
-    console.log(fila);
+    this.offlineStackChanged.next();
   }
 
   public async limparFila() {
     await this.storageService.remove('fila_ocorrencias');
+    this.offlineStackChanged.next();
   }
 }

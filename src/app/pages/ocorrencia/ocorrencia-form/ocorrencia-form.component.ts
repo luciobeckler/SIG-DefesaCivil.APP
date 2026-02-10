@@ -361,7 +361,6 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   private async processarSalvamentoOffline(dto: any) {
-    debugger;
     if (this.isEditing && this.ocorrenciaId) {
       throw new Error(
         'Edição offline não permitida para itens já sincronizados.',
