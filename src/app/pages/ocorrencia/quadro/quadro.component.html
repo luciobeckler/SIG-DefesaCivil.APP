@@ -1,4 +1,7 @@
 <ion-header>
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
   <ion-toolbar color="primary">
     <ion-buttons slot="end">
       <ion-item lines="none" color="primary">

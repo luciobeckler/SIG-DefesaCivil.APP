@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
@@ -39,6 +39,8 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
+  IonRefresher,
+  IonRefresherContent,
 } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
 import { StorageService } from 'src/app/services/storage/storage.service';
@@ -49,6 +51,8 @@ import { StorageService } from 'src/app/services/storage/storage.service';
   styleUrls: ['./quadro.component.scss'],
   standalone: true,
   imports: [
+    IonRefresherContent,
+    IonRefresher,
     CommonModule,
     FormsModule,
     EtapaComponent,
@@ -68,9 +72,10 @@ import { StorageService } from 'src/app/services/storage/storage.service';
     IonText,
     IonSelect,
     IonSelectOption,
+    IonRefresher,
   ],
 })
-export class QuadroComponent implements OnInit {
+export class QuadroComponent {
   quadros: IQuadro[] = [];
   etapas: IEtapa[] = [];
   etapasOriginais: IEtapa[] = [];
@@ -108,7 +113,9 @@ export class QuadroComponent implements OnInit {
   setModalOpen(isOpen: boolean) {
     this.isModalOpen = isOpen;
   }
-  async ngOnInit() {
+
+  async ionViewWillEnter() {
+    console.log('Página de quadros ativa. Atualizando dados...');
     await this.loadData();
   }
 
@@ -135,6 +142,11 @@ export class QuadroComponent implements OnInit {
         this.quadroAtualId = this.quadros[0].id;
       }
     }
+  }
+
+  async handleRefresh(event: any) {
+    await this.loadData();
+    event.target.complete();
   }
 
   // Chamado quando o usuário troca o quadro no select
