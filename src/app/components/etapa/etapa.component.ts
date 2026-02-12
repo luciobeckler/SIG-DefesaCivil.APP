@@ -15,13 +15,13 @@ import {
 import { IEtapa } from 'src/app/interfaces/ocorrencias/IEtapa';
 import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
 import { LoadingService } from 'src/app/services/loading.service';
-import { IOcorrenciaPreviewDTO } from 'src/app/interfaces/ocorrencias/IOcorrencias';
 import {
   IonItem,
   IonLabel,
   IonBadge,
   IonText,
 } from '@ionic/angular/standalone';
+import { IOcorrencia } from 'src/app/interfaces/ocorrencias/IOcorrencias';
 
 @Component({
   selector: 'app-etapa',
@@ -44,16 +44,16 @@ export class EtapaComponent {
   constructor(
     private ocorrenciaService: OcorrenciaService,
     private loadingService: LoadingService,
-    private toastController: ToastController
+    private toastController: ToastController,
   ) {}
 
-  async drop(event: CdkDragDrop<IOcorrenciaPreviewDTO[]>) {
+  async drop(event: CdkDragDrop<IOcorrencia[]>) {
     if (event.previousContainer === event.container) {
       // Reordenar na mesma lista (apenas visual por enquanto)
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
     } else {
       // 1. Movimento Visual Imediato (Otimista)
@@ -61,7 +61,7 @@ export class EtapaComponent {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
 
       // Dados para a requisição
@@ -74,16 +74,16 @@ export class EtapaComponent {
         ocorrencia,
         etapaAnteriorId,
         etapaDestinoId,
-        event // Passamos o evento original para poder fazer o rollback
+        event, // Passamos o evento original para poder fazer o rollback
       );
     }
   }
 
   private async processarTransicaoAPI(
-    ocorrencia: IOcorrenciaPreviewDTO,
+    ocorrencia: IOcorrencia,
     etapaAnteriorId: string,
     etapaDestinoId: string,
-    eventOriginal: CdkDragDrop<IOcorrenciaPreviewDTO[]>
+    eventOriginal: CdkDragDrop<IOcorrencia[]>,
   ) {
     // Bloqueia a UI
     await this.loadingService.show();
@@ -109,20 +109,20 @@ export class EtapaComponent {
       });
   }
 
-  private realizarRollback(event: CdkDragDrop<IOcorrenciaPreviewDTO[]>) {
+  private realizarRollback(event: CdkDragDrop<IOcorrencia[]>) {
     // Invertemos a lógica: movemos do container ATUAL (destino falho) para o ANTERIOR (origem)
     // Note que usamos 'currentIndex' como origem e 'previousIndex' como destino agora.
     transferArrayItem(
       event.container.data, // De onde está agora (Destino errado)
       event.previousContainer.data, // Para onde vai voltar (Origem)
       event.currentIndex, // Índice atual
-      event.previousIndex // Índice original
+      event.previousIndex, // Índice original
     );
   }
 
   private async presentToast(
     message: string,
-    color: 'success' | 'danger' | 'warning'
+    color: 'success' | 'danger' | 'warning',
   ) {
     const toast = await this.toastController.create({
       message,

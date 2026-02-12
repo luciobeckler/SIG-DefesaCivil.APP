@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import {
   ICreateOrEditOcorrenciaDTO,
-  IOcorrenciaDetalhesDTO,
+  IOcorrencia,
   IHistoricoOcorrenciaDTO,
 } from '../interfaces/ocorrencias/IOcorrencias';
 import { environmentApiUrl } from 'src/environments/environment';
@@ -25,10 +25,8 @@ export class OcorrenciaService {
    * GET api/Ocorrencia/{id}/detalhes
    * Retorna os detalhes completos de uma ocorrência.
    */
-  obterDetalhesPorId(id: string): Observable<IOcorrenciaDetalhesDTO> {
-    return this.http.get<IOcorrenciaDetalhesDTO>(
-      `${this.apiUrl}/${id}/detalhes`,
-    );
+  obterDetalhesPorId(id: string): Observable<IOcorrencia> {
+    return this.http.get<IOcorrencia>(`${this.apiUrl}/${id}/detalhes`);
   }
 
   /**
@@ -38,11 +36,11 @@ export class OcorrenciaService {
   criar(
     dto: ICreateOrEditOcorrenciaDTO,
     quadroId: string,
-  ): Observable<IOcorrenciaDetalhesDTO> {
+  ): Observable<IOcorrencia> {
     // Passando quadroId via Query String
     let params = new HttpParams().set('quadroId', quadroId);
 
-    return this.http.post<IOcorrenciaDetalhesDTO>(`${this.apiUrl}`, dto, {
+    return this.http.post<IOcorrencia>(`${this.apiUrl}`, dto, {
       params: params,
     });
   }

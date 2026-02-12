@@ -1,5 +1,5 @@
-import { AbstractControl, ValidationErrors, ValidatorFn } from "@angular/forms";
-import { isValid, parse } from "date-fns";
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { isValid, parse } from 'date-fns';
 
 /**
  * Converte uma data JavaScript para o formato "YYYY-MM-DD",
@@ -9,7 +9,7 @@ import { isValid, parse } from "date-fns";
  * @returns string no formato "YYYY-MM-DD" ou null se inválido.
  */
 export function toDateOnly(
-  value: Date | string | null | undefined
+  value: Date | string | null | undefined,
 ): string | null {
   if (!value) return null;
 
@@ -74,4 +74,11 @@ export function dateValidator(): ValidatorFn {
 
     return null;
   };
+}
+
+export function converterParaISO(dataBR: string): string | null {
+  if (!dataBR || dataBR.length !== 10) return null;
+  const partes = dataBR.split('/');
+  if (partes.length !== 3) return null;
+  return `${partes[2]}-${partes[1]}-${partes[0]}`;
 }

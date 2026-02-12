@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -43,6 +42,7 @@ import {
   IonRefresherContent,
 } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
+import { converterParaISO } from 'src/app/helper/funcions';
 import { StorageService } from 'src/app/services/storage/storage.service';
 
 @Component({
@@ -76,12 +76,12 @@ import { StorageService } from 'src/app/services/storage/storage.service';
   ],
 })
 export class QuadroComponent {
-  quadros: IQuadro[] = [];
-  etapas: IEtapa[] = [];
-  etapasOriginais: IEtapa[] = [];
-  public quadroAtualId: string = '';
+  private navCtrl = inject(NavController);
+  private quadroService = inject(QuadrosService);
+  private cdr = inject(ChangeDetectorRef);
 
-  // Controle do Modal
+  quadros: IQuadro[] = [];
+  public quadroAtual: IQuadro = this.quadros[0];
   public isModalOpen = false;
 
   filtros = {
@@ -93,13 +93,7 @@ export class QuadroComponent {
     dataFim: '',
   };
 
-  constructor(
-    private navCtrl: NavController,
-    private quadroService: QuadrosService,
-    private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef,
-    private storageService: StorageService,
-  ) {
+  constructor() {
     addIcons({
       chevronDown,
       chevronUp,
@@ -121,11 +115,8 @@ export class QuadroComponent {
 
   async loadData() {
     try {
-      // 1. Aguarda carregar a lista de quadros
       await this.carregarQuadros();
-
-      // 2. Só tenta buscar etapas se houver um quadro selecionado
-      if (this.quadroAtualId) {
+      if (this.quadroAtual) {
         await this.getEtapasFromQuadroId();
       }
     } catch (error) {
@@ -135,11 +126,11 @@ export class QuadroComponent {
 
   // Transformamos em Promise para o await do loadData funcionar
   async carregarQuadros() {
-    const data = await firstValueFrom(this.quadroService.getAllPreview());
+    const data = await firstValueFrom(this.quadroService.getQuadros());
     if (data && data.length > 0) {
       this.quadros = data;
-      if (!this.quadroAtualId) {
-        this.quadroAtualId = this.quadros[0].id;
+      if (!this.quadroAtual) {
+        this.quadroAtual = this.quadros[0];
       }
     }
   }
@@ -151,21 +142,17 @@ export class QuadroComponent {
 
   // Chamado quando o usuário troca o quadro no select
   async trocarQuadro(event: any) {
-    this.quadroAtualId = event.detail.value;
+    this.quadroAtual = this.quadros.find((q) => event.detail.value)!;
     await this.getEtapasFromQuadroId();
   }
 
   async getEtapasFromQuadroId() {
-    if (!this.quadroAtualId) return;
+    if (!this.quadroAtual) return;
 
-    const data = await firstValueFrom(
-      this.quadroService.getDetailsById(this.quadroAtualId),
-    );
+    const data = this.quadros.find((q) => q.id === this.quadroAtual.id)!;
     // Deep copy para preservar os originais e permitir filtros
-    this.etapasOriginais = JSON.parse(JSON.stringify(data.etapas));
-    this.etapas = data.etapas;
     this.aplicarFiltros();
-    this.cdr.detectChanges(); // Garante que o Angular perceba a mudança
+    this.cdr.detectChanges();
   }
 
   // --- LÓGICA DE MÁSCARA MANUAL (DD/MM/AAAA) ---
@@ -186,15 +173,8 @@ export class QuadroComponent {
   }
 
   // --- FILTROS ---
-  private converterParaISO(dataBR: string): string | null {
-    if (!dataBR || dataBR.length !== 10) return null;
-    const partes = dataBR.split('/');
-    if (partes.length !== 3) return null;
-    return `${partes[2]}-${partes[1]}-${partes[0]}`;
-  }
 
   aplicarFiltros() {
-    // 1. Verifica se está tudo vazio
     if (
       !this.filtros.protocolo &&
       !this.filtros.rua &&
@@ -203,8 +183,7 @@ export class QuadroComponent {
       !this.filtros.dataInicio &&
       !this.filtros.dataFim
     ) {
-      this.etapas = JSON.parse(JSON.stringify(this.etapasOriginais));
-      this.setModalOpen(false); // Fecha o modal
+      this.setModalOpen(false);
       return;
     }
 
@@ -213,11 +192,11 @@ export class QuadroComponent {
     const termoRua = this.filtros.rua.toLowerCase();
     const termoBairro = this.filtros.bairro.toLowerCase();
     const termoSolicitante = this.filtros.solicitante.toLowerCase();
-    const dataInicioISO = this.converterParaISO(this.filtros.dataInicio);
-    const dataFimISO = this.converterParaISO(this.filtros.dataFim);
+    const dataInicioISO = converterParaISO(this.filtros.dataInicio);
+    const dataFimISO = converterParaISO(this.filtros.dataFim);
 
     // 3. Executa o Filtro
-    this.etapas = this.etapasOriginais.map((etapa) => {
+    this.quadroAtual.etapas = this.quadroAtual.etapas.map((etapa) => {
       const etapaCopia = { ...etapa };
 
       if (etapaCopia.ocorrencias) {
@@ -226,14 +205,8 @@ export class QuadroComponent {
           const matchProtocolo =
             !termoProtocolo ||
             (oc.numero && oc.numero.toString().includes(termoProtocolo));
-          const matchRua =
-            !termoRua ||
-            (oc.enderecoResumido &&
-              oc.enderecoResumido.toLowerCase().includes(termoRua));
-          const matchBairro =
-            !termoBairro ||
-            (oc.enderecoResumido &&
-              oc.enderecoResumido.toLowerCase().includes(termoBairro));
+          const matchRua = !termoRua || oc.enderecoRua;
+          const matchBairro = !termoBairro || oc.enderecoBairro;
           const matchSolicitante =
             !termoSolicitante ||
             (oc.solicitanteNome &&
@@ -274,7 +247,6 @@ export class QuadroComponent {
       dataInicio: '',
       dataFim: '',
     };
-    this.etapas = JSON.parse(JSON.stringify(this.etapasOriginais));
 
     this.setModalOpen(false);
   }
@@ -283,7 +255,7 @@ export class QuadroComponent {
     this.setModalOpen(false);
     this.cdr.detectChanges();
     this.navCtrl.navigateForward(['/home', 'ocorrencia', 'form', 'nova'], {
-      queryParams: { quadroId: this.quadroAtualId },
+      queryParams: { quadroId: this.quadroAtual.id },
     });
   }
 }

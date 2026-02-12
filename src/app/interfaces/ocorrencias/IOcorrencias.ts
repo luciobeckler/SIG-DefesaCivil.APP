@@ -66,25 +66,8 @@ export interface ICreateOrEditOcorrenciaDTO extends IOcorrenciaDadosBaseDTO {
   naturezasId: string[] | null;
 }
 
-// --- DTO de Preview ---
-export interface IOcorrenciaPreviewDTO {
-  id: string;
-  usuarioCriadorId: string;
-  numero: number;
-  isVisible: boolean;
-  emailResponsavel: string | null;
-
-  enderecoResumido: string | null;
-  solicitanteNome: string | null;
-  solicitanteCPF: string | null;
-
-  tipoDeRisco: ETipoRisco[];
-  grauDeRisco: EGrauRisco;
-  dataEHoraDoOcorrido: string | null;
-}
-
 // --- DTO de Saída ---
-export interface IOcorrenciaDetalhesDTO extends IOcorrenciaDadosBaseDTO {
+export interface IOcorrencia extends IOcorrenciaDadosBaseDTO {
   id: string;
   numero: number;
   isVisible: boolean;
@@ -105,9 +88,6 @@ export interface IOcorrenciaDetalhesDTO extends IOcorrenciaDadosBaseDTO {
   tipificacaoDaOcorrencia: ETipificacaoOcorrencia[];
   motivacao: EMotivacao[];
   areasAfetadas: EAreaAfetada[];
-
-  ocorrenciaPai: IOcorrenciaPreviewDTO | null;
-  subOcorrencias: IOcorrenciaPreviewDTO[];
   anexos: IAnexoDTO[];
   naturezas: INaturezaResumo[];
 }

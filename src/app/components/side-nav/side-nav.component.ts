@@ -116,7 +116,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
     if (this.boards == null) {
       const status = await Network.getStatus();
       if (status.connected) {
-        this.boards = await firstValueFrom(this.quadroService.getAllPreview());
+        this.boards = await firstValueFrom(this.quadroService.getQuadros());
         this.storageService.set('quadros', this.boards);
       }
     }
@@ -147,7 +147,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
     try {
       // Chama o GET atualizado do serviço
       quadrosDisponiveis = await firstValueFrom(
-        this.quadroService.getAllPreview(),
+        this.quadroService.getQuadros(),
       );
     } catch (error) {
       this.loadingService.hide();

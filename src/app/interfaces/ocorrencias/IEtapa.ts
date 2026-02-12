@@ -1,4 +1,4 @@
-import { IOcorrenciaPreviewDTO } from './IOcorrencias';
+import { IOcorrencia } from './IOcorrencias';
 
 export interface IEtapa extends IRegrasDeTransicaoEtapa {
   id: string;
@@ -7,7 +7,7 @@ export interface IEtapa extends IRegrasDeTransicaoEtapa {
   posicao: number;
   quadroId: string;
 
-  ocorrencias: IOcorrenciaPreviewDTO[];
+  ocorrencias: IOcorrencia[];
 }
 
 interface IRegrasDeTransicaoEtapa {
