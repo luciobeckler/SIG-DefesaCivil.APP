@@ -15,6 +15,7 @@ import { StorageService } from './storage/storage.service';
 export class OcorrenciaService {
   private apiUrl = `${environmentApiUrl}/Ocorrencia`;
   public offlineStackChanged = new Subject<void>();
+  public createdOrUpdated = new Subject<void>();
 
   constructor(
     private http: HttpClient,
@@ -33,16 +34,18 @@ export class OcorrenciaService {
    * POST api/Ocorrencia?quadroId=...
    * Cria uma nova ocorrência vinculada a um quadro.
    */
-  criar(
+  created(
     dto: ICreateOrEditOcorrenciaDTO,
     quadroId: string,
   ): Observable<IOcorrencia> {
     // Passando quadroId via Query String
     let params = new HttpParams().set('quadroId', quadroId);
-
-    return this.http.post<IOcorrencia>(`${this.apiUrl}`, dto, {
+    const response = this.http.post<IOcorrencia>(`${this.apiUrl}`, dto, {
       params: params,
     });
+
+    this.createdOrUpdated.next();
+    return response;
   }
 
   /**
@@ -50,7 +53,9 @@ export class OcorrenciaService {
    * Atualiza os dados de uma ocorrência existente.
    */
   atualizar(id: string, dto: ICreateOrEditOcorrenciaDTO): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}`, dto);
+    const response = this.http.put<void>(`${this.apiUrl}/${id}`, dto);
+    this.createdOrUpdated.next();
+    return response;
   }
 
   /**
@@ -120,5 +125,27 @@ export class OcorrenciaService {
   public async limparFila() {
     await this.storageService.remove('fila_ocorrencias');
     this.offlineStackChanged.next();
+  }
+
+  public async obterDetalhesLocal(ocorrenciaId: string): Promise<any> {
+    const quadros = await this.storageService.get('quadros');
+
+    if (!quadros) return null;
+
+    for (const quadro of quadros) {
+      if (quadro.etapas) {
+        for (const etapa of quadro.etapas) {
+          if (etapa.ocorrencias) {
+            const ocorrencia = etapa.ocorrencias.find(
+              (o: any) => o.id === ocorrenciaId,
+            );
+            if (ocorrencia) {
+              return ocorrencia;
+            }
+          }
+        }
+      }
+    }
+    return null;
   }
 }

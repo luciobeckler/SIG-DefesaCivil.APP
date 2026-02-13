@@ -76,7 +76,7 @@ export interface IOcorrencia extends IOcorrenciaDadosBaseDTO {
   usuarioCriador: IDetalhesUsuarioDTO;
 
   // Single-Select Tipados
-  grauDeRisco: EGrauRisco | null;
+  grauDeRisco: EGrauRisco;
   regimeDeOcupacaoDoImovel: ERegimeOcupacao | null;
 
   // Multi-Select Tipados

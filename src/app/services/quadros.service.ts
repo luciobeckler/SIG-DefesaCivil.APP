@@ -17,20 +17,13 @@ export class QuadrosService {
     private storageService: StorageService,
   ) {}
 
-  // GET: api/Quadro
+  async getQuadrosOffline(): Promise<IQuadro[]> {
+    return (await this.storageService.get('quadros_cache')) || [];
+  }
+
   getQuadros(): Observable<IQuadro[]> {
-    return this.http.get<IQuadro[]>(this.apiUrl).pipe(
-      tap((data) => {
-        this.storageService.set('quadros', data);
-      }),
-    );
-  }
-
-  async salvarQuadrosEmCache(quadros: IQuadro[]) {
-    await this.storageService.set(this.CACHE_KEY, quadros);
-  }
-
-  async obterQuadrosDoCache(): Promise<IQuadro[]> {
-    return (await this.storageService.get(this.CACHE_KEY)) || [];
+    return this.http
+      .get<IQuadro[]>(this.apiUrl)
+      .pipe(tap((data) => this.storageService.set('quadros_cache', data)));
   }
 }

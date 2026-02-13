@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -6,7 +6,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { IonicModule, AlertController } from '@ionic/angular';
+import { IonicModule } from '@ionic/angular';
 import { NaturezaService } from 'src/app/services/naturezas.service';
 import {
   ISendNatureza,
@@ -35,6 +35,8 @@ import {
   IonNote,
   IonTextarea,
 } from '@ionic/angular/standalone';
+import { AlertService } from 'src/app/services/alert/alert.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-naturezas',
@@ -67,6 +69,12 @@ import {
   styleUrls: ['./naturezas.component.scss'],
 })
 export class NaturezasComponent implements OnInit {
+  private naturezaService = inject(NaturezaService);
+  private fb = inject(FormBuilder);
+  private loadingService = inject(LoadingService);
+  private alertService = inject(AlertService);
+  private toastService = inject(ToastService);
+
   naturezas: INatureza[] = [];
   naturezasFiltradas: INatureza[] = []; // Para a busca
   modalOpen = false;
@@ -75,12 +83,7 @@ export class NaturezasComponent implements OnInit {
   editingNatureza: INatureza | null = null;
   naturezaPaiSelecionada: INatureza | null = null;
 
-  constructor(
-    private naturezaService: NaturezaService,
-    private alertCtrl: AlertController,
-    private fb: FormBuilder,
-    private loadingService: LoadingService
-  ) {
+  constructor() {
     this.form = this.fb.group({
       nome: ['', Validators.required],
       codigoNatureza: ['', Validators.required],
@@ -133,7 +136,7 @@ export class NaturezasComponent implements OnInit {
    */
   private filtrarRecursivamente(
     itens: INatureza[],
-    texto: string
+    texto: string,
   ): INatureza[] {
     const resultado: INatureza[] = [];
 
@@ -146,7 +149,7 @@ export class NaturezasComponent implements OnInit {
       // Filtra os filhos recursivamente
       const filhosFiltrados = this.filtrarRecursivamente(
         item.subNaturezas || [],
-        texto
+        texto,
       );
 
       if (matchSelf) {
@@ -178,7 +181,7 @@ export class NaturezasComponent implements OnInit {
     // Busca recursiva para achar o objeto pai e pegar o código dele
     this.naturezaPaiSelecionada = this.buscarNaturezaPorIdRecursivo(
       this.naturezas,
-      natureza.naturezaPaiId
+      natureza.naturezaPaiId,
     );
 
     this.modalTitle = 'Editar Natureza';
@@ -198,7 +201,7 @@ export class NaturezasComponent implements OnInit {
   // ... (buscarNaturezaPorIdRecursivo mantém igual) ...
   private buscarNaturezaPorIdRecursivo(
     lista: INatureza[],
-    id: string | null
+    id: string | null,
   ): INatureza | null {
     if (!id) return null;
     for (const item of lista) {
@@ -206,7 +209,7 @@ export class NaturezasComponent implements OnInit {
       if (item.subNaturezas?.length) {
         const encontrado = this.buscarNaturezaPorIdRecursivo(
           item.subNaturezas,
-          id
+          id,
         );
         if (encontrado) return encontrado;
       }
@@ -243,34 +246,36 @@ export class NaturezasComponent implements OnInit {
     this.loadNaturezas();
     this.fecharModal();
     this.loadingService.hide();
+
+    this.toastService.showToast(
+      `Operação realizada com sucesso`,
+      `success`,
+      `top`,
+    );
   }
 
   handleError() {
     this.loadingService.hide();
-    alert('Erro ao processar solicitação.');
+    this.toastService.showToast(
+      'Erro ao processar solicitação.',
+      'danger',
+      'top',
+    );
   }
 
   async deletarNatureza(natureza: INatureza) {
-    const alert = await this.alertCtrl.create({
-      header: 'Excluir Natureza',
-      subHeader: natureza.nome,
-      message: 'Tem certeza? Isso pode afetar sub-naturezas.',
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Excluir',
-          role: 'destructive',
-          handler: () => {
-            this.loadingService.show();
-            // Usa ID, não Código
-            this.naturezaService.delete(natureza.id).subscribe({
-              next: () => this.handleSuccess(),
-              error: () => this.handleError(),
-            });
-          },
-        },
-      ],
-    });
-    await alert.present();
+    const header = `Excluir Natureza "${natureza.nome}"`;
+    const message =
+      'Tem certeza? Isso deletará também as sub-naturezas filhas desta natureza.';
+    if (
+      (await this.alertService.showConfirmationAlert(header, message)).valueOf()
+    ) {
+      this.loadingService.show();
+      // Usa ID, não Código
+      this.naturezaService.delete(natureza.id).subscribe({
+        next: () => this.handleSuccess(),
+        error: () => this.handleError(),
+      });
+    }
   }
 }

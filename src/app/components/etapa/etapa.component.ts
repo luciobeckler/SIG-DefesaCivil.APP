@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, input } from '@angular/core';
-import { ToastController } from '@ionic/angular';
+import { Component, inject, input } from '@angular/core';
 import { OcorrenciaComponent } from '../ocorrencia/ocorrencia.component';
 
 // CDK
@@ -22,6 +21,7 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 import { IOcorrencia } from 'src/app/interfaces/ocorrencias/IOcorrencias';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-etapa',
@@ -40,12 +40,11 @@ import { IOcorrencia } from 'src/app/interfaces/ocorrencias/IOcorrencias';
 })
 export class EtapaComponent {
   etapa = input.required<IEtapa>();
+  private ocorrenciaService = inject(OcorrenciaService);
+  private loadingService = inject(LoadingService);
+  private toastService = inject(ToastService);
 
-  constructor(
-    private ocorrenciaService: OcorrenciaService,
-    private loadingService: LoadingService,
-    private toastController: ToastController,
-  ) {}
+  constructor() {}
 
   async drop(event: CdkDragDrop<IOcorrencia[]>) {
     if (event.previousContainer === event.container) {
@@ -94,14 +93,18 @@ export class EtapaComponent {
         next: async () => {
           // Sucesso: Apenas remove o loading, o visual já está certo.
           await this.loadingService.hide();
-          this.presentToast('Ocorrência movida com sucesso!', 'success');
+          this.toastService.showToast(
+            'Ocorrência movida com sucesso!',
+            'success',
+            'bottom',
+          );
         },
         error: async (err) => {
           await this.loadingService.hide();
           console.error('Erro na transição:', err);
 
           const msgErro = err.error?.message || 'Erro ao mover ocorrência.';
-          this.presentToast(`Falha: ${msgErro}`, 'danger');
+          this.toastService.showToast(`Falha: ${msgErro}`, 'danger', 'bottom');
 
           // ROLLBACK: Move o item de volta para a lista de origem
           this.realizarRollback(eventOriginal);
@@ -118,19 +121,5 @@ export class EtapaComponent {
       event.currentIndex, // Índice atual
       event.previousIndex, // Índice original
     );
-  }
-
-  private async presentToast(
-    message: string,
-    color: 'success' | 'danger' | 'warning',
-  ) {
-    const toast = await this.toastController.create({
-      message,
-      duration: 3000,
-      color,
-      position: 'bottom',
-      icon: color === 'danger' ? 'alert-circle' : 'checkmark-circle',
-    });
-    await toast.present();
   }
 }

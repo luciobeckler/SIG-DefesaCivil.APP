@@ -11,11 +11,7 @@ import {
 import { lastValueFrom } from 'rxjs'; // Moderno substituto para .toPromise()
 
 // --- Ionic & Capacitor ---
-import {
-  NavController,
-  ToastController,
-  ModalController,
-} from '@ionic/angular/standalone';
+import { NavController, ModalController } from '@ionic/angular/standalone';
 import { Network } from '@capacitor/network';
 import { addIcons } from 'ionicons';
 import {
@@ -81,6 +77,7 @@ import { LoadingService } from 'src/app/services/loading.service';
 import { dateValidator } from 'src/app/helper/funcions';
 import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
 import { HistoricoOcorrenciaComponent } from 'src/app/components/historico-ocorrencia/historico-ocorrencia.component';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-ocorrencia-form',
@@ -127,10 +124,10 @@ export class OcorrenciaFormPage implements OnInit {
   private route = inject(ActivatedRoute);
   private navCtrl = inject(NavController);
   private modalCtrl = inject(ModalController);
-  private toastCtrl = inject(ToastController);
   private ocorrenciaService = inject(OcorrenciaService);
   private anexoService = inject(AnexoService);
   private loadingService = inject(LoadingService);
+  private toastService = inject(ToastService);
 
   // --- Estado do Formulário e Página ---
   public form!: FormGroup;
@@ -165,7 +162,7 @@ export class OcorrenciaFormPage implements OnInit {
     addIcons({ trash, cloudUpload, documentAttach, closeCircle });
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.quadroIdOrigem = this.route.snapshot.queryParamMap.get('quadroId');
     if (this.quadroIdOrigem) {
       this.hrefVoltar = `/home/quadro/${this.quadroIdOrigem}`;
@@ -258,25 +255,54 @@ export class OcorrenciaFormPage implements OnInit {
     }
   }
 
-  carregarDados(id: string) {
-    this.ocorrenciaService.obterDetalhesPorId(id).subscribe({
-      next: (data: any) => {
-        // Formata datas ISO para string visual
-        [
-          'dataEHoraDoOcorrido',
-          'dataEHoraInicioAtendimento',
-          'dataEHoraTerminoAtendimento',
-        ].forEach((campo) => {
-          if (data[campo]) {
-            data[campo] = format(parseISO(data[campo]), 'dd/MM/yyyy HH:mm');
-          }
-        });
+  async carregarDados(id: string) {
+    const status = await Network.getStatus();
 
-        this.form.patchValue(data);
-      },
-      error: () => this.navCtrl.navigateBack(this.hrefVoltar),
+    if (status.connected) {
+      this.ocorrenciaService.obterDetalhesPorId(id).subscribe({
+        next: (data: any) => this.preencherFormulario(data),
+        error: () => this.navCtrl.navigateBack(this.hrefVoltar),
+      });
+      this.carregarAnexos(id);
+    } else {
+      const dadosLocais = await this.ocorrenciaService.obterDetalhesLocal(id);
+
+      if (dadosLocais) {
+        this.preencherFormulario(dadosLocais);
+        if (dadosLocais.anexos) {
+          this.anexosExistentes = dadosLocais.anexos;
+        }
+
+        // Avisa o usuário que é uma visualização offline
+        this.toastService.showToast(
+          'Modo Offline: Editando dados locais.',
+          'warning',
+          'top',
+        );
+      } else {
+        this.toastService.showToast(
+          'Ocorrência não encontrada localmente.',
+          'danger',
+          'top',
+        );
+        this.navCtrl.navigateBack(this.hrefVoltar);
+      }
+    }
+  }
+
+  private preencherFormulario(data: any) {
+    [
+      'dataEHoraDoOcorrido',
+      'dataEHoraInicioAtendimento',
+      'dataEHoraTerminoAtendimento',
+    ].forEach((campo) => {
+      if (data[campo]) {
+        try {
+          data[campo] = format(parseISO(data[campo]), 'dd/MM/yyyy HH:mm');
+        } catch (e) {}
+      }
     });
-    this.carregarAnexos(id);
+    this.form.patchValue(data);
   }
 
   carregarAnexos(id: string) {
@@ -361,15 +387,8 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   private async processarSalvamentoOffline(dto: any) {
-    if (this.isEditing && this.ocorrenciaId) {
-      throw new Error(
-        'Edição offline não permitida para itens já sincronizados.',
-      );
-    }
+    console.log('Sem internet. Salvando alteração local...');
 
-    console.log('Sem internet. Salvando localmente...');
-
-    // Processa anexos em paralelo
     const anexosOffline = await Promise.all(
       this.novosAnexos.map(async (anexo) => ({
         nome: anexo.nome,
@@ -378,19 +397,29 @@ export class OcorrenciaFormPage implements OnInit {
       })),
     );
 
+    const tempId =
+      this.isEditing && this.ocorrenciaId
+        ? this.ocorrenciaId
+        : Date.now().toString();
+
     const itemOffline = {
-      tempId: Date.now(),
+      tempId: tempId,
+      isUpdate: this.isEditing,
       dto: dto,
       quadroId: this.quadroIdOrigem,
       novosAnexos: anexosOffline,
+      idsAnexosRemover: this.idsParaRemover,
       dataCriacao: new Date(),
     };
 
     await this.ocorrenciaService.adicionarNaFila(itemOffline);
-    await this.exibirToast(
-      'Sem internet. Ocorrência salva no dispositivo.',
+
+    await this.toastService.showToast(
+      this.isEditing
+        ? 'Alterações salvas localmente (Pendente de Envio).'
+        : 'Nova ocorrência salva offline.',
       'warning',
-      'cloud-offline',
+      'top',
     );
   }
 
@@ -402,7 +431,7 @@ export class OcorrenciaFormPage implements OnInit {
       await lastValueFrom(this.ocorrenciaService.atualizar(idAtual, dto));
     } else {
       const novaOcorrencia = await lastValueFrom(
-        this.ocorrenciaService.criar(dto, this.quadroIdOrigem || ''),
+        this.ocorrenciaService.created(dto, this.quadroIdOrigem || ''),
       );
       idAtual = novaOcorrencia?.id ?? null;
     }
@@ -431,26 +460,23 @@ export class OcorrenciaFormPage implements OnInit {
     if (tasks.length > 0) {
       await Promise.all(tasks);
     }
+
+    this.toastService.showToast(
+      'Ocorrência criada com sucesso',
+      'success',
+      'top',
+    );
   }
 
   // --- UI Helpers & Navegação ---
 
   async exibirErro(error: any) {
     console.error(error);
-    await this.exibirToast(
+    await this.toastService.showToast(
       error.message || 'Erro ao processar solicitação',
       'danger',
+      'bottom',
     );
-  }
-
-  async exibirToast(message: string, color: string = 'primary', icon?: string) {
-    const toast = await this.toastCtrl.create({
-      message,
-      duration: 3000,
-      color,
-      icon,
-    });
-    await toast.present();
   }
 
   voltar() {

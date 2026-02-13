@@ -39,11 +39,11 @@
           color="danger"
           class="ion-margin-end"
         ></ion-icon>
-        {{ getRua(ocorrencia().enderecoResumido) }}
+        {{ ocorrencia().enderecoRua || "Local não informado" }}
       </h2>
 
       <p class="endereco-bairro">
-        {{ getBairro(ocorrencia().enderecoResumido) }}
+        {{ ocorrencia().enderecoBairro }}
       </p>
     </div>
 
@@ -65,9 +65,12 @@
         }
       </div>
 
-      @if (ocorrencia().emailResponsavel) {
-        <div class="user-avatar" title="{{ ocorrencia().emailResponsavel }}">
-          <span>{{ getIniciais(ocorrencia().emailResponsavel) }}</span>
+      @if (ocorrencia().usuarioCriador.nome) {
+        <div
+          class="user-avatar"
+          title="{{ ocorrencia().usuarioCriador.email }}"
+        >
+          <span>{{ getIniciais(ocorrencia().usuarioCriador.email) }}</span>
         </div>
       }
     </div>
