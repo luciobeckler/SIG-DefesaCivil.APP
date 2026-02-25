@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import {
@@ -14,7 +13,6 @@ import {
 } from 'ionicons/icons';
 
 // Interfaces e Services
-import { IEtapa } from 'src/app/interfaces/ocorrencias/IEtapa';
 import { IQuadro } from 'src/app/interfaces/ocorrencias/IQuadro';
 import { QuadrosService } from 'src/app/services/quadros.service';
 
@@ -42,8 +40,11 @@ import {
   IonRefresher,
   IonRefresherContent,
 } from '@ionic/angular/standalone';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Subscription } from 'rxjs';
+import { converterParaISO } from 'src/app/helper/funcions';
 import { StorageService } from 'src/app/services/storage/storage.service';
+import { Network } from '@capacitor/network';
+import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
 
 @Component({
   selector: 'app-quadro',
@@ -76,12 +77,17 @@ import { StorageService } from 'src/app/services/storage/storage.service';
   ],
 })
 export class QuadroComponent {
-  quadros: IQuadro[] = [];
-  etapas: IEtapa[] = [];
-  etapasOriginais: IEtapa[] = [];
-  public quadroAtualId: string = '';
+  private navCtrl = inject(NavController);
+  private quadroService = inject(QuadrosService);
+  private cdr = inject(ChangeDetectorRef);
+  private ocorrenciaService = inject(OcorrenciaService);
+  private storageService = inject(StorageService);
 
-  // Controle do Modal
+  private subscriptions = new Subscription();
+
+  quadros: IQuadro[] = [];
+  quadrosOriginais: IQuadro[] = [];
+  public quadroAtual?: IQuadro;
   public isModalOpen = false;
 
   filtros = {
@@ -93,13 +99,7 @@ export class QuadroComponent {
     dataFim: '',
   };
 
-  constructor(
-    private navCtrl: NavController,
-    private quadroService: QuadrosService,
-    private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef,
-    private storageService: StorageService,
-  ) {
+  constructor() {
     addIcons({
       chevronDown,
       chevronUp,
@@ -117,29 +117,46 @@ export class QuadroComponent {
   async ionViewWillEnter() {
     console.log('Página de quadros ativa. Atualizando dados...');
     await this.loadData();
+
+    const sub = this.ocorrenciaService.createdOrUpdated.subscribe(() => {
+      this.loadData();
+    });
+    this.subscriptions.add(sub);
   }
 
   async loadData() {
-    try {
-      // 1. Aguarda carregar a lista de quadros
-      await this.carregarQuadros();
+    const status = await Network.getStatus();
 
-      // 2. Só tenta buscar etapas se houver um quadro selecionado
-      if (this.quadroAtualId) {
-        await this.getEtapasFromQuadroId();
-      }
-    } catch (error) {
-      console.error('Erro na sequência de carregamento:', error);
+    const cache = await this.quadroService.getQuadrosOffline();
+    if (cache.length > 0) {
+      this.quadros = cache;
+      this.quadroAtual = this.quadroAtual || this.quadros[0];
     }
+
+    if (status.connected) {
+      await this.carregarQuadros();
+    }
+
+    this.cdr.detectChanges();
   }
 
   // Transformamos em Promise para o await do loadData funcionar
   async carregarQuadros() {
-    const data = await firstValueFrom(this.quadroService.getAllPreview());
+    const data = await firstValueFrom(this.quadroService.getQuadros());
+    console.log(this.storageService.get('quadros_cache'));
     if (data && data.length > 0) {
-      this.quadros = data;
-      if (!this.quadroAtualId) {
-        this.quadroAtualId = this.quadros[0].id;
+      this.quadrosOriginais = JSON.parse(JSON.stringify(data));
+      this.quadros = JSON.parse(JSON.stringify(data));
+
+      if (
+        !this.quadroAtual ||
+        !this.quadros.find((q) => q.id === this.quadroAtual!.id)
+      ) {
+        this.quadroAtual = this.quadros[0];
+      } else {
+        this.quadroAtual = this.quadros.find(
+          (q) => q.id === this.quadroAtual!.id,
+        );
       }
     }
   }
@@ -149,23 +166,20 @@ export class QuadroComponent {
     event.target.complete();
   }
 
-  // Chamado quando o usuário troca o quadro no select
   async trocarQuadro(event: any) {
-    this.quadroAtualId = event.detail.value;
-    await this.getEtapasFromQuadroId();
-  }
+    const idSelecionado = event.detail.value;
 
-  async getEtapasFromQuadroId() {
-    if (!this.quadroAtualId) return;
+    // 1. Busca pelo ID corretamente
+    const novoQuadro = this.quadros.find((q) => q.id === idSelecionado);
 
-    const data = await firstValueFrom(
-      this.quadroService.getDetailsById(this.quadroAtualId),
-    );
-    // Deep copy para preservar os originais e permitir filtros
-    this.etapasOriginais = JSON.parse(JSON.stringify(data.etapas));
-    this.etapas = data.etapas;
-    this.aplicarFiltros();
-    this.cdr.detectChanges(); // Garante que o Angular perceba a mudança
+    if (novoQuadro) {
+      this.quadroAtual = novoQuadro;
+
+      // 2. Reseta filtros visuais ao trocar de quadro para evitar confusão
+      this.limparFiltros(); // false para não fechar modal se não quiser
+
+      this.cdr.detectChanges();
+    }
   }
 
   // --- LÓGICA DE MÁSCARA MANUAL (DD/MM/AAAA) ---
@@ -186,15 +200,8 @@ export class QuadroComponent {
   }
 
   // --- FILTROS ---
-  private converterParaISO(dataBR: string): string | null {
-    if (!dataBR || dataBR.length !== 10) return null;
-    const partes = dataBR.split('/');
-    if (partes.length !== 3) return null;
-    return `${partes[2]}-${partes[1]}-${partes[0]}`;
-  }
 
   aplicarFiltros() {
-    // 1. Verifica se está tudo vazio
     if (
       !this.filtros.protocolo &&
       !this.filtros.rua &&
@@ -203,9 +210,18 @@ export class QuadroComponent {
       !this.filtros.dataInicio &&
       !this.filtros.dataFim
     ) {
-      this.etapas = JSON.parse(JSON.stringify(this.etapasOriginais));
-      this.setModalOpen(false); // Fecha o modal
+      this.setModalOpen(false);
       return;
+    }
+
+    const quadroOriginal = this.quadrosOriginais.find(
+      (q) => q.id === this.quadroAtual!.id,
+    );
+    if (quadroOriginal) {
+      // Restaura as etapas originais antes de aplicar o filtro
+      this.quadroAtual!.etapas = JSON.parse(
+        JSON.stringify(quadroOriginal.etapas),
+      );
     }
 
     // 2. Prepara termos de busca
@@ -213,11 +229,11 @@ export class QuadroComponent {
     const termoRua = this.filtros.rua.toLowerCase();
     const termoBairro = this.filtros.bairro.toLowerCase();
     const termoSolicitante = this.filtros.solicitante.toLowerCase();
-    const dataInicioISO = this.converterParaISO(this.filtros.dataInicio);
-    const dataFimISO = this.converterParaISO(this.filtros.dataFim);
+    const dataInicioISO = converterParaISO(this.filtros.dataInicio);
+    const dataFimISO = converterParaISO(this.filtros.dataFim);
 
     // 3. Executa o Filtro
-    this.etapas = this.etapasOriginais.map((etapa) => {
+    this.quadroAtual!.etapas = this.quadroAtual!.etapas.map((etapa) => {
       const etapaCopia = { ...etapa };
 
       if (etapaCopia.ocorrencias) {
@@ -226,14 +242,8 @@ export class QuadroComponent {
           const matchProtocolo =
             !termoProtocolo ||
             (oc.numero && oc.numero.toString().includes(termoProtocolo));
-          const matchRua =
-            !termoRua ||
-            (oc.enderecoResumido &&
-              oc.enderecoResumido.toLowerCase().includes(termoRua));
-          const matchBairro =
-            !termoBairro ||
-            (oc.enderecoResumido &&
-              oc.enderecoResumido.toLowerCase().includes(termoBairro));
+          const matchRua = !termoRua || oc.enderecoRua;
+          const matchBairro = !termoBairro || oc.enderecoBairro;
           const matchSolicitante =
             !termoSolicitante ||
             (oc.solicitanteNome &&
@@ -265,7 +275,7 @@ export class QuadroComponent {
     this.setModalOpen(false); // Fecha o modal após filtrar
   }
 
-  limparFiltros() {
+  limparFiltros(fecharModal = true) {
     this.filtros = {
       protocolo: '',
       rua: '',
@@ -274,16 +284,25 @@ export class QuadroComponent {
       dataInicio: '',
       dataFim: '',
     };
-    this.etapas = JSON.parse(JSON.stringify(this.etapasOriginais));
 
-    this.setModalOpen(false);
+    // Restaura os dados originais sem filtros
+    if (this.quadroAtual) {
+      const original = this.quadrosOriginais.find(
+        (q) => q.id === this.quadroAtual!.id,
+      );
+      if (original) {
+        this.quadroAtual.etapas = JSON.parse(JSON.stringify(original.etapas));
+      }
+    }
+
+    if (fecharModal) this.setModalOpen(false);
   }
 
   novaOcorrencia() {
     this.setModalOpen(false);
     this.cdr.detectChanges();
     this.navCtrl.navigateForward(['/home', 'ocorrencia', 'form', 'nova'], {
-      queryParams: { quadroId: this.quadroAtualId },
+      queryParams: { quadroId: this.quadroAtual!.id },
     });
   }
 }

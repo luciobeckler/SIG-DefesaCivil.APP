@@ -7,7 +7,7 @@
       <ion-item lines="none" color="primary">
         <ion-select
           interface="popover"
-          [value]="quadroAtualId"
+          [value]="quadroAtual?.id"
           (ionChange)="trocarQuadro($event)"
           placeholder="Selecionar Quadro"
         >
@@ -25,9 +25,9 @@
 </ion-header>
 
 <ion-content [fullscreen]="true" class="kanban-background">
-  @if (etapas && etapas.length > 0) {
+  @if (quadroAtual && quadroAtual.etapas && quadroAtual.etapas.length > 0) {
     <div class="kanban-board">
-      @for (etapa of etapas; track etapa.id) {
+      @for (etapa of quadroAtual.etapas; track etapa.id) {
         <app-etapa [etapa]="etapa" />
       }
     </div>

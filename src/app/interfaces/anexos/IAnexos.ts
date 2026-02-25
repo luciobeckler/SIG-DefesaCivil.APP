@@ -1,15 +1,21 @@
 export interface IAnexo {
-  id?: string;
+  id: string;
   nomeOriginal: string;
-  urlArmazenamento?: string;
+  urlArmazenamento: string;
   tipoConteudo: string;
   tamanhoBytes: number;
-  file?: File;
-  marcadoParaExcluir?: boolean;
+  file: File;
+  latitudeCaptura?: string;
+  longitudeCaptura?: string;
+  dataHoraCaptura?: Date | string;
+  marcadoParaExcluir: boolean;
 }
 
 export interface INovoAnexo {
   file: File;
-  nome: string; // Permite edição
+  nome: string;
   tamanho: string;
+  latitudeCaptura?: string;
+  longitudeCaptura?: string;
+  dataHoraCaptura?: Date | string;
 }

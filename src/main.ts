@@ -64,6 +64,10 @@ import {
   peopleOutline,
   pricetagOutline,
   pricetagsOutline,
+  mapOutline,
+  locateOutline,
+  camera,
+  folderOpen,
 } from 'ionicons/icons';
 import {
   HTTP_INTERCEPTORS,
@@ -75,9 +79,15 @@ import { provideNgxMask } from 'ngx-mask';
 import { CookieService } from 'ngx-cookie-service';
 import { TokenInterceptor } from './app/interceptors/token.interceptor';
 import { loadingInterceptor } from './app/interceptors/loading.interceptor';
-import { APP_INITIALIZER, importProvidersFrom } from '@angular/core';
+import {
+  APP_INITIALIZER,
+  enableProdMode,
+  importProvidersFrom,
+} from '@angular/core';
 import { PermissionService } from './app/services/permission.service';
 import { IonicStorageModule } from '@ionic/storage-angular';
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
+import { environment } from './environments/environment';
 
 addIcons({
   people,
@@ -130,10 +140,19 @@ addIcons({
   alert,
   locationSharp,
   personOutline,
+  mapOutline,
+  locateOutline,
+  camera,
+  folderOpen,
 });
 
 export function initPermissions(permService: PermissionService) {
   return () => permService.loadPermissions();
+}
+
+defineCustomElements(window);
+if (environment.production) {
+  enableProdMode();
 }
 
 bootstrapApplication(AppComponent, {

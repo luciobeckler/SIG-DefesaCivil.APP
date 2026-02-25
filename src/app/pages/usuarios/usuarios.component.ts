@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { IUsuarioInfoId } from 'src/app/interfaces/usuario/IUsuarioInfo';
 import { UsuariosService } from 'src/app/services/usuarios.service';
 import { IonicModule } from '@ionic/angular';
@@ -9,7 +9,6 @@ import {
   isTelefoneValido,
   toDateOnly,
 } from 'src/app/helper/funcions';
-import { AlertController } from '@ionic/angular';
 import { LoadingService } from 'src/app/services/loading.service';
 import { NgxMaskDirective } from 'ngx-mask';
 import {
@@ -33,6 +32,8 @@ import {
   IonSelectOption,
   IonToggle,
 } from '@ionic/angular/standalone';
+import { AlertService } from 'src/app/services/alert/alert.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-usuarios',
@@ -65,6 +66,11 @@ import {
   ],
 })
 export class UsuariosComponent implements OnInit {
+  private usuarioService = inject(UsuariosService);
+  private loadingService = inject(LoadingService);
+  private alertService = inject(AlertService);
+  private toastService = inject(ToastService);
+
   usuarios: IUsuarioInfoId[] = [];
   usuarioSelecionado: IUsuarioInfoId = {
     id: '',
@@ -86,11 +92,7 @@ export class UsuariosComponent implements OnInit {
   dataNascimentoString: string = '';
   dataAdmissaoString: string = '';
 
-  constructor(
-    private alertController: AlertController,
-    private usuarioService: UsuariosService,
-    private loadingService: LoadingService,
-  ) {
+  constructor() {
     const today = new Date();
     const max = today.toISOString();
 
@@ -168,16 +170,18 @@ export class UsuariosComponent implements OnInit {
     const dataAdmiObj = this.convertStringToDate(this.dataAdmissaoString);
 
     if (this.dataNascimentoString && !dataNascObj) {
-      this.presentAlert(
-        'Data Inválida',
-        'Data de Nascimento inválida. Use o formato DD/MM/YYYY.',
+      this.toastService.showToast(
+        'Data Inválida: Data de Nascimento inválida. Use o formato DD/MM/YYYY.',
+        'warning',
+        'top',
       );
       return;
     }
     if (this.dataAdmissaoString && !dataAdmiObj) {
-      this.presentAlert(
-        'Data Inválida',
-        'Data de Admissão inválida. Use o formato DD/MM/YYYY.',
+      this.toastService.showToast(
+        'Data Inválida: Data de Admissão inválida. Use o formato DD/MM/YYYY.',
+        'warning',
+        'top',
       );
       return;
     }
@@ -186,13 +190,18 @@ export class UsuariosComponent implements OnInit {
     this.usuarioSelecionado.dataAdmissao = dataAdmiObj;
 
     if (!this.validarCPF(this.usuarioSelecionado.cpf)) {
-      this.presentAlert('CPF Inválido', 'O CPF informado não é válido.');
+      this.toastService.showToast(
+        'CPF Inválido: O CPF informado não é válido.',
+        'warning',
+        'top',
+      );
       return;
     }
     if (!this.validarTelefone(this.usuarioSelecionado.telefone)) {
-      this.presentAlert(
-        'Telefone Inválido',
-        'Telefone inválido! Informe DDD + número.',
+      this.toastService.showToast(
+        'Telefone Inválido: Telefone inválido! Informe DDD + número.',
+        'warning',
+        'top',
       );
       return;
     }
@@ -226,36 +235,12 @@ export class UsuariosComponent implements OnInit {
     this.dataAdmissaoString = '';
   }
 
-  async presentAlert(header: string, message: string, subHeader?: string) {
-    const alert = await this.alertController.create({
-      header: header,
-      subHeader: subHeader,
-      message: message,
-      buttons: ['OK'],
-    });
-    await alert.present();
-  }
-
   async confirmarExclusao(user: IUsuarioInfoId) {
-    const alert = await this.alertController.create({
-      header: 'Confirmar exclusão',
-      message: `Tem certeza que deseja excluir o usuário "${user.nome.toUpperCase()}"?`,
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Excluir',
-          role: 'destructive',
-          handler: () => {
-            this.onDeleteUser(user);
-          },
-        },
-      ],
-    });
-
-    await alert.present();
+    const header = 'Confirmar exclusão';
+    const message = `Tem certeza que deseja excluir o usuário "${user.nome.toUpperCase()}"?`;
+    if (this.alertService.showConfirmationAlert(header, message).valueOf()) {
+      this.onDeleteUser(user);
+    }
   }
 
   async getOutrosUsuarios() {
@@ -289,15 +274,20 @@ export class UsuariosComponent implements OnInit {
     this.usuarioService.update(id, payload).subscribe({
       next: () => {
         this.getOutrosUsuarios();
-        this.presentAlert(
-          'Sucesso',
-          `Usuário ${user.nome} editado com sucesso.`,
+        this.toastService.showToast(
+          `Sucesso: Usuário ${user.nome} editado com sucesso.`,
+          'success',
+          'top',
         );
         this.mostrarModal = false;
         this.loadingService.hide();
       },
       error: (err) => {
-        this.presentAlert('Erro', err.error.message);
+        this.toastService.showToast(
+          `Erro ${err.error.message}`,
+          'danger',
+          'top',
+        );
         this.loadingService.hide();
       },
     });
@@ -309,14 +299,19 @@ export class UsuariosComponent implements OnInit {
     this.usuarioService.delete(user.id).subscribe({
       next: () => {
         this.getOutrosUsuarios();
-        this.presentAlert(
-          'Sucesso',
-          `Usuário ${user.nome} deletado com sucesso.`,
+        this.toastService.showToast(
+          `Sucesso: Usuário ${user.nome} deletado com sucesso.`,
+          'success',
+          'top',
         );
         this.loadingService.hide();
       },
       error: (err) => {
-        this.presentAlert('Erro', err.error.message);
+        this.toastService.showToast(
+          `Erro: ${err.error.message}`,
+          'danger',
+          'top',
+        );
         this.loadingService.hide();
       },
     });
@@ -335,12 +330,20 @@ export class UsuariosComponent implements OnInit {
     this.usuarioService.create(payload).subscribe({
       next: (resposta) => {
         this.getOutrosUsuarios();
-        this.presentAlert('Sucesso', resposta.message);
+        this.toastService.showToast(
+          `Sucesso: ${resposta.message}`,
+          `success`,
+          `top`,
+        );
         this.fecharModal();
         this.loadingService.hide();
       },
       error: (err) => {
-        this.presentAlert('Erro', err.error.message);
+        this.toastService.showToast(
+          `Erro: ${err.error.message}`,
+          `danger`,
+          `top`,
+        );
         this.loadingService.hide();
       },
     });

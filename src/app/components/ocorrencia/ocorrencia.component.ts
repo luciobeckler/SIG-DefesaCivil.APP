@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, Inject, inject, input } from '@angular/core';
 import { IonicModule, NavController } from '@ionic/angular';
-import { IOcorrenciaPreviewDTO } from 'src/app/interfaces/ocorrencias/IOcorrencias';
 import {
   getVisual,
   GrauRiscoVisual,
@@ -21,8 +20,9 @@ import {
 } from '@ionic/angular/standalone';
 import { AuthService } from '../../services/auth.service';
 import { PermissionService } from 'src/app/services/permission.service';
-import { ToastController } from '@ionic/angular/standalone';
 import { EPermission } from 'src/app/auth/permissions.enum';
+import { IOcorrencia } from 'src/app/interfaces/ocorrencias/IOcorrencias';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-ocorrencia',
@@ -42,13 +42,13 @@ import { EPermission } from 'src/app/auth/permissions.enum';
   standalone: true,
 })
 export class OcorrenciaComponent {
-  ocorrencia = input.required<IOcorrenciaPreviewDTO>();
+  ocorrencia = input.required<IOcorrencia>();
   quadroId = input.required<string>();
 
   private navCtrl = inject(NavController);
   private authService = inject(AuthService);
   private permService = inject(PermissionService);
-  private toastCtrl = inject(ToastController);
+  private toastService = inject(ToastService);
 
   protected readonly formatarLabel = formatarLabel;
   perms = EPermission;
@@ -83,21 +83,20 @@ export class OcorrenciaComponent {
       this.navCtrl.navigateForward(
         ['/home', 'ocorrencia', 'form', this.ocorrencia().id],
         {
-          queryParams: { quadroId: this.quadroId() },
+          queryParams: { quadroId: this.quadroId() || '' },
         },
       );
     } else {
-      const toast = await this.toastCtrl.create({
-        message: 'Você não tem permissão para visualizar esta ocorrência.',
-        duration: 2000,
-        color: 'warning',
-        icon: 'lock-closed',
-      });
-      toast.present();
+      this.toastService.showToast(
+        'Você não tem permissão para visualizar esta ocorrência.',
+        'warning',
+        'bottom',
+      );
     }
   }
 
   canAccess = computed(() => {
+    if (!this.ocorrencia()) return;
     const dadosOcorrencia = this.ocorrencia();
     const userId = this.authService.getUserId();
 
@@ -105,7 +104,7 @@ export class OcorrenciaComponent {
       this.perms.OCORRENCIA_VISUALIZAR_TODAS,
     );
 
-    const ehDono = dadosOcorrencia.usuarioCriadorId === userId;
+    const ehDono = dadosOcorrencia.usuarioCriador.id === userId;
 
     return temPermissaoGlobal || ehDono;
   });

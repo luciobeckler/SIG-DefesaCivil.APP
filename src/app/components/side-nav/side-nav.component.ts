@@ -18,7 +18,10 @@ import {
   IonCardContent,
   IonCard,
 } from '@ionic/angular/standalone';
-import { firstValueFrom, Subscription } from 'rxjs';
+import { firstValueFrom, Subject, Subscription } from 'rxjs';
+import { Network } from '@capacitor/network';
+
+// Imports do Projeto
 import { EPermission } from 'src/app/auth/permissions.enum';
 import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
 import { ISideNav } from 'src/app/interfaces/side-nav/ISideNavOptions';
@@ -28,9 +31,7 @@ import { LoadingService } from 'src/app/services/loading.service';
 import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
 import { QuadrosService } from 'src/app/services/quadros.service';
 import { StorageService } from 'src/app/services/storage/storage.service';
-import { ToastController, AlertController } from '@ionic/angular/standalone';
-import { Network } from '@capacitor/network';
-import { alert } from 'ionicons/icons';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-side-nav',
@@ -60,8 +61,13 @@ import { alert } from 'ionicons/icons';
   ],
 })
 export class SideNavComponent implements OnInit, OnDestroy {
-  boards: any;
-  sideNavObject: ISideNav = {
+  // --- Estado ---
+  quadros: any[] = [];
+  itemsPendentes: any[] = [];
+  private subscriptions = new Subscription();
+
+  // --- Configuração Menu ---
+  readonly sideNavObject: ISideNav = {
     icon: 'shield-half-outline',
     title: 'Defesa Civil',
     subTitle: 'Gerenciamento',
@@ -90,176 +96,162 @@ export class SideNavComponent implements OnInit, OnDestroy {
       },
     ],
   };
-  penddingItens: any[] = [];
-  stackSub!: Subscription;
 
+  // --- Injeções ---
   private ocorrenciaService = inject(OcorrenciaService);
   private anexoService = inject(AnexoService);
   private loadingService = inject(LoadingService);
-  private toastCtrl = inject(ToastController);
   private authService = inject(AuthService);
   private storageService = inject(StorageService);
   private quadroService = inject(QuadrosService);
-  private alertCtrl = inject(AlertController);
+  private toastService = inject(ToastService);
+
+  // --- Ciclo de Vida ---
 
   async ngOnInit() {
-    await this.carregarQuadros();
-    await this.verificarPendencias();
+    await this.carregarQuadrosCacheOuRede();
+    await this.atualizarListaPendencias();
 
-    this.stackSub = this.ocorrenciaService.offlineStackChanged.subscribe(() => {
-      this.verificarPendencias();
+    const sub = this.ocorrenciaService.offlineStackChanged.subscribe(() => {
+      this.atualizarListaPendencias();
     });
-  }
-
-  async carregarQuadros() {
-    this.boards = await this.storageService.get('quadros');
-    if (this.boards == null) {
-      const status = await Network.getStatus();
-      if (status.connected) {
-        this.boards = await firstValueFrom(this.quadroService.getAllPreview());
-        this.storageService.set('quadros', this.boards);
-      }
-    }
-  }
-
-  async verificarPendencias() {
-    this.penddingItens = await this.ocorrenciaService.getFilaOffline();
-  }
-
-  async sincronizarAgora() {
-    // 1. Verificação de Rede
-    const status = await Network.getStatus();
-    if (!status.connected) {
-      const t = await this.toastCtrl.create({
-        message: 'Você ainda está sem internet.',
-        duration: 2000,
-        color: 'warning',
-      });
-      t.present();
-      return;
-    }
-
-    if (this.penddingItens.length === 0) return;
-
-    // 2. Buscar Quadros disponíveis (Online) para o usuário selecionar
-    this.loadingService.show();
-    let quadrosDisponiveis = [];
-    try {
-      // Chama o GET atualizado do serviço
-      quadrosDisponiveis = await firstValueFrom(
-        this.quadroService.getAllPreview(),
-      );
-    } catch (error) {
-      this.loadingService.hide();
-      const t = await this.toastCtrl.create({
-        message: 'Erro ao buscar quadros para sincronização.',
-        color: 'danger',
-      });
-      t.present();
-      return;
-    }
-    this.loadingService.hide(); // Esconde loading para mostrar o Alerta
-
-    // 3. Exibir Alerta para Seleção
-    const alert = await this.alertCtrl.create({
-      header: 'Sincronização',
-      subHeader: 'Selecione o Quadro de destino',
-      message: 'Para onde as ocorrências criadas offline devem ser enviadas?',
-      backdropDismiss: false, // Obriga a selecionar ou cancelar
-      inputs: quadrosDisponiveis.map((q) => ({
-        type: 'radio',
-        label: q.nome, // Supondo que seu IQuadro tenha 'nome'
-        value: q.id, // Supondo que seu IQuadro tenha 'id'
-      })),
-      buttons: [
-        {
-          text: 'Cancelar',
-          role: 'cancel',
-        },
-        {
-          text: 'Sincronizar',
-          role: 'confirm',
-        },
-      ],
-    });
-
-    await alert.present();
-
-    const { role, data } = await alert.onDidDismiss();
-
-    if (role !== 'confirm' || !data.values) {
-      // Usuário cancelou ou não selecionou nada
-      return;
-    }
-
-    const quadroIdSelecionado = data.values; // O ID escolhido
-
-    // 4. Iniciar Processo de Envio
-    this.loadingService.show();
-
-    const itensFalha = [];
-
-    // Processa a fila
-    for (const item of this.penddingItens) {
-      try {
-        // --- ALTERAÇÃO IMPORTANTE ---
-        // Usamos o quadroIdSelecionado pelo usuário, ignorando o que foi salvo offline (se houver)
-        const novaOcorrencia = await firstValueFrom(
-          this.ocorrenciaService.criar(item.dto, quadroIdSelecionado),
-        );
-
-        // Enviar Anexos (se houver)
-        if (
-          item.novosAnexos &&
-          item.novosAnexos.length > 0 &&
-          novaOcorrencia?.id
-        ) {
-          const arquivosParaUpload = item.novosAnexos.map((a: any) => ({
-            file: this.anexoService.base64ToFile(a.base64, a.nome),
-            nome: a.nome,
-            tamanho: a.tamanho,
-          }));
-
-          await firstValueFrom(
-            this.anexoService.uploadAnexos(
-              novaOcorrencia.id,
-              arquivosParaUpload,
-            ),
-          );
-        }
-
-        // Sucesso: não faz nada, pois o item não será readicionado à lista de falhas
-      } catch (error) {
-        console.error('Erro ao sincronizar item', item, error);
-        itensFalha.push(item); // Mantém na fila se der erro
-      }
-    }
-
-    // Atualiza a fila no Storage
-    await this.storageService.set('fila_ocorrencias', itensFalha);
-    this.penddingItens = itensFalha;
-
-    this.loadingService.hide();
-
-    const msg =
-      itensFalha.length > 0
-        ? `Sincronização parcial. ${itensFalha.length} itens falharam.`
-        : 'Sincronização concluída com sucesso!';
-
-    const toast = await this.toastCtrl.create({
-      message: msg,
-      duration: 3000,
-      color: itensFalha.length > 0 ? 'warning' : 'success',
-    });
-    toast.present();
-  }
-  logOut() {
-    this.authService.logOut().subscribe();
+    this.subscriptions.add(sub);
   }
 
   ngOnDestroy() {
-    if (this.stackSub) {
-      this.stackSub.unsubscribe();
+    this.subscriptions.unsubscribe();
+  }
+
+  // --- Carregamento de Dados ---
+
+  async carregarQuadrosCacheOuRede() {
+    this.quadros = await this.storageService.get('quadros');
+
+    if (!this.quadros) {
+      const status = await Network.getStatus();
+      if (status.connected) {
+        try {
+          this.quadros = await firstValueFrom(this.quadroService.getQuadros());
+          await this.storageService.set('quadros', this.quadros);
+        } catch (error) {
+          console.error('Falha ao buscar quadros iniciais', error);
+        }
+      }
     }
+  }
+
+  async atualizarListaPendencias() {
+    this.itemsPendentes = await this.ocorrenciaService.getFilaOffline();
+  }
+
+  async iniciarSincronizacao() {
+    // 1. Validações Iniciais
+    if (this.itemsPendentes.length === 0) return;
+    if (!(await this.verificarConexao())) return;
+
+    // 2. Seleção de Destino (UI)
+
+    // 3. Processamento
+    this.loadingService.show();
+    const { itensFalha } = await this.processarFilaDeEnvio();
+
+    // 4. Finalização
+    await this.atualizarEstadoAposSync(itensFalha);
+    this.loadingService.hide();
+    this.exibirFeedbackFinal(itensFalha.length);
+  }
+
+  // --- Métodos Auxiliares de Lógica (Private) ---
+
+  private async verificarConexao(): Promise<boolean> {
+    const status = await Network.getStatus();
+    if (!status.connected) {
+      this.toastService.showToast('Você está sem internet.', 'warning', 'top');
+      return false;
+    }
+    return true;
+  }
+  /**
+   * Itera sobre a fila e tenta enviar um por um.
+   * Retorna os itens que falharam.
+   */
+  private async processarFilaDeEnvio() {
+    const itensFalha = [];
+
+    for (const item of this.itemsPendentes) {
+      try {
+        const idOcorrencia = await this.enviarOcorrencia(item);
+
+        if (item.novosAnexos?.length > 0 && idOcorrencia) {
+          await this.enviarAnexos(idOcorrencia, item.novosAnexos);
+        }
+      } catch (error) {
+        console.error('Erro sync item:', item, error);
+        itensFalha.push(item);
+      }
+    }
+
+    return { itensFalha };
+  }
+
+  private async enviarOcorrencia(item: any): Promise<string> {
+    if (item.isUpdate) {
+      // Edição: Usa o ID real (tempId armazenava o ID real na edição)
+      await firstValueFrom(
+        this.ocorrenciaService.atualizar(item.tempId, item.dto),
+      );
+      if (item.idsAnexosRemover && item.idsAnexosRemover.length > 0) {
+        await firstValueFrom(
+          this.anexoService.removerAnexos(item.tempId, item.idsAnexosRemover),
+        );
+      }
+      console.log(`Atualizado: ${item.tempId}`);
+      return item.tempId;
+    } else {
+      // Criação: Usa o Quadro Selecionado
+      const nova = await firstValueFrom(
+        this.ocorrenciaService.created(item.dto, item.quadroId),
+      );
+      return nova.id;
+    }
+  }
+
+  private async enviarAnexos(ocorrenciaId: string, anexos: any[]) {
+    const arquivosPreparados = anexos.map((a: any) => ({
+      file: this.anexoService.base64ToFile(a.base64, a.nome),
+      nome: a.nome,
+      tamanho: a.tamanho,
+    }));
+
+    await firstValueFrom(
+      this.anexoService.uploadAnexos(ocorrenciaId, arquivosPreparados),
+    );
+  }
+
+  private async atualizarEstadoAposSync(itensFalha: any[]) {
+    await this.storageService.set('fila_ocorrencias', itensFalha);
+    this.itemsPendentes = itensFalha;
+  }
+
+  // --- Métodos Auxiliares de UI (Private) ---
+
+  private exibirFeedbackFinal(qtdFalhas: number) {
+    if (qtdFalhas > 0) {
+      this.toastService.showToast(
+        `Sincronização parcial. ${qtdFalhas} falharam.`,
+        'warning',
+        'bottom',
+      );
+    } else {
+      this.toastService.showToast(
+        'Sincronização concluída com sucesso!',
+        'success',
+        'bottom',
+      );
+    }
+  }
+
+  logOut() {
+    this.authService.logOut().subscribe();
   }
 }

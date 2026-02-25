@@ -35,7 +35,6 @@ export const routes: Routes = [
             (m) => m.QuadroComponent,
           ),
       },
-      // Movido para fora de 'quadro' para evitar problemas de Outlet aninhado
       {
         path: 'ocorrencia/form/:id',
         loadComponent: () =>

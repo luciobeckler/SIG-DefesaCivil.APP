@@ -38,11 +38,11 @@
       }
     }
 
-    @if (penddingItens.length > 0) {
+    @if (itemsPendentes.length > 0) {
       <ion-card color="warning" class="ion-margin-bottom">
         <ion-card-content>
           <p>
-            <strong>{{ penddingItens.length }}</strong> ocorrências salvas
+            <strong>{{ itemsPendentes.length }}</strong> ocorrências salvas
             offline.
           </p>
           <ion-button
@@ -50,7 +50,7 @@
             color="dark"
             size="small"
             class="ion-margin-top"
-            (click)="sincronizarAgora()"
+            (click)="iniciarSincronizacao()"
           >
             <ion-icon name="cloud-upload" slot="start"></ion-icon>
             Sincronizar Agora
