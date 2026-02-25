@@ -18,7 +18,6 @@ import {
   cloudUpload,
   documentAttach,
   trash,
-  warning,
 } from 'ionicons/icons';
 import {
   IonHeader,
@@ -36,16 +35,12 @@ import {
   IonLabel,
   IonInput,
   IonCheckbox,
-  IonModal,
   IonRow,
   IonCol,
   IonBadge,
   IonList,
   IonListHeader,
   IonNote,
-  IonItemSliding,
-  IonItemOptions,
-  IonItemOption,
   IonText,
 } from '@ionic/angular/standalone';
 
@@ -73,7 +68,6 @@ import { EPermission } from 'src/app/auth/permissions.enum';
 import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
 import { AnexoService } from 'src/app/services/anexo.service';
 import { LoadingService } from 'src/app/services/loading.service';
-import { dateValidator } from 'src/app/helper/funcions';
 import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
 import { HistoricoOcorrenciaComponent } from 'src/app/components/historico-ocorrencia/historico-ocorrencia.component';
 import { ToastService } from 'src/app/services/toast/toast.service';
@@ -113,9 +107,6 @@ import { LocationStateService } from 'src/app/services/location-state.service';
     IonCol,
     IonAccordion,
     IonAccordionGroup,
-    IonItemSliding,
-    IonItemOptions,
-    IonItemOption,
   ],
 })
 export class OcorrenciaFormPage implements OnInit {
