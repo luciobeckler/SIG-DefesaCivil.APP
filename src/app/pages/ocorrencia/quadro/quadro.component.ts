@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject, input } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NavController } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -13,7 +13,6 @@ import {
 } from 'ionicons/icons';
 
 // Interfaces e Services
-import { IEtapa } from 'src/app/interfaces/ocorrencias/IEtapa';
 import { IQuadro } from 'src/app/interfaces/ocorrencias/IQuadro';
 import { QuadrosService } from 'src/app/services/quadros.service';
 
@@ -120,7 +119,6 @@ export class QuadroComponent {
     await this.loadData();
 
     const sub = this.ocorrenciaService.createdOrUpdated.subscribe(() => {
-      debugger;
       this.loadData();
     });
     this.subscriptions.add(sub);

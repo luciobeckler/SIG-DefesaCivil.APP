@@ -38,58 +38,108 @@
         </ion-item>
 
         <div class="ion-padding" slot="content">
-          <ion-item>
-            <ion-label position="stacked">Data do Ocorrido *</ion-label>
-            <input
-              type="text"
-              formControlName="dataEHoraDoOcorrido"
-              placeholder="DD/MM/AAAA HH:mm"
-              mask="d0/M0/0000 Hh:m0"
-              [dropSpecialCharacters]="false"
-              class="custom-input-date"
-            />
-          </ion-item>
-          <ion-item
-            lines="none"
-            *ngIf="
-              form.get('dataEHoraDoOcorrido')?.invalid &&
-              form.get('dataEHoraDoOcorrido')?.touched
-            "
+          <ion-list-header
+            ><ion-label>Momento do Ocorrido *</ion-label></ion-list-header
           >
-            <ion-text color="danger" style="font-size: 0.8rem">
-              <span
-                *ngIf="form.get('dataEHoraDoOcorrido')?.errors?.['required']"
-                >Data é obrigatória.</span
-              >
-              <span
-                *ngIf="form.get('dataEHoraDoOcorrido')?.errors?.['invalidDate']"
-                >Data ou hora inválida.</span
-              >
-            </ion-text>
-          </ion-item>
-
           <ion-row>
-            <ion-col>
+            <ion-col size="7">
               <ion-item>
-                <ion-label position="stacked">Início Atendimento</ion-label>
+                <ion-label position="stacked">Data</ion-label>
                 <input
                   type="text"
-                  formControlName="dataEHoraInicioAtendimento"
-                  placeholder="DD/MM/AAAA HH:mm"
-                  mask="d0/M0/0000 Hh:m0"
+                  formControlName="dataDoOcorrido"
+                  placeholder="DD/MM/AAAA"
+                  mask="d0/M0/0000"
                   [dropSpecialCharacters]="false"
                   class="custom-input-date"
                 />
               </ion-item>
             </ion-col>
-            <ion-col>
+            <ion-col size="5">
               <ion-item>
-                <ion-label position="stacked">Fim Atendimento</ion-label>
+                <ion-label position="stacked">Hora</ion-label>
                 <input
                   type="text"
-                  formControlName="dataEHoraTerminoAtendimento"
-                  placeholder="DD/MM/AAAA HH:mm"
-                  mask="d0/M0/0000 Hh:m0"
+                  formControlName="horaDoOcorrido"
+                  placeholder="HH:mm"
+                  mask="Hh:m0"
+                  [dropSpecialCharacters]="false"
+                  class="custom-input-date"
+                />
+              </ion-item>
+            </ion-col>
+          </ion-row>
+          <ion-item
+            lines="none"
+            *ngIf="
+              (form.get('dataDoOcorrido')?.invalid &&
+                form.get('dataDoOcorrido')?.touched) ||
+              (form.get('horaDoOcorrido')?.invalid &&
+                form.get('horaDoOcorrido')?.touched)
+            "
+          >
+            <ion-text color="danger" style="font-size: 0.8rem">
+              Data e Hora são obrigatórias e devem ser válidas.
+            </ion-text>
+          </ion-item>
+
+          <ion-list-header
+            ><ion-label>Início do Atendimento</ion-label></ion-list-header
+          >
+          <ion-row>
+            <ion-col size="7">
+              <ion-item>
+                <ion-label position="stacked">Data</ion-label>
+                <input
+                  type="text"
+                  formControlName="dataInicioAtendimento"
+                  placeholder="DD/MM/AAAA"
+                  mask="d0/M0/0000"
+                  [dropSpecialCharacters]="false"
+                  class="custom-input-date"
+                />
+              </ion-item>
+            </ion-col>
+            <ion-col size="5">
+              <ion-item>
+                <ion-label position="stacked">Hora</ion-label>
+                <input
+                  type="text"
+                  formControlName="horaInicioAtendimento"
+                  placeholder="HH:mm"
+                  mask="Hh:m0"
+                  [dropSpecialCharacters]="false"
+                  class="custom-input-date"
+                />
+              </ion-item>
+            </ion-col>
+          </ion-row>
+
+          <ion-list-header
+            ><ion-label>Fim do Atendimento</ion-label></ion-list-header
+          >
+          <ion-row>
+            <ion-col size="7">
+              <ion-item>
+                <ion-label position="stacked">Data</ion-label>
+                <input
+                  type="text"
+                  formControlName="dataTerminoAtendimento"
+                  placeholder="DD/MM/AAAA"
+                  mask="d0/M0/0000"
+                  [dropSpecialCharacters]="false"
+                  class="custom-input-date"
+                />
+              </ion-item>
+            </ion-col>
+            <ion-col size="5">
+              <ion-item>
+                <ion-label position="stacked">Hora</ion-label>
+                <input
+                  type="text"
+                  formControlName="horaTerminoAtendimento"
+                  placeholder="HH:mm"
+                  mask="Hh:m0"
                   [dropSpecialCharacters]="false"
                   class="custom-input-date"
                 />
@@ -104,7 +154,6 @@
               formControlName="solicitanteNome"
             ></ion-input>
           </ion-item>
-
           <ion-row>
             <ion-col>
               <ion-item>
@@ -141,7 +190,31 @@
           ></ion-icon>
           <ion-label>Endereço / Localização</ion-label>
         </ion-item>
+
         <div class="ion-padding" slot="content">
+          <!-- <ion-row class="ion-margin-bottom">
+            <ion-col size="6">
+              <ion-button
+                expand="block"
+                color="secondary"
+                (click)="capturarLocalizacaoAtual()"
+              >
+                <ion-icon name="locate-outline" slot="start"></ion-icon>
+                Pegar GPS
+              </ion-button>
+            </ion-col>
+          </ion-row> -->
+
+          <ion-row *ngIf="form.get('latitude')?.value">
+            <ion-col>
+              <ion-note color="success">
+                <ion-icon name="checkmark-circle"></ion-icon> Coordenadas
+                salvas: {{ form.get("latitude")?.value | number: "1.4-4" }},
+                {{ form.get("longitude")?.value | number: "1.4-4" }}
+              </ion-note>
+            </ion-col>
+          </ion-row>
+
           <ion-item>
             <ion-label position="stacked">CEP</ion-label>
             <input
@@ -154,6 +227,7 @@
               class="custom-input-native"
             />
           </ion-item>
+
           <ion-item>
             <ion-input
               label="Rua"
@@ -161,6 +235,7 @@
               formControlName="enderecoRua"
             ></ion-input>
           </ion-item>
+
           <ion-row>
             <ion-col size="4">
               <ion-item>
@@ -181,6 +256,7 @@
               </ion-item>
             </ion-col>
           </ion-row>
+
           <ion-item>
             <ion-input
               label="Complemento"
@@ -490,9 +566,9 @@
           </ion-row>
 
           <ion-item lines="none">
-            <ion-checkbox formControlName="possuiUnidadeFamiliar"
-              >Possui Unidade Familiar?</ion-checkbox
-            >
+            <ion-checkbox formControlName="possuiUnidadeFamiliar">
+              Possui Unidade Familiar?
+            </ion-checkbox>
           </ion-item>
         </div>
       </ion-accordion>
@@ -514,24 +590,35 @@
             (change)="onFileSelected($event)"
             style="display: none"
           />
-          <ion-button expand="block" fill="outline" (click)="fileInput.click()">
-            <ion-icon name="cloud-upload" slot="start"></ion-icon>
-            Adicionar Arquivos
-          </ion-button>
+          <ion-row class="ion-margin-bottom">
+            <ion-col size="6">
+              <ion-button
+                expand="block"
+                fill="outline"
+                (click)="fileInput.click()"
+              >
+                <ion-icon name="folder-open" slot="start"></ion-icon> Galeria
+              </ion-button>
+            </ion-col>
+            <ion-col size="6">
+              <ion-button expand="block" color="primary" (click)="tirarFoto()">
+                <ion-icon name="camera" slot="start"></ion-icon> Câmera
+              </ion-button>
+            </ion-col>
+          </ion-row>
+
+          <ion-list-header *ngIf="novosAnexos.length > 0">
+            <ion-label>Novos (Ainda não salvos)</ion-label>
+          </ion-list-header>
 
           <ion-list>
-            <ion-list-header *ngIf="novosAnexos.length > 0">
-              <ion-label>Novos (Ainda não salvos)</ion-label>
-            </ion-list-header>
-
             <ion-item *ngFor="let item of novosAnexos; let i = index">
               <ion-icon
                 slot="start"
                 name="document-text-outline"
                 size="large"
                 color="medium"
-              >
-              </ion-icon>
+              ></ion-icon>
 
               <ion-input
                 label="Nome do Arquivo"
@@ -541,9 +628,19 @@
                 placeholder="Nome do arquivo"
               ></ion-input>
 
-              <ion-note slot="end" class="ion-hide-sm-down">{{
-                item.tamanho
-              }}</ion-note>
+              <div
+                slot="end"
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: flex-end;
+                "
+              >
+                <ion-note class="ion-hide-sm-down">{{ item.tamanho }}</ion-note>
+                <ion-badge color="success" *ngIf="item.latitudeCaptura"
+                  >Com GPS</ion-badge
+                >
+              </div>
 
               <ion-button
                 fill="clear"
@@ -559,34 +656,90 @@
               <ion-label>Arquivos Salvos</ion-label>
             </ion-list-header>
 
-            <ion-item-sliding *ngFor="let anexo of anexosExistentes">
-              <ion-item>
-                <ion-label>
-                  <h2>{{ anexo.nomeOriginal }}</h2>
-                  <p>
-                    Enviado em:
-                    {{ anexo.dataUpload | date: "dd/MM/yyyy HH:mm" }}
+            <ion-item *ngFor="let anexo of anexosExistentes">
+              <ion-label class="ion-text-wrap">
+                <h2>{{ anexo.nomeOriginal }}</h2>
+
+                <div style="margin-top: 8px; font-size: 0.85rem; color: #666">
+                  <p style="margin: 0; display: flex; align-items: center">
+                    <ion-icon
+                      name="time-outline"
+                      style="margin-right: 4px"
+                    ></ion-icon>
+                    Captura:
+                    <strong
+                      *ngIf="anexo.dataHoraCaptura"
+                      style="margin-left: 4px; color: #3880ff"
+                    >
+                      {{ anexo.dataHoraCaptura | date: "dd/MM/yyyy HH:mm" }}
+                    </strong>
+                    <span
+                      *ngIf="!anexo.dataHoraCaptura"
+                      style="margin-left: 4px; font-style: italic"
+                    >
+                      Não registrada
+                    </span>
                   </p>
-                </ion-label>
+
+                  <p
+                    style="
+                      margin: 2px 0 0 0;
+                      display: flex;
+                      align-items: center;
+                    "
+                  >
+                    <ion-icon
+                      name="location-outline"
+                      style="margin-right: 4px"
+                    ></ion-icon>
+                    GPS:
+                    <strong
+                      *ngIf="
+                        anexo.latitudeCaptura !== null &&
+                        anexo.longitudeCaptura !== null
+                      "
+                      class="ion-selectable"
+                      style="margin-left: 4px; color: #2dd36f"
+                    >
+                      {{ anexo.latitudeCaptura }}, {{ anexo.longitudeCaptura }}
+                    </strong>
+                    <span
+                      *ngIf="
+                        anexo.latitudeCaptura === null ||
+                        anexo.longitudeCaptura === null
+                      "
+                      style="margin-left: 4px; font-style: italic"
+                    >
+                      Indisponível
+                    </span>
+                  </p>
+                </div>
+              </ion-label>
+
+              <div
+                slot="end"
+                style="display: flex; gap: 8px; align-items: center"
+              >
                 <ion-button
                   fill="outline"
-                  slot="end"
+                  color="primary"
                   [href]="anexo.urlArmazenamento"
                   target="_blank"
+                  title="Visualizar Anexo"
                 >
-                  Ver
+                  <ion-icon slot="icon-only" name="eye-outline"></ion-icon>
                 </ion-button>
-              </ion-item>
 
-              <ion-item-options side="end">
-                <ion-item-option
+                <ion-button
+                  fill="clear"
                   color="danger"
                   (click)="marcarParaRemocao(anexo)"
+                  title="Excluir Anexo"
                 >
                   <ion-icon slot="icon-only" name="trash"></ion-icon>
-                </ion-item-option>
-              </ion-item-options>
-            </ion-item-sliding>
+                </ion-button>
+              </div>
+            </ion-item>
           </ion-list>
 
           <div

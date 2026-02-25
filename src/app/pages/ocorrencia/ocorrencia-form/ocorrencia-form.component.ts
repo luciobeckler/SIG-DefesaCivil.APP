@@ -8,9 +8,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { lastValueFrom } from 'rxjs'; // Moderno substituto para .toPromise()
+import { lastValueFrom } from 'rxjs';
 
-// --- Ionic & Capacitor ---
 import { NavController, ModalController } from '@ionic/angular/standalone';
 import { Network } from '@capacitor/network';
 import { addIcons } from 'ionicons';
@@ -19,6 +18,7 @@ import {
   cloudUpload,
   documentAttach,
   trash,
+  warning,
 } from 'ionicons/icons';
 import {
   IonHeader,
@@ -49,11 +49,11 @@ import {
   IonText,
 } from '@ionic/angular/standalone';
 
-// --- Utils & Libs ---
 import { format, parse, parseISO } from 'date-fns';
 import { NgxMaskDirective } from 'ngx-mask';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { Geolocation } from '@capacitor/geolocation';
 
-// --- Local Enums & Interfaces ---
 import {
   enumToArray,
   EGrauRisco,
@@ -70,7 +70,6 @@ import {
 import { INovoAnexo } from 'src/app/interfaces/anexos/IAnexos';
 import { EPermission } from 'src/app/auth/permissions.enum';
 
-// --- Services & Helpers ---
 import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
 import { AnexoService } from 'src/app/services/anexo.service';
 import { LoadingService } from 'src/app/services/loading.service';
@@ -78,6 +77,7 @@ import { dateValidator } from 'src/app/helper/funcions';
 import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
 import { HistoricoOcorrenciaComponent } from 'src/app/components/historico-ocorrencia/historico-ocorrencia.component';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { LocationStateService } from 'src/app/services/location-state.service';
 
 @Component({
   selector: 'app-ocorrencia-form',
@@ -90,7 +90,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
     FormsModule,
     NgxMaskDirective,
     HasPermissionDirective,
-    // Ionic Components
+
     IonHeader,
     IonToolbar,
     IonButtons,
@@ -119,7 +119,6 @@ import { ToastService } from 'src/app/services/toast/toast.service';
   ],
 })
 export class OcorrenciaFormPage implements OnInit {
-  // --- Injeções de Dependência ---
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private navCtrl = inject(NavController);
@@ -128,19 +127,17 @@ export class OcorrenciaFormPage implements OnInit {
   private anexoService = inject(AnexoService);
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
+  private locationStateService = inject(LocationStateService);
 
-  // --- Estado do Formulário e Página ---
   public form!: FormGroup;
   public tituloPagina = 'Nova Ocorrência';
   public hrefVoltar = '/home';
   public isEditing = false;
   public perms = EPermission;
 
-  // --- Dados de Controle ---
   private ocorrenciaId: string | null = null;
   private quadroIdOrigem: string | null = null;
 
-  // --- Listas para Selects (Enums) ---
   public readonly opcoesGrauRisco = enumToArray(EGrauRisco);
   public readonly opcoesRegime = enumToArray(ERegimeOcupacao);
   public readonly opcoesAnalise = enumToArray(EAnalisePreliminar);
@@ -152,7 +149,6 @@ export class OcorrenciaFormPage implements OnInit {
   public readonly opcoesMotivacao = enumToArray(EMotivacao);
   public readonly opcoesAreaAfetada = enumToArray(EAreaAfetada);
 
-  // --- Controle de Anexos ---
   public anexosExistentes: any[] = [];
   public novosAnexos: INovoAnexo[] = [];
   private idsParaRemover: string[] = [];
@@ -178,8 +174,6 @@ export class OcorrenciaFormPage implements OnInit {
     });
   }
 
-  // --- Inicialização e Configuração ---
-
   private configurarModoEdicao(id: string) {
     this.isEditing = true;
     this.ocorrenciaId = id;
@@ -188,30 +182,32 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   private configurarModoCriacao() {
-    const agora = format(new Date(), 'dd/MM/yyyy HH:mm');
-    this.form.patchValue({ dataEHoraInicioAtendimento: agora });
+    const agora = new Date();
+    this.form.patchValue({
+      dataInicioAtendimento: format(agora, 'dd/MM/yyyy'),
+      horaInicioAtendimento: format(agora, 'HH:mm'),
+    });
   }
 
   private buildForm() {
     this.form = this.fb.group({
-      // Dados Básicos
-      dataEHoraDoOcorrido: [null, [Validators.required, dateValidator()]],
-      dataEHoraInicioAtendimento: [null, [dateValidator()]],
-      dataEHoraTerminoAtendimento: [null, [dateValidator()]],
+      dataDoOcorrido: [null, [Validators.required]],
+      horaDoOcorrido: [null, [Validators.required]],
+      dataInicioAtendimento: [null],
+      horaInicioAtendimento: [null],
+      dataTerminoAtendimento: [null],
+      horaTerminoAtendimento: [null],
 
-      // Endereço
       enderecoRua: [''],
       enderecoNumero: [''],
       enderecoComplemento: [''],
       enderecoBairro: [''],
       enderecoCEP: [''],
 
-      // Solicitante
       solicitanteNome: [''],
       solicitanteCPF: [''],
       solicitanteRG: [''],
 
-      // Classificações
       grauDeRisco: [null, Validators.required],
       regimeDeOcupacaoDoImovel: [null],
       analisePreliminar: [[]],
@@ -223,7 +219,6 @@ export class OcorrenciaFormPage implements OnInit {
       motivacao: [[]],
       areasAfetadas: [[]],
 
-      // Quantitativos
       possuiIPTU: [''],
       numeroDeMoradias: [null],
       numeroDeComodos: [null],
@@ -233,10 +228,11 @@ export class OcorrenciaFormPage implements OnInit {
       numeroDeCriancas: [null],
       numeroDeAdultos: [null],
       numeroDeIdosos: [null],
+
+      latitude: [null],
+      longitude: [null],
     });
   }
-
-  // --- Integrações de API e Carregamento ---
 
   buscarCEP() {
     const cep = this.form.get('enderecoCEP')?.value;
@@ -273,7 +269,6 @@ export class OcorrenciaFormPage implements OnInit {
           this.anexosExistentes = dadosLocais.anexos;
         }
 
-        // Avisa o usuário que é uma visualização offline
         this.toastService.showToast(
           'Modo Offline: Editando dados locais.',
           'warning',
@@ -291,17 +286,36 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   private preencherFormulario(data: any) {
-    [
-      'dataEHoraDoOcorrido',
-      'dataEHoraInicioAtendimento',
-      'dataEHoraTerminoAtendimento',
-    ].forEach((campo) => {
-      if (data[campo]) {
+    const mapeamentoDatas = [
+      {
+        campoOrigem: 'dataEHoraDoOcorrido',
+        campoData: 'dataDoOcorrido',
+        campoHora: 'horaDoOcorrido',
+      },
+      {
+        campoOrigem: 'dataEHoraInicioAtendimento',
+        campoData: 'dataInicioAtendimento',
+        campoHora: 'horaInicioAtendimento',
+      },
+      {
+        campoOrigem: 'dataEHoraTerminoAtendimento',
+        campoData: 'dataTerminoAtendimento',
+        campoHora: 'horaTerminoAtendimento',
+      },
+    ];
+
+    mapeamentoDatas.forEach((map) => {
+      if (data[map.campoOrigem]) {
         try {
-          data[campo] = format(parseISO(data[campo]), 'dd/MM/yyyy HH:mm');
-        } catch (e) {}
+          const dateObj = parseISO(data[map.campoOrigem]);
+          data[map.campoData] = format(dateObj, 'dd/MM/yyyy');
+          data[map.campoHora] = format(dateObj, 'HH:mm');
+        } catch (e) {
+          // Fallback se falhar o parse
+        }
       }
     });
+
     this.form.patchValue(data);
   }
 
@@ -315,7 +329,85 @@ export class OcorrenciaFormPage implements OnInit {
     });
   }
 
-  // --- Manipulação de Arquivos ---
+  async tirarFoto() {
+    try {
+      let lat = undefined;
+      let lng = undefined;
+      try {
+        const position = await Geolocation.getCurrentPosition({
+          enableHighAccuracy: true,
+        });
+        lat = position.coords.latitude;
+        lng = position.coords.longitude;
+      } catch (e) {
+        console.warn('Não foi possível obter GPS para a foto', e);
+        this.toastService.showToast(
+          'Não foi possível obter GPS para a foto',
+          'warning',
+          'top',
+        );
+      }
+
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: false,
+        resultType: CameraResultType.Uri,
+        source: CameraSource.Camera,
+      });
+
+      if (image.webPath) {
+        const response = await fetch(image.webPath);
+        const blob = await response.blob();
+        const fileName = `foto_${new Date().getTime()}.${image.format}`;
+        const file = new File([blob], fileName, { type: blob.type });
+
+        this.novosAnexos.push({
+          file: file,
+          nome: fileName,
+          tamanho: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+          latitudeCaptura: lat?.toString(),
+          longitudeCaptura: lng?.toString(),
+          dataHoraCaptura: new Date(),
+        });
+
+        this.toastService.showToast(
+          'Foto anexada com sucesso!',
+          'success',
+          'top',
+        );
+      }
+    } catch (error) {
+      console.error('Erro ao tirar foto', error);
+    }
+  }
+
+  async capturarLocalizacaoAtual() {
+    this.loadingService.show();
+    try {
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+      });
+
+      this.form.patchValue({
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      });
+
+      this.toastService.showToast(
+        'Localização capturada do GPS.',
+        'success',
+        'top',
+      );
+    } catch (error) {
+      this.toastService.showToast(
+        'Erro ao obter GPS. Verifique as permissões.',
+        'danger',
+        'top',
+      );
+    } finally {
+      this.loadingService.hide();
+    }
+  }
 
   onFileSelected(event: any) {
     const files = event.target.files;
@@ -342,8 +434,6 @@ export class OcorrenciaFormPage implements OnInit {
     );
   }
 
-  // --- Lógica Principal: Salvar ---
-
   async salvar() {
     console.log('Iniciando processo de salvamento...');
     if (this.form.invalid) {
@@ -357,6 +447,7 @@ export class OcorrenciaFormPage implements OnInit {
     try {
       const dto = this.criarDTO();
       const status = await Network.getStatus();
+      debugger;
 
       if (!status.connected) {
         await this.processarSalvamentoOffline(dto);
@@ -374,16 +465,49 @@ export class OcorrenciaFormPage implements OnInit {
 
   private criarDTO() {
     const values = this.form.value;
+
     return {
       ...values,
-      dataEHoraDoOcorrido: this.converterParaUTC(values.dataEHoraDoOcorrido),
-      dataEHoraInicioAtendimento: this.converterParaUTC(
-        values.dataEHoraInicioAtendimento,
+      dataEHoraDoOcorrido: this.juntarEConverterParaUTC(
+        values.dataDoOcorrido,
+        values.horaDoOcorrido,
       ),
-      dataEHoraTerminoAtendimento: this.converterParaUTC(
-        values.dataEHoraTerminoAtendimento,
+      dataEHoraInicioAtendimento: this.juntarEConverterParaUTC(
+        values.dataInicioAtendimento,
+        values.horaInicioAtendimento,
       ),
+      dataEHoraTerminoAtendimento: this.juntarEConverterParaUTC(
+        values.dataTerminoAtendimento,
+        values.horaTerminoAtendimento,
+      ),
+
+      // Removemos os campos virtuais do formulário para não poluir o DTO
+      dataDoOcorrido: undefined,
+      horaDoOcorrido: undefined,
+      dataInicioAtendimento: undefined,
+      horaInicioAtendimento: undefined,
+      dataTerminoAtendimento: undefined,
+      horaTerminoAtendimento: undefined,
     };
+  }
+
+  private juntarEConverterParaUTC(
+    dataStr: string | null,
+    horaStr: string | null,
+  ): string | null {
+    if (!dataStr || dataStr.length < 10) return null;
+
+    // Se a data existir mas a hora não, assume 00:00
+    const hora = horaStr && horaStr.length === 5 ? horaStr : '00:00';
+    const dataHoraCombinada = `${dataStr} ${hora}`;
+
+    try {
+      const dataObj = parse(dataHoraCombinada, 'dd/MM/yyyy HH:mm', new Date());
+      if (isNaN(dataObj.getTime())) return null;
+      return dataObj.toISOString();
+    } catch {
+      return null;
+    }
   }
 
   private async processarSalvamentoOffline(dto: any) {
@@ -424,27 +548,29 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   private async processarSalvamentoOnline(dto: any) {
-    let idAtual = this.ocorrenciaId;
-
-    // 1. Persistência dos Dados
-    if (this.isEditing && idAtual) {
-      await lastValueFrom(this.ocorrenciaService.atualizar(idAtual, dto));
+    if (this.isEditing && this.ocorrenciaId) {
+      await lastValueFrom(
+        this.ocorrenciaService.atualizar(this.ocorrenciaId, dto),
+      );
     } else {
       const novaOcorrencia = await lastValueFrom(
         this.ocorrenciaService.created(dto, this.quadroIdOrigem || ''),
       );
-      idAtual = novaOcorrencia?.id ?? null;
+      this.ocorrenciaId = novaOcorrencia?.id ?? null;
     }
 
-    if (!idAtual) throw new Error('ID da ocorrência não identificado.');
+    if (!this.ocorrenciaId)
+      throw new Error('ID da ocorrência não identificado.');
 
-    // 2. Gestão de Anexos (Paralelo)
     const tasks = [];
 
     if (this.idsParaRemover.length > 0) {
       tasks.push(
         lastValueFrom(
-          this.anexoService.removerAnexos(idAtual, this.idsParaRemover),
+          this.anexoService.removerAnexos(
+            this.ocorrenciaId,
+            this.idsParaRemover,
+          ),
         ),
       );
     }
@@ -452,7 +578,7 @@ export class OcorrenciaFormPage implements OnInit {
     if (this.novosAnexos.length > 0) {
       tasks.push(
         lastValueFrom(
-          this.anexoService.uploadAnexos(idAtual, this.novosAnexos),
+          this.anexoService.uploadAnexos(this.ocorrenciaId, this.novosAnexos),
         ),
       );
     }
@@ -461,14 +587,14 @@ export class OcorrenciaFormPage implements OnInit {
       await Promise.all(tasks);
     }
 
+    const acao = this.isEditing ? 'editada' : 'criada';
+
     this.toastService.showToast(
-      'Ocorrência criada com sucesso',
+      `Ocorrência ${acao} com sucesso`,
       'success',
       'top',
     );
   }
-
-  // --- UI Helpers & Navegação ---
 
   async exibirErro(error: any) {
     console.error(error);
@@ -492,8 +618,6 @@ export class OcorrenciaFormPage implements OnInit {
     });
     await modal.present();
   }
-
-  // --- Pure Helpers ---
 
   formatarLabel(val: string): string {
     return val.replace(/([A-Z])/g, ' $1').trim();

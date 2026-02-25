@@ -25,3 +25,24 @@ ion-item input {
   font-size: 16px;
   width: 100%;
 }
+
+ion-accordion {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: var(--ion-item-background);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  &::part(content) {
+    background: transparent;
+  }
+}
+
+/* Novo estilo para inputs e selects mais modernos (Outline) */
+ion-input,
+ion-select,
+.custom-input-date,
+.custom-input-native {
+  --padding-start: 12px;
+  border-radius: 8px;
+  margin-top: 4px;
+}

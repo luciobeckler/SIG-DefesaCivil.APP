@@ -1,8 +1,8 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environmentApiUrl } from 'src/environments/environment';
-// ... outros imports
+import { INovoAnexo } from '../interfaces/anexos/IAnexos';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +11,7 @@ export class AnexoService {
   private anexoUrl = `${environmentApiUrl}/Anexo`;
 
   constructor(private http: HttpClient) {}
+
   removerAnexos(entidadeId: string, idsAnexos: string[]): Observable<void> {
     const options = {
       body: {
@@ -24,21 +25,53 @@ export class AnexoService {
       options,
     );
   }
+
+  // Correção 1: Assinatura atualizada para INovoAnexo[]
   uploadAnexos(
     ocorrenciaId: string,
-    listaArquivos: { file: File; nome: string }[],
+    listaArquivos: INovoAnexo[],
   ): Observable<any> {
     const formData = new FormData();
 
-    formData.append('entidade', 'Ocorrencia');
+    formData.append('Entidade', 'Ocorrencia');
 
-    listaArquivos.forEach((item) => {
+    // Correção 2: Montagem do FormData com indexação para o C#
+    listaArquivos.forEach((item, index) => {
       const extensao = item.file.name.split('.').pop();
       const nomeFinal = item.nome.endsWith(`.${extensao}`)
         ? item.nome
         : `${item.nome}.${extensao}`;
 
-      formData.append('arquivos', item.file, nomeFinal);
+      // Prefixo base para este item na lista do C#
+      const prefix = `Arquivos[${index}]`;
+
+      // 1. O Arquivo físico
+      formData.append(`${prefix}.Arquivo`, item.file, nomeFinal);
+
+      // 2. Metadados Geográficos e de Tempo (se existirem)
+      if (item.latitudeCaptura !== undefined && item.latitudeCaptura !== null) {
+        formData.append(`${prefix}.Latitude`, item.latitudeCaptura.toString());
+      }
+
+      if (
+        item.longitudeCaptura !== undefined &&
+        item.longitudeCaptura !== null
+      ) {
+        formData.append(
+          `${prefix}.Longitude`,
+          item.longitudeCaptura.toString(),
+        );
+      }
+
+      if (item.dataHoraCaptura) {
+        // Garante envio no formato ISO-8601 para o C# fazer o parse de DateTime sem quebrar
+        const dataIso =
+          typeof item.dataHoraCaptura === 'string'
+            ? item.dataHoraCaptura
+            : item.dataHoraCaptura.toISOString();
+
+        formData.append(`${prefix}.DataHoraCaptura`, dataIso);
+      }
     });
 
     return this.http.post(`${this.anexoUrl}/${ocorrenciaId}/anexos`, formData);
