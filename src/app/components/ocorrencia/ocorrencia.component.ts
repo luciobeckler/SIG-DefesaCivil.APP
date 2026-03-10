@@ -69,7 +69,7 @@ export class OcorrenciaComponent {
     return email.charAt(0).toUpperCase();
   }
 
-  getGrauVisual(grau: string | null): IVisualConfig {
+  getGrauVisual(grau: string | undefined): IVisualConfig {
     return getVisual(GrauRiscoVisual, grau);
   }
 
@@ -104,7 +104,9 @@ export class OcorrenciaComponent {
       this.perms.OCORRENCIA_VISUALIZAR_TODAS,
     );
 
-    const ehDono = dadosOcorrencia.usuarioCriador.id === userId;
+    const ehDono =
+      dadosOcorrencia.responsavel != null &&
+      dadosOcorrencia.responsavel.id === userId;
 
     return temPermissaoGlobal || ehDono;
   });

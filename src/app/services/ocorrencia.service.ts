@@ -4,10 +4,10 @@ import { Observable, Subject } from 'rxjs';
 import {
   ICreateOrEditOcorrenciaDTO,
   IOcorrencia,
-  IHistoricoOcorrenciaDTO,
 } from '../interfaces/ocorrencias/IOcorrencias';
 import { environmentApiUrl } from 'src/environments/environment';
 import { StorageService } from './storage/storage.service';
+import { IHistoricoOcorrenciaDTO } from '../interfaces/ocorrencias/IHistoricoOcorrencia';
 
 @Injectable({
   providedIn: 'root',

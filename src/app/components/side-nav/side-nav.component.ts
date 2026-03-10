@@ -32,6 +32,7 @@ import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
 import { QuadrosService } from 'src/app/services/quadros.service';
 import { StorageService } from 'src/app/services/storage/storage.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { IAnexoUpload } from 'src/app/interfaces/anexos/IAnexos';
 
 @Component({
   selector: 'app-side-nav',
@@ -145,6 +146,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   async iniciarSincronizacao() {
+    debugger;
     // 1. Validações Iniciais
     if (this.itemsPendentes.length === 0) return;
     if (!(await this.verificarConexao())) return;
@@ -176,6 +178,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
    * Retorna os itens que falharam.
    */
   private async processarFilaDeEnvio() {
+    debugger;
     const itensFalha = [];
 
     for (const item of this.itemsPendentes) {
@@ -195,6 +198,7 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   private async enviarOcorrencia(item: any): Promise<string> {
+    debugger;
     if (item.isUpdate) {
       // Edição: Usa o ID real (tempId armazenava o ID real na edição)
       await firstValueFrom(
@@ -217,14 +221,15 @@ export class SideNavComponent implements OnInit, OnDestroy {
   }
 
   private async enviarAnexos(ocorrenciaId: string, anexos: any[]) {
-    const arquivosPreparados = anexos.map((a: any) => ({
+    debugger;
+    const anexosPreparados: IAnexoUpload[] = anexos.map((a: any) => ({
       file: this.anexoService.base64ToFile(a.base64, a.nome),
-      nome: a.nome,
-      tamanho: a.tamanho,
+      localizacao: a.localizacao,
+      dataHoraCaptura: a.dataHoraCaptura,
     }));
 
     await firstValueFrom(
-      this.anexoService.uploadAnexos(ocorrenciaId, arquivosPreparados),
+      this.anexoService.uploadAnexos(ocorrenciaId, anexosPreparados),
     );
   }
 

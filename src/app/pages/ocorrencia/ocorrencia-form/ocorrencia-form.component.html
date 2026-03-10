@@ -621,11 +621,11 @@
               ></ion-icon>
 
               <ion-input
-                label="Nome do Arquivo"
+                label="Nome do anexo"
                 labelPlacement="stacked"
-                [(ngModel)]="item.nome"
+                [(ngModel)]="item.file.name"
                 [ngModelOptions]="{ standalone: true }"
-                placeholder="Nome do arquivo"
+                placeholder="Nome do anexo"
               ></ion-input>
 
               <div
@@ -636,8 +636,10 @@
                   align-items: flex-end;
                 "
               >
-                <ion-note class="ion-hide-sm-down">{{ item.tamanho }}</ion-note>
-                <ion-badge color="success" *ngIf="item.latitudeCaptura"
+                <ion-note class="ion-hide-sm-down">{{
+                  item.file.size
+                }}</ion-note>
+                <ion-badge color="success" *ngIf="item.localizacao.latitude"
                   >Com GPS</ion-badge
                 >
               </div>
@@ -653,7 +655,7 @@
             </ion-item>
 
             <ion-list-header *ngIf="anexosExistentes.length > 0">
-              <ion-label>Arquivos Salvos</ion-label>
+              <ion-label>Anexos Salvos</ion-label>
             </ion-list-header>
 
             <ion-item *ngFor="let anexo of anexosExistentes">
@@ -695,18 +697,21 @@
                     GPS:
                     <strong
                       *ngIf="
-                        anexo.latitudeCaptura !== null &&
-                        anexo.longitudeCaptura !== null
+                        anexo.localizacao !== null &&
+                        anexo.localizacao.latitude !== null &&
+                        anexo.localizacao.longitude !== null
                       "
                       class="ion-selectable"
                       style="margin-left: 4px; color: #2dd36f"
                     >
-                      {{ anexo.latitudeCaptura }}, {{ anexo.longitudeCaptura }}
+                      {{ anexo.localizacao.latitude }},
+                      {{ anexo.localizacao.longitude }}
                     </strong>
                     <span
                       *ngIf="
-                        anexo.latitudeCaptura === null ||
-                        anexo.longitudeCaptura === null
+                        anexo.localizacao !== null &&
+                        (anexo.localizacao.latitude === null ||
+                          anexo.localizacao.longitude === null)
                       "
                       style="margin-left: 4px; font-style: italic"
                     >

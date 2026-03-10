@@ -23,7 +23,7 @@ export const TipoRiscoVisual: Record<string, IVisualConfig> = {
 
 export function getVisual(
   map: Record<string, IVisualConfig>,
-  key: string | null
+  key: string | undefined,
 ): IVisualConfig {
   if (!key || !map[key]) return map['default'];
   return map[key];

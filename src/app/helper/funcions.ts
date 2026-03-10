@@ -57,7 +57,8 @@ export function isTelefoneValido(telefone: string): boolean {
   return tel.length >= 10 && tel.length <= 11;
 }
 
-export function formatarLabel(valor: string): string {
+export function formatarLabel(valor: string | undefined): string {
+  if (valor == undefined) return '';
   return valor.replace(/([A-Z])/g, ' $1').trim();
 }
 

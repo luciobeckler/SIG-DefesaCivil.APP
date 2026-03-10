@@ -4,14 +4,14 @@
   (click)="navegar()"
   [class.disabled-card]="!canAccess()"
 >
-  @let grauVisual = getGrauVisual(ocorrencia().grauDeRisco);
+  @let grauVisual = getGrauVisual(ocorrencia().campos.grauDeRisco);
 
   <div class="card-header-item ion-item-mimic">
     @if (!canAccess()) {
       <ion-icon name="lock-closed" color="medium" slot="end"></ion-icon>
     }
     <div slot="start" class="protocolo-wrapper">
-      <span class="protocolo">#{{ ocorrencia().numero }}</span>
+      <span class="protocolo">#{{ ocorrencia().protocolo }}</span>
     </div>
 
     <div class="risk-info">
@@ -22,12 +22,12 @@
       ></ion-icon>
 
       <ion-text [color]="grauVisual.color" class="risco-texto">
-        {{ formatarLabel(ocorrencia().grauDeRisco) }}
+        {{ formatarLabel(ocorrencia().campos.grauDeRisco) }}
       </ion-text>
     </div>
 
     <ion-note slot="end" class="data-nota">
-      {{ ocorrencia().dataEHoraDoOcorrido | date: "dd/MM/yyyy HH:mm" }}
+      {{ ocorrencia().campos.dataEHoraDoOcorrido | date: "dd/MM/yyyy HH:mm" }}
     </ion-note>
   </div>
 
@@ -39,24 +39,24 @@
           color="danger"
           class="ion-margin-end"
         ></ion-icon>
-        {{ ocorrencia().enderecoRua || "Local não informado" }}
+        {{ ocorrencia().campos.localizacao?.rua || "Local não informado" }}
       </h2>
 
       <p class="endereco-bairro">
-        {{ ocorrencia().enderecoBairro }}
+        {{ ocorrencia().campos.localizacao?.bairro }}
       </p>
     </div>
 
-    @if (ocorrencia().solicitanteNome) {
+    @if (ocorrencia().campos.solicitante?.nome) {
       <div class="solicitante-info ion-margin-bottom">
         <ion-icon name="person-outline"></ion-icon>
-        <span>{{ ocorrencia().solicitanteNome }}</span>
+        <span>{{ ocorrencia().campos.solicitante?.cpf }}</span>
       </div>
     }
 
     <div class="footer-actions">
       <div class="chips-container">
-        @for (tipo of ocorrencia().tipoDeRisco; track tipo) {
+        @for (tipo of ocorrencia().campos.tipoDeRisco; track tipo) {
           @let tipoVis = getTipoVisual(tipo);
           <ion-chip [color]="tipoVis.color" outline="true">
             <ion-icon [name]="tipoVis.icon"></ion-icon>
@@ -65,12 +65,9 @@
         }
       </div>
 
-      @if (ocorrencia().usuarioCriador.nome) {
-        <div
-          class="user-avatar"
-          title="{{ ocorrencia().usuarioCriador.email }}"
-        >
-          <span>{{ getIniciais(ocorrencia().usuarioCriador.email) }}</span>
+      @if (ocorrencia().responsavel !== null) {
+        <div class="user-avatar" title="{{ ocorrencia().responsavel!.email }}">
+          <span>{{ getIniciais(ocorrencia().responsavel!.email) }}</span>
         </div>
       }
     </div>

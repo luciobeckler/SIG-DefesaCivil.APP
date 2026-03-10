@@ -62,7 +62,7 @@ import {
   EAreaAfetada,
   ERegimeOcupacao,
 } from 'src/app/helper/OcorrenciaEnums';
-import { INovoAnexo } from 'src/app/interfaces/anexos/IAnexos';
+import { IAnexo, IAnexoUpload } from 'src/app/interfaces/anexos/IAnexos';
 import { EPermission } from 'src/app/auth/permissions.enum';
 
 import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
@@ -72,6 +72,11 @@ import { HasPermissionDirective } from 'src/app/directives/has-permission.direct
 import { HistoricoOcorrenciaComponent } from 'src/app/components/historico-ocorrencia/historico-ocorrencia.component';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { LocationStateService } from 'src/app/services/location-state.service';
+import { ICamposOcorrencia } from 'src/app/interfaces/ocorrencias/ICamposOcorrencia';
+import {
+  ICreateOrEditOcorrenciaDTO,
+  IOcorrencia,
+} from 'src/app/interfaces/ocorrencias/IOcorrencias';
 
 @Component({
   selector: 'app-ocorrencia-form',
@@ -118,7 +123,6 @@ export class OcorrenciaFormPage implements OnInit {
   private anexoService = inject(AnexoService);
   private loadingService = inject(LoadingService);
   private toastService = inject(ToastService);
-  private locationStateService = inject(LocationStateService);
 
   public form!: FormGroup;
   public tituloPagina = 'Nova Ocorrência';
@@ -140,8 +144,8 @@ export class OcorrenciaFormPage implements OnInit {
   public readonly opcoesMotivacao = enumToArray(EMotivacao);
   public readonly opcoesAreaAfetada = enumToArray(EAreaAfetada);
 
-  public anexosExistentes: any[] = [];
-  public novosAnexos: INovoAnexo[] = [];
+  public anexosExistentes: IAnexo[] = [];
+  public novosAnexos: IAnexoUpload[] = [];
   private idsParaRemover: string[] = [];
 
   constructor() {
@@ -247,7 +251,7 @@ export class OcorrenciaFormPage implements OnInit {
 
     if (status.connected) {
       this.ocorrenciaService.obterDetalhesPorId(id).subscribe({
-        next: (data: any) => this.preencherFormulario(data),
+        next: (data: IOcorrencia) => this.preencherFormulario(data.campos),
         error: () => this.navCtrl.navigateBack(this.hrefVoltar),
       });
       this.carregarAnexos(id);
@@ -276,8 +280,21 @@ export class OcorrenciaFormPage implements OnInit {
     }
   }
 
-  private preencherFormulario(data: any) {
-    const mapeamentoDatas = [
+  private preencherFormulario(campos: ICamposOcorrencia) {
+    const formPatch: any = { ...campos };
+
+    type ChavesDeData = Extract<
+      keyof ICamposOcorrencia,
+      | 'dataEHoraDoOcorrido'
+      | 'dataEHoraInicioAtendimento'
+      | 'dataEHoraTerminoAtendimento'
+    >;
+
+    const mapeamentoDatas: Array<{
+      campoOrigem: ChavesDeData;
+      campoData: string;
+      campoHora: string;
+    }> = [
       {
         campoOrigem: 'dataEHoraDoOcorrido',
         campoData: 'dataDoOcorrido',
@@ -296,18 +313,23 @@ export class OcorrenciaFormPage implements OnInit {
     ];
 
     mapeamentoDatas.forEach((map) => {
-      if (data[map.campoOrigem]) {
+      const valorDataISO = campos[map.campoOrigem];
+
+      if (valorDataISO) {
         try {
-          const dateObj = parseISO(data[map.campoOrigem]);
-          data[map.campoData] = format(dateObj, 'dd/MM/yyyy');
-          data[map.campoHora] = format(dateObj, 'HH:mm');
+          const dateObj = parseISO(valorDataISO);
+          formPatch[map.campoData] = format(dateObj, 'dd/MM/yyyy');
+          formPatch[map.campoHora] = format(dateObj, 'HH:mm');
         } catch (e) {
-          // Fallback se falhar o parse
+          console.error(
+            `Falha ao formatar a data do campo ${map.campoOrigem}`,
+            e,
+          );
         }
       }
     });
 
-    this.form.patchValue(data);
+    this.form.patchValue(formPatch);
   }
 
   carregarAnexos(id: string) {
@@ -322,18 +344,34 @@ export class OcorrenciaFormPage implements OnInit {
 
   async tirarFoto() {
     try {
-      let lat = undefined;
-      let lng = undefined;
+      let lat: number | undefined = undefined;
+      let lng: number | undefined = undefined;
+
       try {
-        const position = await Geolocation.getCurrentPosition({
-          enableHighAccuracy: true,
-        });
-        lat = position.coords.latitude;
-        lng = position.coords.longitude;
-      } catch (e) {
-        console.warn('Não foi possível obter GPS para a foto', e);
+        let gpsPerms = await Geolocation.checkPermissions();
+
+        if (gpsPerms.location !== 'granted') {
+          gpsPerms = await Geolocation.requestPermissions();
+        }
+
+        if (gpsPerms.location === 'granted') {
+          const position = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 5000,
+          });
+          lat = position.coords.latitude;
+          lng = position.coords.longitude;
+        } else {
+          this.toastService.showToast(
+            'GPS negado. A foto será salva sem localização.',
+            'warning',
+            'top',
+          );
+        }
+      } catch (gpsError) {
+        console.warn('Falha ou timeout ao obter GPS para a foto', gpsError);
         this.toastService.showToast(
-          'Não foi possível obter GPS para a foto',
+          'Aviso: Não foi possível obter o GPS a tempo. Foto sem localização.',
           'warning',
           'top',
         );
@@ -354,11 +392,11 @@ export class OcorrenciaFormPage implements OnInit {
 
         this.novosAnexos.push({
           file: file,
-          nome: fileName,
-          tamanho: (file.size / 1024 / 1024).toFixed(2) + ' MB',
-          latitudeCaptura: lat?.toString(),
-          longitudeCaptura: lng?.toString(),
-          dataHoraCaptura: new Date(),
+          localizacao: {
+            latitude: lat?.toString(),
+            longitude: lng?.toString(),
+          },
+          dataHoraCaptura: new Date().toISOString(),
         });
 
         this.toastService.showToast(
@@ -368,7 +406,7 @@ export class OcorrenciaFormPage implements OnInit {
         );
       }
     } catch (error) {
-      console.error('Erro ao tirar foto', error);
+      console.error('Erro geral ao tirar foto', error);
     }
   }
 
@@ -406,8 +444,8 @@ export class OcorrenciaFormPage implements OnInit {
       Array.from(files).forEach((file: any) => {
         this.novosAnexos.push({
           file: file,
-          nome: file.name,
-          tamanho: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+          localizacao: {},
+          dataHoraCaptura: new Date().toISOString(),
         });
       });
     }
@@ -426,6 +464,7 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   async salvar() {
+    debugger;
     console.log('Iniciando processo de salvamento...');
     if (this.form.invalid) {
       console.warn('Formulário inválido!', this.form.value);
@@ -438,7 +477,6 @@ export class OcorrenciaFormPage implements OnInit {
     try {
       const dto = this.criarDTO();
       const status = await Network.getStatus();
-      debugger;
 
       if (!status.connected) {
         await this.processarSalvamentoOffline(dto);
@@ -454,32 +492,36 @@ export class OcorrenciaFormPage implements OnInit {
     }
   }
 
-  private criarDTO() {
+  private criarDTO(): ICreateOrEditOcorrenciaDTO {
     const values = this.form.value;
 
-    return {
-      ...values,
-      dataEHoraDoOcorrido: this.juntarEConverterParaUTC(
-        values.dataDoOcorrido,
-        values.horaDoOcorrido,
-      ),
-      dataEHoraInicioAtendimento: this.juntarEConverterParaUTC(
-        values.dataInicioAtendimento,
-        values.horaInicioAtendimento,
-      ),
-      dataEHoraTerminoAtendimento: this.juntarEConverterParaUTC(
-        values.dataTerminoAtendimento,
-        values.horaTerminoAtendimento,
-      ),
+    const dto: ICreateOrEditOcorrenciaDTO = {
+      tipoCadastro: 'Basica',
+      campos: {
+        ...values,
+        dataEHoraDoOcorrido: this.juntarEConverterParaUTC(
+          values.dataDoOcorrido,
+          values.horaDoOcorrido,
+        ),
+        dataEHoraInicioAtendimento: this.juntarEConverterParaUTC(
+          values.dataInicioAtendimento,
+          values.horaInicioAtendimento,
+        ),
+        dataEHoraTerminoAtendimento: this.juntarEConverterParaUTC(
+          values.dataTerminoAtendimento,
+          values.horaTerminoAtendimento,
+        ),
 
-      // Removemos os campos virtuais do formulário para não poluir o DTO
-      dataDoOcorrido: undefined,
-      horaDoOcorrido: undefined,
-      dataInicioAtendimento: undefined,
-      horaInicioAtendimento: undefined,
-      dataTerminoAtendimento: undefined,
-      horaTerminoAtendimento: undefined,
+        dataDoOcorrido: undefined,
+        horaDoOcorrido: undefined,
+        dataInicioAtendimento: undefined,
+        horaInicioAtendimento: undefined,
+        dataTerminoAtendimento: undefined,
+        horaTerminoAtendimento: undefined,
+      },
     };
+
+    return dto;
   }
 
   private juntarEConverterParaUTC(
@@ -488,7 +530,6 @@ export class OcorrenciaFormPage implements OnInit {
   ): string | null {
     if (!dataStr || dataStr.length < 10) return null;
 
-    // Se a data existir mas a hora não, assume 00:00
     const hora = horaStr && horaStr.length === 5 ? horaStr : '00:00';
     const dataHoraCombinada = `${dataStr} ${hora}`;
 
@@ -502,13 +543,12 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   private async processarSalvamentoOffline(dto: any) {
-    console.log('Sem internet. Salvando alteração local...');
-
     const anexosOffline = await Promise.all(
       this.novosAnexos.map(async (anexo) => ({
-        nome: anexo.nome,
-        tamanho: anexo.tamanho,
         base64: await this.anexoService.fileToBase64(anexo.file),
+        nomeOriginal: anexo.file.name,
+        localizacao: anexo.localizacao,
+        dataHoraCaptura: anexo.dataHoraCaptura,
       })),
     );
 

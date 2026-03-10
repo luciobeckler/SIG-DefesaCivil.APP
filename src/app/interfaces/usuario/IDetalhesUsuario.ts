@@ -1,5 +1,5 @@
-export interface IDetalhesUsuarioDTO {
+export interface IResponsavel {
   id: string;
-  nome: string;
+  userName: string;
   email: string;
 }

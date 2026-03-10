@@ -18,7 +18,7 @@ import {
 import { addIcons } from 'ionicons';
 import { close, personCircleOutline, timeOutline } from 'ionicons/icons';
 import { OcorrenciaService } from 'src/app/services/ocorrencia.service';
-import { IHistoricoOcorrenciaDTO } from 'src/app/interfaces/ocorrencias/IOcorrencias';
+import { IHistoricoOcorrenciaDTO } from 'src/app/interfaces/ocorrencias/IHistoricoOcorrencia';
 
 @Component({
   selector: 'app-historico-ocorrencia',

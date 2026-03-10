@@ -1,21 +1,32 @@
+import { IEndereco } from '../shared/IEndereco';
+
 export interface IAnexo {
+  file: File;
+
   id: string;
   nomeOriginal: string;
   urlArmazenamento: string;
-  tipoConteudo: string;
-  tamanhoBytes: number;
-  file: File;
-  latitudeCaptura?: string;
-  longitudeCaptura?: string;
-  dataHoraCaptura?: Date | string;
+  localizacao: IEndereco | null;
+  dataHoraCaptura?: string;
+
   marcadoParaExcluir: boolean;
 }
 
-export interface INovoAnexo {
+export interface IListaDeAnexos {
+  tipoEntidade: 'Ocorrencia';
+  anexos: IAnexoUpload[];
+}
+
+export interface IAnexoUpload {
   file: File;
-  nome: string;
-  tamanho: string;
-  latitudeCaptura?: string;
-  longitudeCaptura?: string;
-  dataHoraCaptura?: Date | string;
+  localizacao: IEndereco;
+  dataHoraCaptura?: string;
+}
+
+export interface IRemocaoAnexos {
+  idsAnexos: string[];
+}
+
+export interface IAnexoOffiline extends IAnexo {
+  isUpdate: boolean;
 }

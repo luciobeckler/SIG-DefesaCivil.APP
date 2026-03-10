@@ -241,18 +241,21 @@ export class QuadroComponent {
           // Filtros de Texto
           const matchProtocolo =
             !termoProtocolo ||
-            (oc.numero && oc.numero.toString().includes(termoProtocolo));
-          const matchRua = !termoRua || oc.enderecoRua;
-          const matchBairro = !termoBairro || oc.enderecoBairro;
+            (oc.campos.localizacao?.numero &&
+              oc.campos.localizacao.numero.toString().includes(termoProtocolo));
+          const matchRua = !termoRua || oc.campos.localizacao?.rua;
+          const matchBairro = !termoBairro || oc.campos.localizacao?.bairro;
           const matchSolicitante =
             !termoSolicitante ||
-            (oc.solicitanteNome &&
-              oc.solicitanteNome.toLowerCase().includes(termoSolicitante));
+            (oc.campos.solicitante?.nome &&
+              oc.campos.solicitante?.nome
+                .toLowerCase()
+                .includes(termoSolicitante));
 
           // Filtro de Data
           let matchData = true;
-          if (oc.dataEHoraDoOcorrido) {
-            const dataOcorrencia = oc.dataEHoraDoOcorrido.split('T')[0];
+          if (oc.campos.dataEHoraDoOcorrido) {
+            const dataOcorrencia = oc.campos.dataEHoraDoOcorrido.split('T')[0];
             if (dataInicioISO && dataOcorrencia < dataInicioISO)
               matchData = false;
             if (dataFimISO && dataOcorrencia > dataFimISO) matchData = false;

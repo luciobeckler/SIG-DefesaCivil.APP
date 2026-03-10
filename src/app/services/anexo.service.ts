@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environmentApiUrl } from 'src/environments/environment';
-import { INovoAnexo } from '../interfaces/anexos/IAnexos';
+import { IAnexoUpload } from '../interfaces/anexos/IAnexos';
 
 @Injectable({
   providedIn: 'root',
@@ -26,51 +26,37 @@ export class AnexoService {
     );
   }
 
-  // Correção 1: Assinatura atualizada para INovoAnexo[]
   uploadAnexos(
     ocorrenciaId: string,
-    listaArquivos: INovoAnexo[],
+    listaAnexos: IAnexoUpload[],
   ): Observable<any> {
     const formData = new FormData();
 
-    formData.append('Entidade', 'Ocorrencia');
+    formData.append('TipoEntidade', 'Ocorrencia');
 
-    // Correção 2: Montagem do FormData com indexação para o C#
-    listaArquivos.forEach((item, index) => {
-      const extensao = item.file.name.split('.').pop();
-      const nomeFinal = item.nome.endsWith(`.${extensao}`)
-        ? item.nome
-        : `${item.nome}.${extensao}`;
+    listaAnexos.forEach((item, index) => {
+      const prefix = `Anexos[${index}]`;
 
-      // Prefixo base para este item na lista do C#
-      const prefix = `Arquivos[${index}]`;
+      formData.append(`${prefix}.Anexo`, item.file, item.file.name);
 
-      // 1. O Arquivo físico
-      formData.append(`${prefix}.Arquivo`, item.file, nomeFinal);
-
-      // 2. Metadados Geográficos e de Tempo (se existirem)
-      if (item.latitudeCaptura !== undefined && item.latitudeCaptura !== null) {
-        formData.append(`${prefix}.Latitude`, item.latitudeCaptura.toString());
+      if (
+        item.localizacao.latitude !== undefined &&
+        item.localizacao.latitude !== null
+      ) {
+        const latString = item.localizacao.latitude.toString();
+        formData.append(`${prefix}.Latitude`, latString);
       }
 
       if (
-        item.longitudeCaptura !== undefined &&
-        item.longitudeCaptura !== null
+        item.localizacao.longitude !== undefined &&
+        item.localizacao.longitude !== null
       ) {
-        formData.append(
-          `${prefix}.Longitude`,
-          item.longitudeCaptura.toString(),
-        );
+        const lonString = item.localizacao.longitude.toString();
+        formData.append(`${prefix}.Longitude`, lonString);
       }
 
       if (item.dataHoraCaptura) {
-        // Garante envio no formato ISO-8601 para o C# fazer o parse de DateTime sem quebrar
-        const dataIso =
-          typeof item.dataHoraCaptura === 'string'
-            ? item.dataHoraCaptura
-            : item.dataHoraCaptura.toISOString();
-
-        formData.append(`${prefix}.DataHoraCaptura`, dataIso);
+        formData.append(`${prefix}.DataHoraCaptura`, item.dataHoraCaptura);
       }
     });
 
