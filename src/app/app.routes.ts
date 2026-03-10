@@ -19,6 +19,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'solicitacao-vistoria',
+    loadComponent: () =>
+      import('./pages/solicitacao-vistoria/solicitacao-vistoria.page').then(
+        (m) => m.SolicitacaoVistoriaPage,
+      ),
+  },
+  {
     path: 'home',
     component: SideNavComponent,
     // canActivate: [authGuard], // Protege o acesso a qualquer sub-rota de home

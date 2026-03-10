@@ -1,0 +1,149 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Pedir Vistoria</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <p class="instrucoes">
+    Preencha os dados abaixo para enviar seu pedido de vistoria para a Defesa
+    Civil.
+  </p>
+
+  <form [formGroup]="form">
+    <h3>1. Seus Dados</h3>
+    <ion-list lines="full">
+      <ion-item>
+        <ion-input
+          label="Seu Nome Completo"
+          labelPlacement="stacked"
+          formControlName="nome"
+          placeholder="Ex: Maria da Silva"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">CPF</ion-label>
+        <input
+          labelPlacement="stacked"
+          type="text"
+          formControlName="cpf"
+          mask="000.000.000-00"
+          [dropSpecialCharacters]="true"
+          placeholder="000.000.000-00"
+          class="native-input"
+        />
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Telefone</ion-label>
+
+        <input
+          label="Seu Celular (com DDD)"
+          labelPlacement="stacked"
+          type="tel"
+          formControlName="telefone"
+          mask="(00) 00000-0000"
+          [dropSpecialCharacters]="true"
+          placeholder="(00) 00000-0000"
+          class="native-input"
+        />
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Seu E-mail"
+          labelPlacement="stacked"
+          type="email"
+          formControlName="email"
+          placeholder="email@exemplo.com"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <h3>2. Onde é o problema?</h3>
+    <ion-list lines="full">
+      <ion-item>
+        <ion-label position="stacked">CEP</ion-label>
+
+        <input
+          label="CEP"
+          labelPlacement="stacked"
+          type="text"
+          formControlName="cep"
+          mask="00000-000"
+          [dropSpecialCharacters]="true"
+          placeholder="00000-000"
+          (blur)="buscarCEP()"
+          class="native-input"
+        />
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Rua / Avenida"
+          labelPlacement="stacked"
+          formControlName="rua"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          id="inputNumero"
+          label="Número"
+          labelPlacement="stacked"
+          type="text"
+          formControlName="numero"
+          placeholder="Ex: 123 ou S/N"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Bairro"
+          labelPlacement="stacked"
+          formControlName="bairro"
+        ></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-input
+          label="Complemento (Opcional)"
+          labelPlacement="stacked"
+          formControlName="complemento"
+          placeholder="Casa fundos, Bloco 2..."
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <h3>3. Fotos do Local</h3>
+    <p class="instrucoes-menor">
+      Tire fotos ou escolha da galeria para mostrar a situação.
+    </p>
+
+    <ion-button expand="block" fill="outline" (click)="adicionarFoto()">
+      Adicionar Foto
+    </ion-button>
+
+    <div class="fotos-container" *ngIf="fotosSelecionadas.length > 0">
+      <div
+        class="foto-item"
+        *ngFor="let foto of fotosSelecionadas; let i = index"
+      >
+        <img [src]="foto.webPath" alt="Foto do problema" />
+        <ion-button color="danger" size="small" (click)="removerFoto(i)"
+          >Remover</ion-button
+        >
+      </div>
+    </div>
+
+    <ion-button
+      expand="block"
+      color="primary"
+      class="ion-margin-top"
+      (click)="enviarSolicitacao()"
+    >
+      Enviar Pedido de Vistoria
+    </ion-button>
+  </form>
+</ion-content>
