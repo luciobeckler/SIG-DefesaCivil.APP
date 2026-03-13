@@ -16,9 +16,7 @@ export class VistoriaService {
     tipoCadastro: string,
   ): Promise<string> {
     // CORREÇÃO: Cadeia de métodos para respeitar a imutabilidade do HttpParams
-    const params = new HttpParams()
-      .set('quadroId', '6b8821ca-576e-4f23-a6c8-298f361fbd66')
-      .set('tipoCadastroOcorrencia', tipoCadastro);
+    const params = new HttpParams().set('tipoCadastroOcorrencia', tipoCadastro);
 
     // CORREÇÃO: Informar ao HttpClient que a resposta é um texto puro (o protocolo), e não um JSON.
     const request$ = this.http.post(this.anexoUrl, formData, {
