@@ -27,6 +27,7 @@ import {
 } from '@ionic/angular/standalone';
 import { NgxMaskDirective } from 'ngx-mask';
 import { VistoriaService } from 'src/app/services/vistoria.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-solicitacao-vistoria',
@@ -55,7 +56,10 @@ export class SolicitacaoVistoriaPage {
   form: FormGroup;
   fotosSelecionadas: Photo[] = [];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+  ) {
     this.form = this.fb.group({
       nome: ['', [Validators.required, Validators.minLength(3)]],
       cpf: ['', [Validators.required, Validators.minLength(11)]],
@@ -77,6 +81,9 @@ export class SolicitacaoVistoriaPage {
         allowEditing: false,
         resultType: CameraResultType.Uri,
         source: CameraSource.Prompt,
+        promptLabelHeader: 'Fotos',
+        promptLabelPhoto: 'Galeria',
+        promptLabelPicture: 'Câmera ',
       });
 
       this.fotosSelecionadas.push(image);
@@ -132,10 +139,10 @@ export class SolicitacaoVistoriaPage {
         this.fotosSelecionadas,
       );
       if (protocoloRetornado) {
-        alert(
-          `Ocorrência criada com sucesso! Protocolo: ${protocoloRetornado}`,
-        );
-        // Aqui você pode limpar o form ou redirecionar a tela
+        this.router.navigate(['/solicitacao-vistoria/vistoria-criada'], {
+          state: { protocolo: protocoloRetornado },
+          replaceUrl: true,
+        });
       }
     } catch (error) {
       console.error(error);

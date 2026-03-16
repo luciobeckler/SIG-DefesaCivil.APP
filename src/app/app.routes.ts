@@ -26,6 +26,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'solicitacao-vistoria/vistoria-criada',
+    loadComponent: () =>
+      import('./pages/solicitacao-vistoria/vistoria-criada/vistoria-criada.page').then(
+        (m) => m.VistoriaCriadaPage,
+      ),
+  },
+  {
     path: 'home',
     component: SideNavComponent,
     // canActivate: [authGuard], // Protege o acesso a qualquer sub-rota de home
@@ -77,5 +84,12 @@ export const routes: Routes = [
   {
     path: '**',
     redirectTo: 'login',
+  },
+  {
+    path: 'vistoria-criada',
+    loadComponent: () =>
+      import('./pages/solicitacao-vistoria/vistoria-criada/vistoria-criada.page').then(
+        (m) => m.VistoriaCriadaPage,
+      ),
   },
 ];
