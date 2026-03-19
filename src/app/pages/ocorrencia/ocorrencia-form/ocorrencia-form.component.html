@@ -146,42 +146,67 @@
               </ion-item>
             </ion-col>
           </ion-row>
+          <div formGroupName="solicitante">
+            <ion-item>
+              <ion-input
+                label="Nome do Solicitante"
+                labelPlacement="stacked"
+                formControlName="nome"
+              ></ion-input>
+            </ion-item>
 
-          <ion-item>
-            <ion-input
-              label="Nome do Solicitante"
-              labelPlacement="stacked"
-              formControlName="solicitanteNome"
-            ></ion-input>
-          </ion-item>
-          <ion-row>
-            <ion-col>
-              <ion-item>
-                <ion-label position="stacked">CPF</ion-label>
-                <input
-                  type="text"
-                  formControlName="solicitanteCPF"
-                  placeholder="000.000.000-00"
-                  mask="000.000.000-00"
-                  [dropSpecialCharacters]="true"
-                  class="custom-input-native"
-                />
-              </ion-item>
-            </ion-col>
-            <ion-col>
-              <ion-item>
-                <ion-input
-                  label="RG"
-                  labelPlacement="stacked"
-                  formControlName="solicitanteRG"
-                ></ion-input>
-              </ion-item>
-            </ion-col>
-          </ion-row>
+            <ion-row>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="stacked">CPF</ion-label>
+                  <input
+                    type="text"
+                    formControlName="cpf"
+                    placeholder="000.000.000-00"
+                    mask="000.000.000-00"
+                    [dropSpecialCharacters]="true"
+                    class="custom-input-native"
+                  />
+                </ion-item>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-label position="stacked">Telefone</ion-label>
+                  <input
+                    type="tel"
+                    formControlName="telefone"
+                    placeholder="(00) 00000-0000"
+                    mask="(00) 00000-0000||(00) 0000-0000"
+                    [dropSpecialCharacters]="true"
+                    class="custom-input-native"
+                  />
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-item>
+              <ion-input
+                label="E-mail"
+                labelPlacement="stacked"
+                formControlName="email"
+                type="email"
+                placeholder="exemplo@email.com"
+              ></ion-input>
+            </ion-item>
+
+            <ion-item
+              lines="none"
+              *ngIf="form.get('email')?.invalid && form.get('email')?.touched"
+            >
+              <ion-text color="danger" style="font-size: 0.8rem">
+                Por favor, insira um endereço de e-mail válido.
+              </ion-text>
+            </ion-item>
+          </div>
         </div>
       </ion-accordion>
 
-      <ion-accordion value="endereco">
+      <ion-accordion value="endereco" formGroupName="localizacao">
         <ion-item slot="header" color="light">
           <ion-icon
             name="location-outline"
@@ -192,19 +217,6 @@
         </ion-item>
 
         <div class="ion-padding" slot="content">
-          <!-- <ion-row class="ion-margin-bottom">
-            <ion-col size="6">
-              <ion-button
-                expand="block"
-                color="secondary"
-                (click)="capturarLocalizacaoAtual()"
-              >
-                <ion-icon name="locate-outline" slot="start"></ion-icon>
-                Pegar GPS
-              </ion-button>
-            </ion-col>
-          </ion-row> -->
-
           <ion-row *ngIf="form.get('latitude')?.value">
             <ion-col>
               <ion-note color="success">
@@ -219,7 +231,7 @@
             <ion-label position="stacked">CEP</ion-label>
             <input
               type="text"
-              formControlName="enderecoCEP"
+              formControlName="cep"
               placeholder="00000-000"
               mask="00000-000"
               [dropSpecialCharacters]="true"
@@ -232,7 +244,7 @@
             <ion-input
               label="Rua"
               labelPlacement="stacked"
-              formControlName="enderecoRua"
+              formControlName="rua"
             ></ion-input>
           </ion-item>
 
@@ -242,7 +254,7 @@
                 <ion-input
                   label="Número"
                   labelPlacement="stacked"
-                  formControlName="enderecoNumero"
+                  formControlName="numero"
                 ></ion-input>
               </ion-item>
             </ion-col>
@@ -251,7 +263,7 @@
                 <ion-input
                   label="Bairro"
                   labelPlacement="stacked"
-                  formControlName="enderecoBairro"
+                  formControlName="bairro"
                 ></ion-input>
               </ion-item>
             </ion-col>
@@ -261,7 +273,7 @@
             <ion-input
               label="Complemento"
               labelPlacement="stacked"
-              formControlName="enderecoComplemento"
+              formControlName="complemento"
             ></ion-input>
           </ion-item>
         </div>

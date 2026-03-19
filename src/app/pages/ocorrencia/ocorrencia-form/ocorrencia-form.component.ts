@@ -71,7 +71,6 @@ import { LoadingService } from 'src/app/services/loading.service';
 import { HasPermissionDirective } from 'src/app/directives/has-permission.directive';
 import { HistoricoOcorrenciaComponent } from 'src/app/components/historico-ocorrencia/historico-ocorrencia.component';
 import { ToastService } from 'src/app/services/toast/toast.service';
-import { LocationStateService } from 'src/app/services/location-state.service';
 import { ICamposOcorrencia } from 'src/app/interfaces/ocorrencias/ICamposOcorrencia';
 import {
   ICreateOrEditOcorrenciaDTO,
@@ -193,15 +192,22 @@ export class OcorrenciaFormPage implements OnInit {
       dataTerminoAtendimento: [null],
       horaTerminoAtendimento: [null],
 
-      enderecoRua: [''],
-      enderecoNumero: [''],
-      enderecoComplemento: [''],
-      enderecoBairro: [''],
-      enderecoCEP: [''],
+      localizacao: this.fb.group({
+        rua: [''],
+        numero: [''],
+        complemento: [''],
+        bairro: [''],
+        cep: [''],
+        latitude: [null],
+        longitude: [null],
+      }),
 
-      solicitanteNome: [''],
-      solicitanteCPF: [''],
-      solicitanteRG: [''],
+      solicitante: this.fb.group({
+        nome: [''],
+        cpf: [''],
+        email: ['', [Validators.email]],
+        telefone: [''],
+      }),
 
       grauDeRisco: [null, Validators.required],
       regimeDeOcupacaoDoImovel: [null],
@@ -214,18 +220,15 @@ export class OcorrenciaFormPage implements OnInit {
       motivacao: [[]],
       areasAfetadas: [[]],
 
-      possuiIPTU: [''],
+      possuiIPTU: [null],
       numeroDeMoradias: [null],
       numeroDeComodos: [null],
       numeroDePavimentos: [null],
-      possuiUnidadeFamiliar: [false],
+      possuiUnidadeFamiliar: [null],
       numeroDeDeficientes: [null],
       numeroDeCriancas: [null],
       numeroDeAdultos: [null],
       numeroDeIdosos: [null],
-
-      latitude: [null],
-      longitude: [null],
     });
   }
 
@@ -281,20 +284,9 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   private preencherFormulario(campos: ICamposOcorrencia) {
-    const formPatch: any = { ...campos };
+    const formPatch: Record<string, unknown> = { ...campos };
 
-    type ChavesDeData = Extract<
-      keyof ICamposOcorrencia,
-      | 'dataEHoraDoOcorrido'
-      | 'dataEHoraInicioAtendimento'
-      | 'dataEHoraTerminoAtendimento'
-    >;
-
-    const mapeamentoDatas: Array<{
-      campoOrigem: ChavesDeData;
-      campoData: string;
-      campoHora: string;
-    }> = [
+    const mapeamentoDatas = [
       {
         campoOrigem: 'dataEHoraDoOcorrido',
         campoData: 'dataDoOcorrido',
@@ -313,9 +305,9 @@ export class OcorrenciaFormPage implements OnInit {
     ];
 
     mapeamentoDatas.forEach((map) => {
-      const valorDataISO = campos[map.campoOrigem];
+      const valorDataISO = campos[map.campoOrigem as keyof ICamposOcorrencia];
 
-      if (valorDataISO) {
+      if (typeof valorDataISO === 'string') {
         try {
           const dateObj = parseISO(valorDataISO);
           formPatch[map.campoData] = format(dateObj, 'dd/MM/yyyy');
@@ -464,7 +456,6 @@ export class OcorrenciaFormPage implements OnInit {
   }
 
   async salvar() {
-    debugger;
     console.log('Iniciando processo de salvamento...');
     if (this.form.invalid) {
       console.warn('Formulário inválido!', this.form.value);
@@ -512,12 +503,21 @@ export class OcorrenciaFormPage implements OnInit {
           values.horaTerminoAtendimento,
         ),
 
-        dataDoOcorrido: undefined,
-        horaDoOcorrido: undefined,
-        dataInicioAtendimento: undefined,
-        horaInicioAtendimento: undefined,
-        dataTerminoAtendimento: undefined,
-        horaTerminoAtendimento: undefined,
+        solicitante: {
+          nome: values.solicitanteNome,
+          cpf: values.solicitanteCPF,
+          email: values.solicitanteEmail,
+          telefone: values.solicitanteTelefone,
+        },
+        localizacao: {
+          rua: values.enderecoRua,
+          bairro: values.enderecoBairro,
+          numero: values.enderecoNumero,
+          complemento: values.enderecoComplemento,
+          cep: values.enderecoCEP,
+          latitude: values.latitude,
+          longitude: values.longitude,
+        },
       },
     };
 
